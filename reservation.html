@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Reserve Restaurant – Reservations</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- tab icon -->
+    <link rel="icon" type="image/svg+xml" href="images/R.svg" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+      /* === LOCAL FONTS (from /fonts) === */
+      @font-face {
+        font-family: "LatoLocal";
+        src: url("fonts/Lato-Regular.ttf") format("truetype");
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: "GlacialBold";
+        src: url("fonts/GlacialIndifference-Bold.otf") format("opentype");
+        font-weight: 700;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      body { font-family: "LatoLocal", Arial, sans-serif; }
+
+      /* ===== top logo swap (white -> black when header-dark) ===== */
+      #logo-link { position: relative; display: inline-block; }
+      #logo-link img { display: block; }
+      #logo-link .logo-black { display: none; }
+      header.header-dark #logo-link .logo-white { display: none; }
+      header.header-dark #logo-link .logo-black { display: block; }
+
+      /* curtain color */
+      .page-panel { background-color: #D0842F; }
+
+      /* ====== HEADER POSITIONING FIXES (match index) ====== */
+      .brand-logo {
+        height: 188px;
+        width: auto;
+        display: block;
+      }
+      @media (min-width: 768px) {
+        .brand-logo { height: 222px; }
+      }
+      .top-logo-up { transform: translateY(-45px); }
+      .top-buttons-down { transform: translateY(40px); }
+
+      /* small social buttons (match index footer) */
+      .social-btn {
+        opacity: 0.75;
+        transition: opacity 200ms ease, transform 200ms ease;
+      }
+      .social-btn:hover { opacity: 1; transform: translateY(-1px); }
+      .social-btn:active { transform: translateY(0); }
+    </style>
+  </head>
+
+  <body
+    class="text-[#1a1a1a]"
+    style="
+      background-image: url('images/background2.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+    "
+  >
+    <!-- ===== CURTAIN OVERLAY (same style/timing) ===== -->
+    <div
+      id="page-overlay"
+      class="fixed inset-0 z-40 pointer-events-none opacity-100 transition-opacity duration-300"
+    >
+      <div
+        id="page-panel"
+        class="page-panel absolute inset-0 transform translate-y-0
+               transition-transform duration-[1050ms] ease-in-out
+               flex items-center justify-center"
+      >
+        <div id="page-logo" class="text-white opacity-100 transition-opacity duration-500">
+          <img
+            src="images/logowhite.svg"
+            alt="Reserve"
+            class="w-[420px] md:w-[500px] h-auto select-none"
+            draggable="false"
+          />
+        </div>
+      </div>
+    </div>
+
+    <div id="top"></div>
+
+    <!-- ===== HEADER (matches index: positions + logo swap) ===== -->
+    <header
+      id="site-header"
+      class="fixed top-0 left-0 w-full z-20 flex items-start justify-between px-10 pt-0 pb-0 text-white"
+    >
+      <!-- LEFT buttons DOWN -->
+      <div class="top-buttons-down flex items-center gap-4 text-xl text-[#1a1a1a] tracking-wide">
+        <span class="lang-line h-px w-10 bg-black"></span>
+        <a href="index.html#top" class="hover:opacity-80">EN</a>
+        <span>|</span>
+        <a href="#" class="hover:opacity-80">GE</a>
+      </div>
+
+      <!-- TOP logo UP + white/black swap -->
+      <a href="index.html#top" id="logo-link" class="opacity-80 hover:opacity-80" aria-label="Reserve">
+        <img
+          src="images/logowhite.svg"
+          alt="Reserve"
+          class="brand-logo top-logo-up select-none logo-white"
+          draggable="false"
+        />
+        <img
+          src="images/logoblack.svg"
+          alt="Reserve"
+          class="brand-logo top-logo-up select-none logo-black"
+          draggable="false"
+        />
+      </a>
+
+      <!-- RIGHT buttons DOWN -->
+      <nav class="top-buttons-down flex items-center gap-8 text-[#1a1a1a] md:text-lg">
+        <span class="opacity-80 cursor-default">Reservations</span>
+        <a href="menu.pdf" target="_blank" class="hover:opacity-80">Menu</a>
+      </nav>
+    </header>
+
+    <!-- main -->
+    <main class="min-h-screen flex items-center justify-center pt-32 px-6">
+      <div class="max-w-xl w-full space-y-6">
+        <div class="text-center">
+          <h1 class="text-4xl md:text-5xl font-semibold mb-4">Reservations</h1>
+          <p class="text-sm md:text-base text-[#3a3a3a]">
+            
+            All reservation requests are sent via WhatsApp to our team.
+          </p>
+        </div>
+
+        <!-- card -->
+        <div
+          class="bg-black/85 text-white rounded-xl shadow-lg p-6 md:p-8 space-y-4"
+          style="font-family: 'GlacialBold', Arial, sans-serif;"
+        >
+          <p class="text-xs uppercase tracking-wide text-white/70">
+            Step <span id="step-current">1</span> of 3
+          </p>
+
+          <!-- step 1 -->
+          <div id="step-1" class="space-y-4">
+            <h2 class="text-lg font-semibold">Your details:</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm mb-1">Name *</label>
+                <input
+                  id="input-name"
+                  type="text"
+                  class="w-full text-black/60 border border-black/20 rounded-md px-3 py-2 text-sm bg-white/95 focus:outline-none focus:ring-1 focus:ring-black/40"
+                  autocomplete="given-name"
+                />
+              </div>
+              <div>
+                <label class="block text-sm mb-1">Surname *</label>
+                <input
+                  id="input-surname"
+                  type="text"
+                  class="w-full border text-black/60 border-black/20 rounded-md px-3 py-2 text-sm bg-white/95 focus:outline-none focus:ring-1 focus:ring-black/40"
+                  autocomplete="family-name"
+                />
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm mb-1">Your phone number *</label>
+              <input
+                id="input-phone"
+                type="tel"
+                placeholder="+995..."
+                class="w-full border  text-black/60 border-black/20 rounded-md px-3 py-2 text-sm bg-white/95 focus:outline-none focus:ring-1 focus:ring-black/40"
+                autocomplete="tel"
+              />
+            </div>
+
+            <div class="flex flex-col gap-3 pt-4">
+              <div class="flex justify-end">
+                <button
+                  id="btn-next-1"
+                  class="px-4 py-2 rounded-md bg-white text-black text-sm hover:bg-[#D0842F] hover:text-white transition"
+                >
+                  Next
+                </button>
+              </div>
+
+              <button
+                class="btn-open-whatsapp-empty w-full px-4 py-2 rounded-md border border-green-700 text-white bg-green-700 text-sm hover:bg-white/30 transition"
+              >
+                Open WhatsApp with a custom message
+              </button>
+            </div>
+          </div>
+
+          <!-- step 2 -->
+          <div id="step-2" class="space-y-4 hidden">
+            <h2 class="text-lg font-GlacialBold">Date and time</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm mb-1">Date *</label>
+                <input
+                  id="input-date"
+                  type="date"
+                  class="w-full border border-black/20  text-black/60 rounded-md px-3 py-2 text-sm bg-white/95 focus:outline-none focus:ring-1 focus:ring-black/40"
+                />
+              </div>
+              <div>
+                <label class="block text-sm mb-1">
+                  Time * <span class="text-[11px] text-white/70">(09:00–21:30)</span>
+                </label>
+                <input
+                  id="input-time"
+                  type="time"
+                  class="w-full text-black/60 border border-black/20 rounded-md px-3 py-2 text-sm bg-white/95 focus:outline-none focus:ring-1 focus:ring-black/40"
+                />
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm mb-1">Number of guests *</label>
+              <input
+                id="input-guests"
+                type="number"
+                min="1"
+                class="w-full border  text-black/60 border-black/20 rounded-md px-3 py-2 text-sm bg-white/95 focus:outline-none focus:ring-1 focus:ring-black/40"
+              />
+            </div>
+
+            <div class="flex justify-between gap-3 pt-4">
+              <button
+                id="btn-back-2"
+                class="px-4 py-2 rounded-md bg-white text-black text-sm hover:bg-[#D0842F] hover:text-white transition"
+              >
+                Back
+              </button>
+              <button
+                id="btn-next-2"
+                class="px-4 py-2 rounded-md bg-white text-black text-sm hover:bg-[#D0842F] hover:text-white transition"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+
+          <!-- step 3 -->
+          <div id="step-3" class="space-y-4 hidden">
+            <h2 class="text-lg font-family: 'GlacialBold'">Special requests</h2>
+            <div>
+              <label class="block text-sm mb-1">(optional)</label>
+              <textarea
+                id="input-requests"
+                rows="3"
+                class="w-full text-black/60 border border-black/20 rounded-md px-3 py-2 text-sm bg-white/95 focus:outline-none focus:ring-1 focus:ring-black/40"
+                placeholder="Allergies, occasions, seating preferences..."
+              ></textarea>
+            </div>
+
+            
+
+            <div class="flex flex-col gap-3 pt-4">
+              <div class="flex justify-between gap-3">
+                <button
+                  id="btn-back-3"
+                  class="px-4 py-2 rounded-md bg-white text-black text-sm hover:bg-[#D0842F] hover:text-white transition"
+                >
+                  Back
+                </button>
+                <button
+                  id="btn-send-whatsapp"
+                  class="px-4 py-2 rounded-md bg-green-700 text-white text-sm hover:bg-green-800 transition"
+                >
+                  Send via WhatsApp
+                </button>
+              </div>
+
+              <button
+                class="btn-open-whatsapp-empty w-full px-4 py-2 rounded-md border border-green-700 text-green-900 text-sm hover:bg-white/90 transition"
+              >
+                Open WhatsApp with a custom message
+              </button>
+            </div>
+          </div>
+
+          <p class="text-[11px] text-white/70">
+            Your reservation is confirmed only after our team replies to you in WhatsApp.
+          </p>
+        </div>
+      </div>
+    </main>
+
+    <!-- ===== FOOTER SOCIAL (same as index) ===== -->
+    <footer class="bg-black py-10">
+      <div class="max-w-7xl mx-auto px-6 md:px-16 flex items-center justify-center gap-5">
+        <a
+          href="https://api.whatsapp.com/send/?phone=%2B995595313344&text=&type=phone_number&app_absent=0"
+          target="_blank"
+          aria-label="WhatsApp"
+          class="social-btn inline-flex items-center justify-center w-10 h-10 rounded-full border border-white/20 hover:border-white/40"
+        >
+          <img
+            src="images/Digital_Glyph_White.svg"
+            alt="WhatsApp"
+            class="w-5 h-5"
+            draggable="false"
+          />
+        </a>
+
+        <a
+          href="https://www.instagram.com/reserve.tbilisi/"
+          target="_blank"
+          aria-label="Instagram"
+          class="social-btn inline-flex items-center justify-center w-10 h-10 rounded-full border border-white/20 hover:border-white/40"
+        >
+          <img
+            src="images/Instagram_Glyph_White.svg"
+            alt="Instagram"
+            class="w-5 h-5"
+            draggable="false"
+          />
+        </a>
+      </div>
+    </footer>
+
+    <script>
+      // curtain
+      const overlay = document.getElementById("page-overlay");
+      const panel = document.getElementById("page-panel");
+      const logo = document.getElementById("page-logo");
+
+      window.addEventListener("load", () => {
+        setTimeout(() => {
+          logo.classList.remove("opacity-100");
+          logo.classList.add("opacity-0");
+
+          panel.classList.add("translate-y-full");
+
+          setTimeout(() => {
+            overlay.classList.add("opacity-0");
+          }, 1050);
+        }, 150);
+      });
+
+      // config times
+      const OPEN_TIME = "09:00";
+      const CLOSE_TIME = "21:30";
+
+      // steps
+      const stepCurrent = document.getElementById("step-current");
+      const steps = [
+        document.getElementById("step-1"),
+        document.getElementById("step-2"),
+        document.getElementById("step-3"),
+      ];
+      let currentStep = 1;
+
+      function showStep(step) {
+        currentStep = step;
+        steps.forEach((s, i) => {
+          if (i === step - 1) s.classList.remove("hidden");
+          else s.classList.add("hidden");
+        });
+        stepCurrent.textContent = step;
+        if (step === 3) updateSummary();
+      }
+
+      // inputs
+      const inputName = document.getElementById("input-name");
+      const inputSurname = document.getElementById("input-surname");
+      const inputPhone = document.getElementById("input-phone");
+      const inputDate = document.getElementById("input-date");
+      const inputTime = document.getElementById("input-time");
+      const inputGuests = document.getElementById("input-guests");
+      const inputRequests = document.getElementById("input-requests");
+      const summaryText = document.getElementById("summary-text");
+
+      // phone
+      const restaurantPhone = "+995595313344";
+
+      function setMinDateToday() {
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, "0");
+        const d = String(now.getDate()).padStart(2, "0");
+        inputDate.min = `${y}-${m}-${d}`;
+      }
+
+      function setTimeLimits() {
+        inputTime.min = OPEN_TIME;
+        inputTime.max = CLOSE_TIME;
+      }
+
+      function formatDateDisplay(dateStr) {
+        if (!dateStr) return "";
+        const parts = dateStr.split("-");
+        if (parts.length !== 3) return dateStr;
+        const [y, m, d] = parts;
+        return `${d}/${m}/${y}`;
+      }
+
+      function validateDateTime(dateStr, timeStr) {
+        if (!dateStr || !timeStr) return "missing";
+        if (timeStr < OPEN_TIME) return "before-open";
+        if (timeStr > CLOSE_TIME) return "after-close";
+
+        const now = new Date();
+        const selected = new Date(`${dateStr}T${timeStr}`);
+        if (selected < now) return "past";
+
+        return "";
+      }
+
+      function buildMessage() {
+        const name = inputName.value.trim();
+        const surname = inputSurname.value.trim();
+        const phone = inputPhone.value.trim();
+        const date = inputDate.value;
+        const time = inputTime.value;
+        const guests = inputGuests.value;
+        const req = inputRequests.value.trim() || "None";
+
+        return (
+          "Reservation request:\n\n" +
+          "Name: " + name + " " + surname + "\n" +
+          "Guest phone: " + phone + "\n" +
+          "Date: " + formatDateDisplay(date) + "\n" +
+          "Time: " + time + "\n" +
+          "Guests: " + guests + "\n" +
+          "Special requests: " + req
+        );
+      }
+
+      function updateSummary() {
+        summaryText.textContent = buildMessage();
+      }
+
+      // next/back buttons
+      document.getElementById("btn-next-1").addEventListener("click", () => {
+        if (!inputName.value.trim() || !inputSurname.value.trim() || !inputPhone.value.trim()) {
+          alert("Please fill in your name, surname and phone number.");
+          return;
+        }
+        showStep(2);
+      });
+
+      document.getElementById("btn-back-2").addEventListener("click", () => showStep(1));
+
+      document.getElementById("btn-next-2").addEventListener("click", () => {
+        if (!inputDate.value || !inputTime.value || !inputGuests.value) {
+          alert("Please fill in date, time and number of guests.");
+          return;
+        }
+
+        const reason = validateDateTime(inputDate.value, inputTime.value);
+        if (reason === "before-open") { alert("Reservations are available from " + OPEN_TIME + " onward."); return; }
+        if (reason === "after-close") { alert("Reservations are available until " + CLOSE_TIME + "."); return; }
+        if (reason === "past") { alert("You cannot choose a past date and time."); return; }
+
+        showStep(3);
+      });
+
+      document.getElementById("btn-back-3").addEventListener("click", () => showStep(2));
+
+      // send via whatsapp
+      document.getElementById("btn-send-whatsapp").addEventListener("click", () => {
+        if (
+          !inputName.value.trim() || !inputSurname.value.trim() || !inputPhone.value.trim() ||
+          !inputDate.value || !inputTime.value || !inputGuests.value
+        ) {
+          alert("Please complete all required fields first.");
+          return;
+        }
+
+        const reason = validateDateTime(inputDate.value, inputTime.value);
+        if (reason === "before-open") { alert("Reservations are available from " + OPEN_TIME + " onward."); return; }
+        if (reason === "after-close") { alert("Reservations are available until " + CLOSE_TIME + "."); return; }
+        if (reason === "past") { alert("You cannot choose a past date and time."); return; }
+
+        const url =
+          "https://api.whatsapp.com/send?phone=" +
+          encodeURIComponent(restaurantPhone) +
+          "&text=" +
+          encodeURIComponent(buildMessage());
+
+        window.open(url, "_blank");
+      });
+
+      // custom whatsapp buttons
+      document.querySelectorAll(".btn-open-whatsapp-empty").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          window.open(
+            "https://api.whatsapp.com/send/?phone=%2B995595313344&text=&type=phone_number&app_absent=0",
+            "_blank"
+          );
+        });
+      });
+
+      // header turns dark after the light page background starts showing
+      const header = document.getElementById("site-header");
+      const mainEl = document.querySelector("main");
+
+      const mainIO = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) header.classList.add("header-dark");
+            else header.classList.remove("header-dark");
+          });
+        },
+        { threshold: 0.01 }
+      );
+      mainIO.observe(mainEl);
+
+      // init
+      showStep(1);
+      setMinDateToday();
+      setTimeLimits();
+    </script>
+  </body>
+</html>
