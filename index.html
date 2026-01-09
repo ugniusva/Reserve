@@ -3,6 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <title>Reserve</title>
+
+    <!-- ✅ SEO: meta description -->
+    <meta
+      name="description"
+      content="Reserve is a discreet casual fine dining restaurant in Tbilisi, led by chef Tomi Rissanen. Discover seasonal tasting menus, breakfast, and a carefully curated wine cellar—including Château Leuville—served in an intimate seven-table setting."
+    />
+
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <!-- tab icon -->
@@ -27,12 +34,12 @@
         font-display: swap;
       }
 
-
       #logo-link { position: relative; display: inline-block; }
-    #logo-link img { display: block; }
-    #logo-link .logo-black { display: none; }
-    header.header-dark #logo-link .logo-white { display: none; }
-    header.header-dark #logo-link .logo-black { display: block; }
+      #logo-link img { display: block; }
+      #logo-link .logo-black { display: none; }
+      header.header-dark #logo-link .logo-white { display: none; }
+      header.header-dark #logo-link .logo-black { display: block; }
+
       body { font-family: "LatoLocal", Arial, sans-serif; }
       .address-font { font-family: "GlacialBold", "LatoLocal", Arial, sans-serif; }
 
@@ -69,13 +76,14 @@
       @media (prefers-reduced-motion: reduce) {
         .reveal { transition: none; transform: none; }
       }
+
       .hero-center-shift {
-  transform: translate(-10px, 0px); /* move UP */
-  
-}
-.herobutton-center-shift {
-  transform: translateY(-10px); /* move UP */
-}
+        transform: translate(-10px, 0px); /* move UP */
+      }
+      .herobutton-center-shift {
+        transform: translateY(-10px); /* move UP */
+      }
+
       /* header color swap (white on hero, dark on gray) */
       header { transition: color 300ms ease; }
       header a { transition: color 300ms ease, opacity 200ms ease; }
@@ -92,7 +100,6 @@
       .social-btn:active { transform: translateY(0); }
 
       /* ====== HEADER POSITIONING FIXES ====== */
-      /* top logo: translate UP */
       .brand-logo {
         height: 188px;
         width: auto;
@@ -105,7 +112,6 @@
         transform: translateY(-45px);
       }
 
-      /* top buttons (left EN/GE + right nav): move DOWN */
       .top-buttons-down {
         transform: translateY(40px);
       }
@@ -136,7 +142,7 @@
         <div id="page-logo" class="text-white">
           <img
             src="images/logowhite.svg"
-            alt="Reserve"
+            alt="Reserve Restaurant logo"
             class="w-[420px] md:w-[500px] h-auto select-none"
             draggable="false"
           />
@@ -150,43 +156,41 @@
     <header
       id="site-header"
       class="fixed top-0 left-0 w-full z-20 flex items-start justify-between px-4 sm:px-10 pt-0 pb-0 text-white"
-
     >
       <!-- LEFT buttons DOWN -->
       <div class="top-buttons-down flex items-center gap-2 sm:gap-4 text-sm sm:text-base md:text-xl tracking-wide">
-  <span class="lang-line hidden sm:block h-px w-8 md:w-10 bg-white"></span>
+        <span class="lang-line hidden sm:block h-px w-8 md:w-10 bg-white"></span>
 
-  <a href="#top" class="hover:opacity-80">EN</a>
+        <a href="#top" class="hover:opacity-80">EN</a>
 
-  <span class="hidden sm:inline">|</span>
+        <span class="hidden sm:inline">|</span>
 
-  <a href="#" class="hover:opacity-80">GE</a>
-</div>
-
+        <a href="#" class="hover:opacity-80">GE</a>
+      </div>
 
       <!-- TOP logo UP -->
       <a
-  href="#top"
-  id="logo-link"
-  class="opacity-80 hover:opacity-80"
-  aria-label="Reserve"
->
-  <!-- white version (default on hero) -->
-  <img
-    src="images/logowhite.svg"
-    alt="Reserve"
-    class="brand-logo top-logo-up select-none logo-white"
-    draggable="false"
-  />
+        href="#top"
+        id="logo-link"
+        class="opacity-80 hover:opacity-80"
+        aria-label="Reserve"
+      >
+        <!-- white version (default on hero) -->
+        <img
+          src="images/logowhite.svg"
+          alt="Reserve Restaurant logo"
+          class="brand-logo top-logo-up select-none logo-white"
+          draggable="false"
+        />
 
-  <!-- black version (shows when header-dark) -->
-  <img
-    src="images/logoblack.svg"
-    alt="Reserve"
-    class="brand-logo top-logo-up select-none logo-black"
-    draggable="false"
-  />
-</a>
+        <!-- black version (shows when header-dark) -->
+        <img
+          src="images/logoblack.svg"
+          alt="Reserve Restaurant logo"
+          class="brand-logo top-logo-up select-none logo-black"
+          draggable="false"
+        />
+      </a>
 
       <!-- RIGHT buttons DOWN -->
       <nav class="top-buttons-down flex items-center gap-8 text-base md:text-lg">
@@ -203,6 +207,7 @@
     <section
       id="hero"
       class="relative min-h-screen w-full flex items-center justify-center overflow-hidden text-white bg-black"
+      aria-label="Reserve fine dining hero section"
     >
       <video
         id="hero-video"
@@ -219,31 +224,38 @@
       <div class="hero-overlay absolute inset-0"></div>
 
       <div class="relative z-10 flex flex-col items-center justify-center text-center px-4">
+        <!-- ✅ SEO: single H1 for the page -->
+        <h1 class="sr-only">
+          Reserve Restaurant in Tbilisi – Seasonal Tasting Menus & Casual Fine Dining
+        </h1>
+
         <!-- middle logo DOWN -->
         <img
           src="images/logowhite2.svg"
-          alt="Reserve"
+          alt="Reserve Restaurant wordmark"
           class="hero-logo mb-6 select-none"
           draggable="false"
         />
-        <div class="hero-center-shift">
-        <p class="address-font text-sm md:text-base tracking-[0.25em] mb-8 ">
-          9 APRILI ST, TBILISI
-        </p>
-        <div class="herobutton-center-shift">
-        <div class="flex items-center gap-12 text-base md:text-lg">
-          <a href="reservation.html" data-transition class="flex flex-col items-center group">
-            <span class="group-hover:opacity-80">Reservations</span>
-            <span class="mt-1 h-[2px] w-10 bg-[#D0842F]"></span>
-          </a>
 
-          <a href="menu.pdf" target="_blank" class="flex flex-col items-center group">
-            <span class="group-hover:opacity-80">Menu</span>
-            <span class="mt-1 h-[2px] w-10 bg-[#D0842F]"></span>
-          </a>
+        <div class="hero-center-shift">
+          <p class="address-font text-sm md:text-base tracking-[0.25em] mb-8">
+            9 APRILI ST, TBILISI
+          </p>
+
+          <div class="herobutton-center-shift">
+            <div class="flex items-center gap-12 text-base md:text-lg">
+              <a href="reservation.html" data-transition class="flex flex-col items-center group">
+                <span class="group-hover:opacity-80">Reservations</span>
+                <span class="mt-1 h-[2px] w-10 bg-[#D0842F]"></span>
+              </a>
+
+              <a href="menu.pdf" target="_blank" class="flex flex-col items-center group">
+                <span class="group-hover:opacity-80">Menu</span>
+                <span class="mt-1 h-[2px] w-10 bg-[#D0842F]"></span>
+              </a>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
       </div>
 
       <button
@@ -252,146 +264,139 @@
         class="z-10 absolute bottom-6 left-6 flex items-center justify-center
                rounded-full w-12 h-12 border border-white/70 bg-black/40
                backdrop-blur-sm text-base hover:bg-black/70 transition"
+        aria-label="Pause or play the background video"
       >
         ❚❚
       </button>
     </section>
 
     <!-- ABOUT -->
-   <!-- ABOUT (fixed for “square” / narrow widths) -->
-<section
-  id="about-section"
-  class="text-[#1a1a1a]"
-  style="
-    background-image: url('images/background4.jpg');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-  "
->
-  <!-- more horizontal padding on in-between widths + comfy vertical padding -->
-  <div class="min-h-[100vh] px-6 sm:px-10 md:px-16 py-20 md:py-28">
-    <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-[0.9fr_1.1fr] gap-12 lg:gap-14">
-      
-      <!-- LEFT: text (limit line length + responsive sizing/leading) -->
-      <div class="lg:min-h-[90vh] flex items-center">
-        <div class="max-w-lg lg:max-w-xl space-y-8 md:space-y-10 reveal">
-          <h2 class="text-3xl sm:text-4xl md:text-5xl tracking-wide font-semibold text-[#111111]">
-            About the Experience
-          </h2>
+    <section
+      id="about-section"
+      class="text-[#1a1a1a]"
+      style="
+        background-image: url('images/background4.jpg');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+      "
+      aria-label="About Reserve"
+    >
+      <div class="min-h-[100vh] px-6 sm:px-10 md:px-16 py-20 md:py-28">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-[0.9fr_1.1fr] gap-12 lg:gap-14">
+          <div class="lg:min-h-[90vh] flex items-center">
+            <div class="max-w-lg lg:max-w-xl space-y-8 md:space-y-10 reveal">
+              <!-- ✅ SEO: H2 -->
+              <h2 class="text-3xl sm:text-4xl md:text-5xl tracking-wide font-semibold text-[#111111]">
+                About Reserve
+              </h2>
 
-          <p class="text-sm sm:text-base md:text-lg text-[#3a3a3a] leading-7 md:leading-8">
-            Reserve is a casual fine dining restaurant in Tbilisi.
-            Seasonal menus are created by chef Tomi Rissanen, who began his career in Finland and has worked across Western and Eastern Europe, the Middle East, and Asia, where he previously led his own restaurant. His cooking is based on classical French technique, with a Scandinavian approach and restrained Asian influences.
-            The kitchen works with produce from our own farm, an in-house bakery, and a breakfast menu.
-            The restaurant is located in the historic center of the city, in a small park named after Oliver Wardrop, behind the Parliament of Georgia.
-            Reserve operates in a discreet seven-table format.
-          </p>
-        </div>
-      </div>
+              <p class="text-sm sm:text-base md:text-lg text-[#3a3a3a] leading-7 md:leading-8">
+                Reserve is a casual fine dining restaurant in Tbilisi.
+                Seasonal menus are created by chef Tomi Rissanen, who began his career in Finland and has worked across Western and Eastern Europe, the Middle East, and Asia, where he previously led his own restaurant. His cooking is based on classical French technique, with a Scandinavian approach and restrained Asian influences.
+                The kitchen works with produce from our own farm, an in-house bakery, and a breakfast menu.
+                The restaurant is located in the historic center of the city, in a small park named after Oliver Wardrop, behind the Parliament of Georgia.
+                Reserve operates in a discreet seven-table format.
+              </p>
+            </div>
+          </div>
 
-      <!-- RIGHT: image card (no forced right shift on small screens) -->
-      <div class="lg:min-h-[90vh] flex items-center">
-        <div class="w-full reveal">
-          <div
-            class="rounded-[1.75rem] shadow-2xl bg-[#f0f0f0] border border-black/5
-                   w-full h-[46vh] sm:h-[50vh] lg:h-[65vh]
-                   mx-auto lg:ml-12"
-          >
-            <div class="w-full h-full p-6 md:p-8">
-              <div class="w-full h-full rounded-[1.25rem] overflow-hidden bg-[#eaeaea]">
-                <img
-                  src="images/image1.jpg"
-                  alt="Experience image"
-                  class="w-full h-full object-contain"
-                  draggable="false"
-                />
+          <div class="lg:min-h-[90vh] flex items-center">
+            <div class="w-full reveal">
+              <div
+                class="rounded-[1.75rem] shadow-2xl bg-[#f0f0f0] border border-black/5
+                       w-full h-[46vh] sm:h-[50vh] lg:h-[65vh]
+                       mx-auto lg:ml-12"
+              >
+                <div class="w-full h-full p-6 md:p-8">
+                  <div class="w-full h-full rounded-[1.25rem] overflow-hidden bg-[#eaeaea]">
+                    <img
+                      src="images/image1.jpg"
+                      alt="Chef Tomi Rissanen creating a seasonal fine dining menu at Reserve in Tbilisi"
+                      class="w-full h-full object-contain"
+                      draggable="false"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
+
         </div>
       </div>
+    </section>
 
-    </div>
-  </div>
-</section>
+    <!-- ===== THIRD SECTION (RESERVATION + HOURS) ===== -->
+    <section
+      id="reservation-hours"
+      class="text-[#111]"
+      style="
+        background-image: url('images/background3.jpg');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+      "
+      aria-label="Reservations and opening hours"
+    >
+      <div class="min-h-[100vh] px-6 md:px-16 py-24 md:py-32">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-14 items-start mt-32">
+          <div class="space-y-6 reveal">
+            <!-- ✅ SEO: H2 -->
+            <h2 class="text-5xl md:text-6xl font-semibold tracking-wide text-[#111]">
+              Reservations
+            </h2>
 
-
-
-
-<!-- ===== THIRD SECTION (RESERVATION + HOURS) ===== -->
-<section
-  id="reservation-hours"
-  class="text-[#111]"
-  style="
-    background-image: url('images/background3.jpg');
-    background-size: cover;      /* fills section, no bars */
-    background-position: center;
-    background-repeat: no-repeat;
-  "
->
-  <div class="min-h-[100vh] px-6 md:px-16  py-24 md:py-32">
-    <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-14 items-start mt-32">
-
-      <!-- LEFT: RESERVATION -->
-      <div class="space-y-6 reveal">
-        <h2 class="text-5xl md:text-6xl font-semibold tracking-wide text-[#111]">
-          RESERVATION
-        </h2>
-
-        <div class="text-base md:text-lg leading-relaxed text-[#222] space-y-4 max-w-xl">
-          <p>Reservations are recommended due to the limited number of tables.</p>
-          <p>Bookings are available online.</p>
-          <p>Tasting menus are designed per person.</p>
-          <p>
-            Please inform us in advance of any dietary restrictions. While we do our best to
-            accommodate our guests, the increasing range of allergies and dietary requirements
-            means that not all ingredient substitutions can be guaranteed.
-          </p>
-          <p>
-            The maximum number of guests seated at one table is ten. This option must be
-            requested and confirmed in advance. Larger tables are not possible due to the size
-            and format of the restaurant.
-          </p>
-          <p>Prices listed on the menu are inclusive of all taxes and service charges.</p>
-          <p>For cancellations, changes, or delays, we ask that you notify the restaurant in advance.</p>
-          <p>Château Leuville wines are offered at a 30% reduction for off-premise purchase.</p>
-          <p>All other selections from our wine cellar are available at a 10% reduction.</p>
-        </div>
-      </div>
-
-      <!-- RIGHT: HOURS -->
-      <div class="space-y-10 reveal lg:pl-10">
-        <div class="space-y-4">
-          <h2 class="text-5xl md:text-6xl font-semibold tracking-wide text-[#111]">
-            HOURS
-          </h2>
-
-          <div class="space-y-2 text-base md:text-lg text-[#222]">
-            <p class="font-semibold text-[#111]">Kitchen hours</p>
-            <p>09:00–14:00 — Breakfast</p>
-            <p>14:00–22:00 — À la carte and tasting menus</p>
-            <p class="text-[#555]">(Monday, Tuesday, Wednesday, Thursday, Sunday)</p>
-            <p>14:00–23:00 — À la carte and tasting menus</p>
-            <p class="text-[#555]">(Friday, Saturday)</p>
-
-            <p class="pt-4 font-semibold text-[#111]">Restaurant hours</p>
-            <p>The restaurant is open daily until 00:00</p>
+            <div class="text-base md:text-lg leading-relaxed text-[#222] space-y-4 max-w-xl">
+              <p>Reservations are recommended due to the limited number of tables.</p>
+              <p>Bookings are available online.</p>
+              <p>Tasting menus are designed per person.</p>
+              <p>
+                Please inform us in advance of any dietary restrictions. While we do our best to
+                accommodate our guests, the increasing range of allergies and dietary requirements
+                means that not all ingredient substitutions can be guaranteed.
+              </p>
+              <p>
+                The maximum number of guests seated at one table is ten. This option must be
+                requested and confirmed in advance. Larger tables are not possible due to the size
+                and format of the restaurant.
+              </p>
+              <p>Prices listed on the menu are inclusive of all taxes and service charges.</p>
+              <p>For cancellations, changes, or delays, we ask that you notify the restaurant in advance.</p>
+              <p>Château Leuville wines are offered at a 30% reduction for off-premise purchase.</p>
+              <p>All other selections from our wine cellar are available at a 10% reduction.</p>
+            </div>
           </div>
+
+          <div class="space-y-10 reveal lg:pl-10">
+            <div class="space-y-4">
+              <!-- ✅ SEO: H2 -->
+              <h2 class="text-5xl md:text-6xl font-semibold tracking-wide text-[#111]">
+                Hours
+              </h2>
+
+              <div class="space-y-2 text-base md:text-lg text-[#222]">
+                <p class="font-semibold text-[#111]">Kitchen hours</p>
+                <p>09:00–14:00 — Breakfast</p>
+                <p>14:00–22:00 — À la carte and tasting menus</p>
+                <p class="text-[#555]">(Monday, Tuesday, Wednesday, Thursday, Sunday)</p>
+                <p>14:00–23:00 — À la carte and tasting menus</p>
+                <p class="text-[#555]">(Friday, Saturday)</p>
+
+                <p class="pt-4 font-semibold text-[#111]">Restaurant hours</p>
+                <p>The restaurant is open daily until 00:00</p>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
-
-    </div>
-  </div>
-</section>
-
-
-
+    </section>
 
     <!-- FOLLOW ON INSTAGRAM -->
-    <section class="bg-[#D0842F] py-24 md:py-32 px-6 md:px-16">
+    <section class="bg-[#D0842F] py-24 md:py-32 px-6 md:px-16" aria-label="Instagram gallery">
       <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
         <div class="space-y-5 reveal">
+          <!-- ✅ SEO: H2 -->
           <h2 class="text-5xl md:text-6xl font-semibold leading-tight text-[#111111]">
             Follow Us On<br />Instagram
           </h2>
@@ -408,7 +413,7 @@
           >
             <img
               src="images/im1.png"
-              alt="Instagram post 1"
+              alt="Château Leuville wine selection at Reserve in Tbilisi"
               class="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-300"
               draggable="false"
             />
@@ -422,7 +427,7 @@
           >
             <img
               src="images/im2.png"
-              alt="Instagram post 2"
+              alt="Elegant plated desserts and pastry presentation at Reserve Restaurant"
               class="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-300"
               draggable="false"
             />
@@ -436,7 +441,7 @@
           >
             <img
               src="images/im3.png"
-              alt="Instagram post 3"
+              alt="Morning coffee and breakfast sweets served at Reserve in Tbilisi"
               class="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-300"
               draggable="false"
             />
@@ -457,7 +462,7 @@
         >
           <img
             src="images/Digital_Glyph_White.svg"
-            alt="WhatsApp"
+            alt="WhatsApp icon"
             class="w-5 h-5"
             draggable="false"
           />
@@ -471,7 +476,7 @@
         >
           <img
             src="images/Instagram_Glyph_White.svg"
-            alt="Instagram"
+            alt="Instagram icon"
             class="w-5 h-5"
             draggable="false"
           />
