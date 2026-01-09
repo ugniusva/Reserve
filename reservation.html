@@ -98,15 +98,20 @@
     <!-- ===== HEADER (matches index: positions + logo swap) ===== -->
     <header
       id="site-header"
-      class="fixed top-0 left-0 w-full z-20 flex items-start justify-between px-10 pt-0 pb-0 text-white"
+      class="fixed top-0 left-0 w-full z-20 flex items-start justify-between px-4 sm:px-10 pt-0 pb-0 text-white"
+
     >
       <!-- LEFT buttons DOWN -->
-      <div class="top-buttons-down flex items-center gap-4 text-xl text-[#1a1a1a] tracking-wide">
-        <span class="lang-line h-px w-10 bg-black"></span>
-        <a href="index.html#top" class="hover:opacity-80">EN</a>
-        <span>|</span>
-        <a href="#" class="hover:opacity-80">GE</a>
-      </div>
+      <div class="top-buttons-down flex items-center gap-2 sm:gap-4 text-sm sm:text-base md:text-xl tracking-wide">
+  <span class="lang-line hidden sm:block h-px w-8 md:w-10 bg-white"></span>
+
+  <a href="#top" class="hover:opacity-80">EN</a>
+
+  <span class="hidden sm:inline">|</span>
+
+  <a href="#" class="hover:opacity-80">GE</a>
+</div>
+
 
       <!-- TOP logo UP + white/black swap -->
       <a href="index.html#top" id="logo-link" class="opacity-80 hover:opacity-80" aria-label="Reserve">
