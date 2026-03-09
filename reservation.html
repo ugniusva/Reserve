@@ -282,12 +282,12 @@ The deposit will be applied towards the final bill upon your visit.
                 >
                   Back
                 </button>
-                <button
-                  id="btn-send-whatsapp"
+                  <button
+                  id="btn-send-booking"
                   class="px-4 py-2 rounded-md bg-green-700 text-white text-sm hover:bg-green-800 transition"
                 >
-                  Send via WhatsApp
-                </button>
+                    Continue to deposit
+              </button>
               </div>
 
               <button
@@ -487,40 +487,74 @@ The deposit will be applied towards the final bill upon your visit.
 
       document.getElementById("btn-back-3").addEventListener("click", () => showStep(2));
 
-      // send via whatsapp
-      document.getElementById("btn-send-whatsapp").addEventListener("click", () => {
-        if (
-          !inputName.value.trim() || !inputSurname.value.trim() || !inputPhone.value.trim() ||
-          !inputDate.value || !inputTime.value || !inputGuests.value
-        ) {
-          alert("Please complete all required fields first.");
-          return;
-        }
+      // nmo more watsap :<
+      document.getElementById("btn-send-booking").addEventListener("click", async () => {
+  if (
+    !inputName.value.trim() ||
+    !inputSurname.value.trim() ||
+    !inputPhone.value.trim() ||
+    !inputDate.value ||
+    !inputTime.value ||
+    !inputGuests.value
+  ) {
+    alert("Please complete all required fields first.");
+    return;
+  }
 
-        const reason = validateDateTime(inputDate.value, inputTime.value);
-        if (reason === "before-open") { alert("Reservations are available from " + OPEN_TIME + " onward."); return; }
-        if (reason === "after-close") { alert("Reservations are available until " + CLOSE_TIME + "."); return; }
-        if (reason === "past") { alert("You cannot choose a past date and time."); return; }
+  const reason = validateDateTime(inputDate.value, inputTime.value);
+  if (reason === "before-open") {
+    alert("Reservations are available from " + OPEN_TIME + " onward.");
+    return;
+  }
+  if (reason === "after-close") {
+    alert("Reservations are available until " + CLOSE_TIME + ".");
+    return;
+  }
+  if (reason === "past") {
+    alert("You cannot choose a past date and time.");
+    return;
+  }
 
-        const url =
-          "https://api.whatsapp.com/send?phone=" +
-          encodeURIComponent(restaurantPhone) +
-          "&text=" +
-          encodeURIComponent(buildMessage());
+  const payload = {
+    first_name: inputName.value.trim(),
+    last_name: inputSurname.value.trim(),
+    phone: inputPhone.value.trim(),
+    booking_date: inputDate.value,
+    booking_time: inputTime.value,
+    guests: Number(inputGuests.value),
+    requests: inputRequests.value.trim(),
+  };
 
-        window.open(url, "_blank");
-      });
+  const button = document.getElementById("btn-send-booking");
+  const originalText = button.textContent;
+  button.disabled = true;
+  button.textContent = "Processing...";
 
-      // custom whatsapp buttons
-      document.querySelectorAll(".btn-open-whatsapp-empty").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          window.open(
-            "https://api.whatsapp.com/send/?phone=%2B995595313344&text=&type=phone_number&app_absent=0",
-            "_blank"
-          );
-        });
-      });
+  try {
+    const response = await fetch("/api/reservations/create", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
 
+    const data = await response.json();
+
+    if (!response.ok || !data.ok) {
+      alert(data.error || "Failed to create reservation.");
+      button.disabled = false;
+      button.textContent = originalText;
+      return;
+    }
+
+    window.location.href = data.redirectUrl;
+  } catch (error) {
+    alert("Something went wrong. Please try again.");
+    button.disabled = false;
+    button.textContent = originalText;
+  }
+});
       // header turns dark after the light page background starts showing
       const header = document.getElementById("site-header");
       const mainEl = document.querySelector("main");

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mock Payment</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-black text-white flex items-center justify-center px-6">
+  <div class="max-w-md w-full bg-white/10 rounded-xl p-8 space-y-4 text-center">
+    <h1 class="text-2xl font-semibold">Mock Payment Page</h1>
+    <p class="text-white/80">
+      This is a temporary fake payment page until Bank of Georgia is connected.
+    </p>
+    <p id="reservation-id" class="text-sm text-white/60"></p>
+
+    <div class="flex flex-col gap-3 pt-4">
+      <button
+        id="btn-success"
+        class="px-4 py-2 rounded-md bg-green-700 hover:bg-green-800 transition"
+      >
+        Simulate payment success
+      </button>
+
+      <button
+        id="btn-fail"
+        class="px-4 py-2 rounded-md bg-red-700 hover:bg-red-800 transition"
+      >
+        Simulate payment failure
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const reservationId = params.get("reservationId");
+    document.getElementById("reservation-id").textContent =
+      reservationId ? `Reservation ID: ${reservationId}` : "No reservation ID";
+
+    document.getElementById("btn-success").addEventListener("click", () => {
+      window.location.href = `/reservation-success.html?reservationId=${encodeURIComponent(reservationId || "")}`;
+    });
+
+    document.getElementById("btn-fail").addEventListener("click", () => {
+      window.location.href = `/reservation-failed.html?reservationId=${encodeURIComponent(reservationId || "")}`;
+    });
+  </script>
+</body>
+</html>
