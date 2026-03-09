@@ -1,3 +1,9 @@
 export async function onRequest(context) {
-  return new Response("Backend works!");
+  const { DB } = context.env;
+
+  const result = await DB.prepare(
+    "SELECT datetime('now') as now"
+  ).first();
+
+  return Response.json(result);
 }
