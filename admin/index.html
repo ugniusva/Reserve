@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reserve Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: #0a0a0a; color: white; }
+  </style>
+</head>
+<body class="min-h-screen px-4 py-8 md:px-8">
+  <div class="max-w-7xl mx-auto space-y-6">
+    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+      <div>
+        <p class="text-white/60 text-sm uppercase tracking-[0.2em]">Reserve</p>
+        <h1 class="text-3xl md:text-4xl font-semibold">Reservations Admin</h1>
+        <p class="text-white/60 mt-2">Staff dashboard for bookings</p>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-3">
+        <div>
+          <label class="block text-sm text-white/70 mb-1">Date</label>
+          <input
+            id="filter-date"
+            type="date"
+            class="px-3 py-2 rounded-md bg-white text-black"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm text-white/70 mb-1">Status</label>
+          <select
+            id="filter-status"
+            class="px-3 py-2 rounded-md bg-white text-black"
+          >
+            <option value="">All</option>
+            <option value="pending_payment">Pending payment</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="payment_failed">Payment failed</option>
+            <option value="cancelled">Cancelled</option>
+            <option value="completed">Completed</option>
+            <option value="no_show">No show</option>
+          </select>
+        </div>
+
+        <div class="flex items-end">
+          <button
+            id="btn-refresh"
+            class="px-4 py-2 rounded-md bg-[#D0842F] text-white hover:opacity-90 transition"
+          >
+            Refresh
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="rounded-xl bg-white/5 border border-white/10 p-4">
+        <p class="text-white/60 text-sm">Total reservations</p>
+        <p id="stat-total" class="text-3xl font-semibold mt-2">0</p>
+      </div>
+      <div class="rounded-xl bg-white/5 border border-white/10 p-4">
+        <p class="text-white/60 text-sm">Pending payment</p>
+        <p id="stat-pending" class="text-3xl font-semibold mt-2">0</p>
+      </div>
+      <div class="rounded-xl bg-white/5 border border-white/10 p-4">
+        <p class="text-white/60 text-sm">Confirmed</p>
+        <p id="stat-confirmed" class="text-3xl font-semibold mt-2">0</p>
+      </div>
+    </div>
+
+    <div class="rounded-2xl border border-white/10 bg-white/5 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="bg-white/10 text-left text-white/70">
+            <tr>
+              <th class="px-4 py-3">Date</th>
+              <th class="px-4 py-3">Time</th>
+              <th class="px-4 py-3">Guest</th>
+              <th class="px-4 py-3">Phone</th>
+              <th class="px-4 py-3">Guests</th>
+              <th class="px-4 py-3">Deposit</th>
+              <th class="px-4 py-3">Status</th>
+              <th class="px-4 py-3">Requests</th>
+            </tr>
+          </thead>
+          <tbody id="reservations-body" class="divide-y divide-white/10">
+            <tr>
+              <td colspan="8" class="px-4 py-6 text-center text-white/50">
+                Loading...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const filterDate = document.getElementById("filter-date");
+    const filterStatus = document.getElementById("filter-status");
+    const btnRefresh = document.getElementById("btn-refresh");
+    const bodyEl = document.getElementById("reservations-body");
+
+    const statTotal = document.getElementById("stat-total");
+    const statPending = document.getElementById("stat-pending");
+    const statConfirmed = document.getElementById("stat-confirmed");
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function statusBadge(status) {
+      const styles = {
+        pending_payment: "bg-yellow-500/20 text-yellow-300 border-yellow-400/30",
+        confirmed: "bg-green-500/20 text-green-300 border-green-400/30",
+        payment_failed: "bg-red-500/20 text-red-300 border-red-400/30",
+        cancelled: "bg-gray-500/20 text-gray-300 border-gray-400/30",
+        completed: "bg-blue-500/20 text-blue-300 border-blue-400/30",
+        no_show: "bg-pink-500/20 text-pink-300 border-pink-400/30",
+      };
+
+      const cls = styles[status] || "bg-white/10 text-white border-white/20";
+
+      return `
+        <span class="inline-flex px-2 py-1 rounded-full border text-xs ${cls}">
+          ${escapeHtml(status)}
+        </span>
+      `;
+    }
+
+    function renderRows(reservations) {
+      if (!reservations.length) {
+        bodyEl.innerHTML = `
+          <tr>
+            <td colspan="8" class="px-4 py-6 text-center text-white/50">
+              No reservations found.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      bodyEl.innerHTML = reservations.map(r => `
+        <tr class="hover:bg-white/5 align-top">
+          <td class="px-4 py-4 whitespace-nowrap">${escapeHtml(r.booking_date)}</td>
+          <td class="px-4 py-4 whitespace-nowrap">${escapeHtml(r.booking_time)}</td>
+          <td class="px-4 py-4">
+            <div class="font-medium">${escapeHtml(r.first_name)} ${escapeHtml(r.last_name)}</div>
+          </td>
+          <td class="px-4 py-4 whitespace-nowrap">${escapeHtml(r.phone)}</td>
+          <td class="px-4 py-4 whitespace-nowrap">${escapeHtml(r.guests)}</td>
+          <td class="px-4 py-4 whitespace-nowrap">${escapeHtml(r.deposit_amount)} ${escapeHtml(r.currency)}</td>
+          <td class="px-4 py-4 whitespace-nowrap">${statusBadge(r.status)}</td>
+          <td class="px-4 py-4 text-white/70">${escapeHtml(r.requests || "—")}</td>
+        </tr>
+      `).join("");
+    }
+
+    function updateStats(reservations) {
+      statTotal.textContent = reservations.length;
+      statPending.textContent = reservations.filter(r => r.status === "pending_payment").length;
+      statConfirmed.textContent = reservations.filter(r => r.status === "confirmed").length;
+    }
+
+    async function loadReservations() {
+      bodyEl.innerHTML = `
+        <tr>
+          <td colspan="8" class="px-4 py-6 text-center text-white/50">
+            Loading...
+          </td>
+        </tr>
+      `;
+
+      const params = new URLSearchParams();
+
+      if (filterDate.value) params.set("date", filterDate.value);
+      if (filterStatus.value) params.set("status", filterStatus.value);
+
+      try {
+        const response = await fetch(`/api/admin/reservations?${params.toString()}`);
+        const data = await response.json();
+
+        if (!response.ok || !data.ok) {
+          throw new Error(data.error || "Failed to load reservations.");
+        }
+
+        renderRows(data.reservations);
+        updateStats(data.reservations);
+      } catch (error) {
+        bodyEl.innerHTML = `
+          <tr>
+            <td colspan="8" class="px-4 py-6 text-center text-red-300">
+              Failed to load reservations.
+            </td>
+          </tr>
+        `;
+      }
+    }
+
+    btnRefresh.addEventListener("click", loadReservations);
+    filterDate.addEventListener("change", loadReservations);
+    filterStatus.addEventListener("change", loadReservations);
+
+    loadReservations();
+  </script>
+</body>
+</html>
