@@ -1,8 +1,15 @@
 export async function onRequest(context) {
-  const cookie = context.request.headers.get("Cookie") || "";
   const url = new URL(context.request.url);
+  const path = url.pathname;
+  const cookie = context.request.headers.get("Cookie") || "";
 
-  if (url.pathname === "/admin/login.html") {
+  const publicAdminPaths = [
+    "/admin/login",
+    "/admin/login/",
+    "/admin/login.html",
+  ];
+
+  if (publicAdminPaths.includes(path)) {
     return context.next();
   }
 
