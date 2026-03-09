@@ -1,3 +1,8 @@
+function isAuthenticated(request) {
+  const cookie = request.headers.get("Cookie") || "";
+  return cookie.includes("admin_auth=ok");
+}
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -10,6 +15,9 @@ function json(data, status = 200) {
 
 export async function onRequestGet(context) {
   try {
+    if (!isAuthenticated(context.request)) {
+  return json({ ok: false, error: "Unauthorized" }, 401);
+}
     const { DB } = context.env;
     const url = new URL(context.request.url);
 

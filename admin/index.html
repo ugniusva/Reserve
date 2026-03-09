@@ -51,6 +51,12 @@
           >
             Refresh
           </button>
+          <button
+            id="btn-logout"
+                        class="px-4 py-2 rounded-md bg-white/10 text-white hover:bg-white/20 transition"
+                    >
+                        Log out
+           </button>
         </div>
       </div>
     </div>
@@ -203,6 +209,13 @@
         `;
       }
     }
+    
+const btnLogout = document.getElementById("btn-logout");
+
+btnLogout.addEventListener("click", async () => {
+  await fetch("/api/admin/logout", { method: "POST" });
+  window.location.href = "/admin/login.html";
+});
 
     btnRefresh.addEventListener("click", loadReservations);
     filterDate.addEventListener("change", loadReservations);
