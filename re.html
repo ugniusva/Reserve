@@ -99,13 +99,19 @@
     <header
       id="site-header"
       class="fixed top-0 left-0 w-full z-20 flex items-start justify-between px-4 sm:px-10 pt-0 pb-0 text-white"
+
     >
       <!-- LEFT buttons DOWN -->
       <div class="top-buttons-down flex items-center gap-2 sm:gap-4 text-sm text-black sm:text-base md:text-xl tracking-wide">
-        <a href="#top" class="hover:opacity-80">EN</a>
-        <span class="hidden sm:inline">|</span>
-        <a href="Rge.html" class="hover:opacity-80">GE</a>
-      </div>
+  
+
+  <a href="#top" class="hover:opacity-80">EN</a>
+
+  <span class="hidden sm:inline">|</span>
+
+  <a href="Rge.html" class="hover:opacity-80">GE</a>
+</div>
+
 
       <!-- TOP logo UP + white/black swap -->
       <a href="index.html#top" id="logo-link" class="opacity-80 hover:opacity-80" aria-label="Reserve">
@@ -136,9 +142,10 @@
         <div class="text-center">
           <h1 class="text-4xl md:text-5xl font-semibold mb-4">Reservations</h1>
           <p class="text-sm md:text-base text-[#3a3a3a]">
+            
             All reservation requests are sent via WhatsApp to our team.
             Reservations for groups of more than five guests are accepted at least two hours in advance and are confirmed with a non-refundable deposit of 150 GEL.
-            The deposit will be applied towards the final bill upon your visit.
+The deposit will be applied towards the final bill upon your visit.
           </p>
         </div>
 
@@ -265,6 +272,8 @@
               ></textarea>
             </div>
 
+            
+
             <div class="flex flex-col gap-3 pt-4">
               <div class="flex justify-between gap-3">
                 <button
@@ -273,12 +282,12 @@
                 >
                   Back
                 </button>
-                <button
-                  id="btn-send-whatsapp"
+                  <button
+                  id="btn-send-booking"
                   class="px-4 py-2 rounded-md bg-green-700 text-white text-sm hover:bg-green-800 transition"
                 >
-                  Send via WhatsApp
-                </button>
+                    Continue to deposit
+              </button>
               </div>
 
               <button
@@ -298,43 +307,46 @@
 
     <!-- ===== FOOTER SOCIAL (same as index) ===== -->
     <footer class="bg-black py-10">
-      <div class="max-w-7xl mx-auto px-6 md:px-16 flex items-center justify-center gap-5">
-        <a
-          href="https://api.whatsapp.com/send/?phone=%2B995595313344&text=&type=phone_number&app_absent=0"
-          target="_blank"
-          aria-label="WhatsApp"
-          class="social-btn inline-flex items-center justify-center w-10 h-10 rounded-full border border-white/20 hover:border-white/40"
-        >
-          <img
-            src="images/Digital_Glyph_White.svg"
-            alt="WhatsApp icon"
-            class="w-5 h-5"
-            draggable="false"
-          />
-        </a>
+  <div class="max-w-7xl mx-auto px-6 md:px-16 flex items-center justify-center gap-5">
+    
+    <a
+      href="https://api.whatsapp.com/send/?phone=%2B995595313344&text=&type=phone_number&app_absent=0"
+      target="_blank"
+      aria-label="WhatsApp"
+      class="social-btn inline-flex items-center justify-center w-10 h-10 rounded-full border border-white/20 hover:border-white/40"
+    >
+      <img
+        src="images/Digital_Glyph_White.svg"
+        alt="WhatsApp icon"
+        class="w-5 h-5"
+        draggable="false"
+      />
+    </a>
 
-        <a
-          href="https://www.instagram.com/reserve.tbilisi/"
-          target="_blank"
-          aria-label="Instagram"
-          class="social-btn inline-flex items-center justify-center w-10 h-10 rounded-full border border-white/20 hover:border-white/40"
-        >
-          <img
-            src="images/Instagram_Glyph_White.svg"
-            alt="Instagram icon"
-            class="w-5 h-5"
-            draggable="false"
-          />
-        </a>
+    <a
+      href="https://www.instagram.com/reserve.tbilisi/"
+      target="_blank"
+      aria-label="Instagram"
+      class="social-btn inline-flex items-center justify-center w-10 h-10 rounded-full border border-white/20 hover:border-white/40"
+    >
+      <img
+        src="images/Instagram_Glyph_White.svg"
+        alt="Instagram icon"
+        class="w-5 h-5"
+        draggable="false"
+      />
+    </a>
 
-        <a
-          href="mailto:info@reservetbilisi.ge"
-          class="text-white hover:underline underline-offset-4 transition"
-        >
-          info@reservetbilisi.ge
-        </a>
-      </div>
-    </footer>
+    <a
+      href="mailto:info@reservetbilisi.ge"
+      class="text-white hover:underline underline-offset-4 transition"
+    >
+      info@reservetbilisi.ge
+    </a>
+
+  </div>
+</footer>
+
 
     <script>
       // curtain
@@ -475,40 +487,74 @@
 
       document.getElementById("btn-back-3").addEventListener("click", () => showStep(2));
 
-      // send via whatsapp
-      document.getElementById("btn-send-whatsapp").addEventListener("click", () => {
-        if (
-          !inputName.value.trim() || !inputSurname.value.trim() || !inputPhone.value.trim() ||
-          !inputDate.value || !inputTime.value || !inputGuests.value
-        ) {
-          alert("Please complete all required fields first.");
-          return;
-        }
+      // nmo more watsap :<
+      document.getElementById("btn-send-booking").addEventListener("click", async () => {
+  if (
+    !inputName.value.trim() ||
+    !inputSurname.value.trim() ||
+    !inputPhone.value.trim() ||
+    !inputDate.value ||
+    !inputTime.value ||
+    !inputGuests.value
+  ) {
+    alert("Please complete all required fields first.");
+    return;
+  }
 
-        const reason = validateDateTime(inputDate.value, inputTime.value);
-        if (reason === "before-open") { alert("Reservations are available from " + OPEN_TIME + " onward."); return; }
-        if (reason === "after-close") { alert("Reservations are available until " + CLOSE_TIME + "."); return; }
-        if (reason === "past") { alert("You cannot choose a past date and time."); return; }
+  const reason = validateDateTime(inputDate.value, inputTime.value);
+  if (reason === "before-open") {
+    alert("Reservations are available from " + OPEN_TIME + " onward.");
+    return;
+  }
+  if (reason === "after-close") {
+    alert("Reservations are available until " + CLOSE_TIME + ".");
+    return;
+  }
+  if (reason === "past") {
+    alert("You cannot choose a past date and time.");
+    return;
+  }
 
-        const url =
-          "https://api.whatsapp.com/send?phone=" +
-          encodeURIComponent(restaurantPhone) +
-          "&text=" +
-          encodeURIComponent(buildMessage());
+  const payload = {
+    first_name: inputName.value.trim(),
+    last_name: inputSurname.value.trim(),
+    phone: inputPhone.value.trim(),
+    booking_date: inputDate.value,
+    booking_time: inputTime.value,
+    guests: Number(inputGuests.value),
+    requests: inputRequests.value.trim(),
+  };
 
-        window.open(url, "_blank");
-      });
+  const button = document.getElementById("btn-send-booking");
+  const originalText = button.textContent;
+  button.disabled = true;
+  button.textContent = "Processing...";
 
-      // custom whatsapp buttons
-      document.querySelectorAll(".btn-open-whatsapp-empty").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          window.open(
-            "https://api.whatsapp.com/send/?phone=%2B995595313344&text=&type=phone_number&app_absent=0",
-            "_blank"
-          );
-        });
-      });
+  try {
+    const response = await fetch("/api/reservations/create", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
 
+    const data = await response.json();
+
+    if (!response.ok || !data.ok) {
+      alert(data.error || "Failed to create reservation.");
+      button.disabled = false;
+      button.textContent = originalText;
+      return;
+    }
+
+    window.location.href = data.redirectUrl;
+  } catch (error) {
+    alert("Something went wrong. Please try again.");
+    button.disabled = false;
+    button.textContent = originalText;
+  }
+});
       // header turns dark after the light page background starts showing
       const header = document.getElementById("site-header");
       const mainEl = document.querySelector("main");
