@@ -23,8 +23,11 @@ export async function onRequestPost(context) {
     const body = await context.request.json();
 
     const id = String(body.id || "").trim();
-    const status = String(body.status || "").trim();
+    const firstName = String(body.first_name || "").trim();
+    const lastName = String(body.last_name || "").trim();
+    const phone = String(body.phone || "").trim();
     const guests = Number(body.guests);
+    const status = String(body.status || "").trim();
 
     const allowedStatuses = [
       "pending_payment",
@@ -39,12 +42,20 @@ export async function onRequestPost(context) {
       return json({ ok: false, error: "Missing reservation ID." }, 400);
     }
 
-    if (!allowedStatuses.includes(status)) {
-      return json({ ok: false, error: "Invalid status." }, 400);
+    if (!firstName || !lastName) {
+      return json({ ok: false, error: "Name is required." }, 400);
+    }
+
+    if (!phone) {
+      return json({ ok: false, error: "Phone is required." }, 400);
     }
 
     if (!Number.isInteger(guests) || guests < 1) {
       return json({ ok: false, error: "Invalid guest count." }, 400);
+    }
+
+    if (!allowedStatuses.includes(status)) {
+      return json({ ok: false, error: "Invalid status." }, 400);
     }
 
     const updatedAt = new Date().toISOString();
@@ -52,11 +63,17 @@ export async function onRequestPost(context) {
     const result = await DB.prepare(`
       UPDATE reservations
       SET
+        first_name = ?,
+        last_name = ?,
+        phone = ?,
         guests = ?,
         status = ?,
         updated_at = ?
       WHERE id = ?
     `).bind(
+      firstName,
+      lastName,
+      phone,
       guests,
       status,
       updatedAt,
