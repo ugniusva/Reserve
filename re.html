@@ -5,13 +5,10 @@
     <title>Reserve Restaurant – Reservations</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <!-- tab icon -->
     <link rel="icon" type="image/svg+xml" href="images/R.svg" />
-
     <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
-      /* === LOCAL FONTS (from /fonts) === */
       @font-face {
         font-family: "LatoLocal";
         src: url("fonts/Lato-Regular.ttf") format("truetype");
@@ -19,6 +16,7 @@
         font-style: normal;
         font-display: swap;
       }
+
       @font-face {
         font-family: "GlacialBold";
         src: url("fonts/GlacialIndifference-Bold.otf") format("opentype");
@@ -27,37 +25,677 @@
         font-display: swap;
       }
 
-      body { font-family: "LatoLocal", Arial, sans-serif; }
+      :root {
+        --accent: #d0842f;
+        --accent-soft: rgba(208, 132, 47, 0.16);
+        --panel-dark: rgba(12, 12, 12, 0.9);
+        --panel-border: rgba(255, 255, 255, 0.12);
+        --input-bg: rgba(255, 255, 255, 0.96);
+        --input-border: rgba(0, 0, 0, 0.12);
+        --input-text: #1a1a1a;
+        --muted: rgba(255, 255, 255, 0.72);
+        --danger: #f2c28e;
+        --shadow-lg: 0 26px 80px rgba(0, 0, 0, 0.34);
+      }
 
-      /* ===== top logo swap (white -> black when header-dark) ===== */
-      #logo-link { position: relative; display: inline-block; }
-      #logo-link img { display: block; }
-      #logo-link .logo-black { display: none; }
-      header.header-dark #logo-link .logo-white { display: none; }
-      header.header-dark #logo-link .logo-black { display: block; }
+.reservation-main-wrap {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding-top: clamp(110px, 11vh, 160px);
+}
 
-      /* curtain color */
-      .page-panel { background-color: #D0842F; }
+.reservation-hero {
+  text-align: center;
+  padding-top: clamp(12px, 2vh, 28px);
+  padding-bottom: clamp(10px, 2vh, 22px);
+}
 
-      /* ====== HEADER POSITIONING FIXES (match index) ====== */
+.reservation-title {
+  font-size: clamp(3rem, 5.8vw, 5.2rem);
+  line-height: 0.98;
+  margin-bottom: clamp(16px, 2vh, 24px);
+}
+
+.reservation-copy {
+  font-size: clamp(1rem, 1.15vw, 1.08rem);
+  line-height: 1.9;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.reservation-card-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: clamp(18px, 3vh, 34px);
+}
+
+.booking-card {
+  width: min(100%, 620px);
+}
+
+@media (max-width: 768px) {
+  .reservation-main-wrap {
+    padding-top: 120px;
+  }
+
+  .reservation-copy {
+    line-height: 1.75;
+  }
+
+  .booking-card {
+    width: 100%;
+  }
+}
+
+@media (min-width: 1600px) {
+  .reservation-main-wrap {
+    padding-top: 130px;
+  }
+}
+      
+      
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        font-family: "LatoLocal", Arial, sans-serif;
+      }
+
+      #logo-link {
+        position: relative;
+        display: inline-block;
+      }
+
+      #logo-link img {
+        display: block;
+      }
+
+      #logo-link .logo-black {
+        display: none;
+      }
+
+      header.header-dark #logo-link .logo-white {
+        display: none;
+      }
+
+      header.header-dark #logo-link .logo-black {
+        display: block;
+      }
+
+      .page-panel {
+        background-color: #d0842f;
+      }
+
       .brand-logo {
         height: 188px;
         width: auto;
         display: block;
       }
-      @media (min-width: 768px) {
-        .brand-logo { height: 222px; }
-      }
-      .top-logo-up { transform: translate(20px,-45px);; }
-      .top-buttons-down { transform: translateY(40px); }
 
-      /* small social buttons (match index footer) */
+      @media (min-width: 768px) {
+        .brand-logo {
+          height: 222px;
+        }
+      }
+
+      .top-logo-up {
+        transform: translate(20px, -45px);
+      }
+
+      .top-buttons-down {
+        transform: translateY(40px);
+      }
+
       .social-btn {
         opacity: 0.75;
         transition: opacity 200ms ease, transform 200ms ease;
       }
-      .social-btn:hover { opacity: 1; transform: translateY(-1px); }
-      .social-btn:active { transform: translateY(0); }
+
+      .social-btn:hover {
+        opacity: 1;
+        transform: translateY(-1px);
+      }
+
+      .social-btn:active {
+        transform: translateY(0);
+      }
+
+      .booking-card {
+        background: var(--panel-dark);
+        border: 1px solid var(--panel-border);
+        border-radius: 24px;
+        box-shadow: var(--shadow-lg);
+        backdrop-filter: blur(10px);
+      }
+
+      .heading-font {
+        font-family: "GlacialBold", Arial, sans-serif;
+      }
+
+      .eyebrow {
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        font-size: 0.72rem;
+        color: rgba(255, 255, 255, 0.68);
+      }
+
+      .step-chip {
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: rgba(255, 255, 255, 0.06);
+        color: white;
+        border-radius: 999px;
+        padding: 0.5rem 0.9rem;
+        font-size: 0.84rem;
+        white-space: nowrap;
+      }
+
+      .progress-track {
+        width: 100%;
+        height: 6px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.12);
+        overflow: hidden;
+      }
+
+      .progress-bar {
+        height: 100%;
+        width: 33.3333%;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #d0842f, #efb06a);
+        transition: width 240ms ease;
+      }
+
+      .status-banner {
+        border-radius: 16px;
+        padding: 0.9rem 1rem;
+        font-size: 0.92rem;
+        line-height: 1.45;
+        border: 1px solid transparent;
+      }
+
+      .status-banner[data-type="error"] {
+        background: rgba(208, 132, 47, 0.12);
+        border-color: rgba(208, 132, 47, 0.42);
+        color: #fff2e2;
+      }
+
+      .status-banner[data-type="success"] {
+        background: rgba(76, 175, 80, 0.12);
+        border-color: rgba(76, 175, 80, 0.42);
+        color: #eefbed;
+      }
+
+      .status-banner[data-type="info"] {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.14);
+        color: white;
+      }
+
+      .field-label {
+        display: block;
+        font-size: 0.95rem;
+        color: rgba(255, 255, 255, 0.96);
+        margin-bottom: 0.5rem;
+      }
+
+      .field-wrap {
+        position: relative;
+      }
+
+      .text-input,
+      .textarea-input,
+      .country-code-select {
+        width: 100%;
+        border-radius: 15px;
+        border: 1px solid var(--input-border);
+        background: var(--input-bg);
+        color: var(--input-text);
+        outline: none;
+        transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+      }
+
+      .text-input {
+        min-height: 50px;
+        padding: 0 1rem;
+        font-size: 0.96rem;
+      }
+
+      .textarea-input {
+        min-height: 118px;
+        resize: vertical;
+        padding: 0.9rem 1rem;
+        font-size: 0.96rem;
+      }
+
+      .phone-shell {
+        display: grid;
+        grid-template-columns: 220px 1fr;
+        gap: 0.75rem;
+      }
+
+      @media (max-width: 520px) {
+        .phone-shell {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .select-shell {
+        position: relative;
+        min-width: 0;
+      }
+
+      .select-shell::before {
+        content: attr(data-display);
+        position: absolute;
+        left: 0.95rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #1a1a1a;
+        font-size: 0.96rem;
+        pointer-events: none;
+        z-index: 1;
+        white-space: nowrap;
+        max-width: calc(100% - 2.4rem);
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .country-code-select {
+        min-width: 0;
+        min-height: 50px;
+        padding: 0 2.5rem 0 0.95rem;
+        appearance: none;
+        cursor: pointer;
+        color: transparent;
+        text-shadow: 0 0 0 transparent;
+      }
+
+      .country-code-select option {
+        color: #1a1a1a;
+      }
+
+      .text-input:focus,
+      .textarea-input:focus,
+      .country-code-select:focus {
+        border-color: rgba(208, 132, 47, 0.65);
+        box-shadow: 0 0 0 4px rgba(208, 132, 47, 0.14);
+      }
+
+      .select-chevron {
+        position: absolute;
+        top: 50%;
+        right: 0.9rem;
+        transform: translateY(-50%);
+        pointer-events: none;
+        color: #3c3c3c;
+        font-size: 0.8rem;
+        z-index: 2;
+      }
+
+      .selector-wrap {
+        position: relative;
+      }
+
+      .selector-trigger {
+        width: 100%;
+        min-height: 56px;
+        border-radius: 16px;
+        border: 1px solid var(--input-border);
+        background: var(--input-bg);
+        color: var(--input-text);
+        padding: 0.85rem 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        text-align: left;
+        transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+      }
+
+      .selector-trigger:hover {
+        transform: translateY(-1px);
+      }
+
+      .selector-trigger:focus-visible {
+        outline: none;
+        border-color: rgba(208, 132, 47, 0.65);
+        box-shadow: 0 0 0 4px rgba(208, 132, 47, 0.14);
+      }
+
+      .selector-trigger .placeholder {
+        color: rgba(26, 26, 26, 0.55);
+      }
+
+      .selector-trigger .value {
+        color: var(--input-text);
+      }
+
+      .selector-chevron-inline {
+        flex: 0 0 auto;
+        font-size: 0.8rem;
+        color: rgba(26, 26, 26, 0.62);
+        transition: transform 180ms ease;
+      }
+
+      .selector-wrap.open .selector-chevron-inline {
+        transform: rotate(180deg);
+      }
+
+      .selector-panel {
+        position: absolute;
+        top: calc(100% + 0.65rem);
+        left: 0;
+        width: 100%;
+        z-index: 40;
+        border-radius: 18px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: rgba(17, 17, 17, 0.98);
+        box-shadow: 0 18px 42px rgba(0, 0, 0, 0.35);
+        overflow: hidden;
+      }
+
+      .panel-inner {
+        padding: 0.9rem;
+      }
+
+      .panel-empty {
+        color: rgba(255, 255, 255, 0.74);
+        font-size: 0.9rem;
+        padding: 0.85rem 0.2rem 0.35rem;
+      }
+
+      .people-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.7rem;
+      }
+
+      .people-option {
+        min-height: 56px;
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: white;
+        color: #1a1a1a;
+        font-size: 1rem;
+        transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
+      }
+
+      .people-option:hover:not(:disabled),
+      .calendar-day:hover:not(:disabled),
+      .time-option:hover:not(:disabled) {
+        transform: translateY(-1px);
+      }
+
+      .people-option.selected,
+      .calendar-day.selected,
+      .time-option.selected {
+        border-color: rgba(208, 132, 47, 0.9);
+        box-shadow: 0 0 0 3px rgba(208, 132, 47, 0.18);
+      }
+
+      .people-option.disabled,
+      .calendar-day.disabled,
+      .time-option.disabled {
+        opacity: 0.38;
+        cursor: not-allowed;
+        filter: grayscale(0.08);
+      }
+
+      .time-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+        max-height: 320px;
+        overflow-y: auto;
+        padding-right: 0.1rem;
+      }
+
+      .time-option {
+        width: 100%;
+        min-height: 58px;
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: white;
+        color: #1a1a1a;
+        padding: 0.9rem 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.8rem;
+        text-align: left;
+        transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
+      }
+
+      .time-option-time {
+        font-size: 1.05rem;
+        font-family: "GlacialBold", Arial, sans-serif;
+        letter-spacing: 0.04em;
+      }
+
+      .time-option-status {
+        font-size: 0.74rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        font-family: "GlacialBold", Arial, sans-serif;
+      }
+
+      .time-option-status.available {
+        color: #2f2f2f;
+      }
+
+      .time-option-status.unavailable {
+        color: #6a6a6a;
+      }
+
+      .calendar-shell {
+        padding: 0.9rem;
+      }
+
+      .calendar-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-bottom: 0.9rem;
+      }
+
+      .calendar-nav-btn {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: white;
+        color: #1a1a1a;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        font-size: 1.15rem;
+        transition: transform 160ms ease, opacity 160ms ease;
+      }
+
+      .calendar-nav-btn:hover:not(:disabled) {
+        transform: translateY(-1px);
+      }
+
+      .calendar-nav-btn:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+      }
+
+      .calendar-title {
+        color: white;
+        font-family: "GlacialBold", Arial, sans-serif;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        text-align: center;
+        font-size: 1rem;
+      }
+
+      .calendar-weekdays,
+      .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        gap: 0.35rem;
+      }
+
+      .calendar-weekdays {
+        margin-bottom: 0.55rem;
+      }
+
+      .calendar-weekday {
+        text-align: center;
+        color: rgba(255, 255, 255, 0.72);
+        font-size: 0.78rem;
+        padding-bottom: 0.2rem;
+      }
+
+      .calendar-cell {
+        min-height: 44px;
+      }
+
+      .calendar-day {
+        width: 100%;
+        min-height: 44px;
+        border-radius: 12px;
+        border: 1px solid transparent;
+        background: white;
+        color: #1a1a1a;
+        font-size: 0.94rem;
+        transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
+      }
+
+      .calendar-day.today {
+        outline: 1px dashed rgba(208, 132, 47, 0.7);
+        outline-offset: -4px;
+      }
+
+      .calendar-legend {
+        color: rgba(255, 255, 255, 0.62);
+        font-size: 0.8rem;
+        margin-top: 0.75rem;
+      }
+
+      .field-error-text {
+        margin-top: 0.45rem;
+        color: var(--danger);
+        font-size: 0.82rem;
+        line-height: 1.4;
+      }
+
+      .has-error .text-input,
+      .has-error .textarea-input,
+      .has-error .country-code-select,
+      .has-error .selector-trigger,
+      .has-error .select-shell::before {
+        border-color: rgba(208, 132, 47, 0.82);
+        box-shadow: 0 0 0 4px rgba(208, 132, 47, 0.14);
+      }
+
+      .shake {
+        animation: shake 300ms ease;
+      }
+
+      @keyframes shake {
+        0%,
+        100% {
+          transform: translateX(0);
+        }
+        25% {
+          transform: translateX(-4px);
+        }
+        50% {
+          transform: translateX(4px);
+        }
+        75% {
+          transform: translateX(-3px);
+        }
+      }
+
+      .button-primary,
+      .button-secondary {
+        min-height: 48px;
+        border-radius: 15px;
+        padding: 0.8rem 1.1rem;
+        font-size: 0.94rem;
+        transition: transform 180ms ease, background-color 180ms ease, color 180ms ease, border-color 180ms ease, opacity 180ms ease;
+      }
+
+      .button-primary:hover:not(:disabled),
+      .button-secondary:hover:not(:disabled) {
+        transform: translateY(-1px);
+      }
+
+      .button-primary:disabled,
+      .button-secondary:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .button-primary {
+        background: var(--accent);
+        color: white;
+        border: 1px solid transparent;
+      }
+
+      .button-primary:hover:not(:disabled) {
+        background: #b87226;
+      }
+
+      .button-secondary {
+        background: rgba(255, 255, 255, 0.94);
+        color: #1a1a1a;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+      }
+
+      .button-secondary:hover:not(:disabled) {
+        background: white;
+      }
+
+      .hint-box {
+        border-radius: 16px;
+        border: 1px solid rgba(208, 132, 47, 0.28);
+        background: rgba(208, 132, 47, 0.08);
+        padding: 0.9rem 1rem;
+        color: #f8e2c8;
+        font-size: 0.88rem;
+        line-height: 1.45;
+      }
+
+      .summary-card {
+        border-radius: 18px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.06);
+        padding: 1rem;
+      }
+
+      .summary-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.65rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .summary-row:last-child {
+        border-bottom: none;
+      }
+
+      .summary-label {
+        color: rgba(255, 255, 255, 0.62);
+        font-size: 0.84rem;
+      }
+
+      .summary-value {
+        color: white;
+        text-align: right;
+        font-size: 0.92rem;
+        word-break: break-word;
+      }
+
+      .subtle-copy {
+        color: rgba(255, 255, 255, 0.82);
+        font-size: 0.95rem;
+        line-height: 1.55;
+      }
     </style>
   </head>
 
@@ -71,16 +709,13 @@
       background-attachment: fixed;
     "
   >
-    <!-- ===== CURTAIN OVERLAY (same style/timing) ===== -->
     <div
       id="page-overlay"
       class="fixed inset-0 z-40 pointer-events-none opacity-100 transition-opacity duration-300"
     >
       <div
         id="page-panel"
-        class="page-panel absolute inset-0 transform translate-y-0
-               transition-transform duration-[1050ms] ease-in-out
-               flex items-center justify-center"
+        class="page-panel absolute inset-0 transform translate-y-0 transition-transform duration-[1050ms] ease-in-out flex items-center justify-center"
       >
         <div id="page-logo" class="text-white opacity-100 transition-opacity duration-500">
           <img
@@ -95,25 +730,16 @@
 
     <div id="top"></div>
 
-    <!-- ===== HEADER (matches index: positions + logo swap) ===== -->
     <header
       id="site-header"
       class="fixed top-0 left-0 w-full z-20 flex items-start justify-between px-4 sm:px-10 pt-0 pb-0 text-white"
-
     >
-      <!-- LEFT buttons DOWN -->
       <div class="top-buttons-down flex items-center gap-2 sm:gap-4 text-sm text-black sm:text-base md:text-xl tracking-wide">
-  
+        <a href="#top" class="hover:opacity-80">EN</a>
+        <span class="hidden sm:inline">|</span>
+        <a href="Rge.html" class="hover:opacity-80">GE</a>
+      </div>
 
-  <a href="#top" class="hover:opacity-80">EN</a>
-
-  <span class="hidden sm:inline">|</span>
-
-  <a href="Rge.html" class="hover:opacity-80">GE</a>
-</div>
-
-
-      <!-- TOP logo UP + white/black swap -->
       <a href="index.html#top" id="logo-link" class="opacity-80 hover:opacity-80" aria-label="Reserve">
         <img
           src="images/logowhite.svg"
@@ -129,227 +755,307 @@
         />
       </a>
 
-      <!-- RIGHT buttons DOWN -->
       <nav class="top-buttons-down flex items-center gap-8 text-[#1a1a1a] md:text-lg">
         <span class="opacity-80 cursor-default">Reservations</span>
         <a href="menu.pdf" target="_blank" class="hover:opacity-80">Menu</a>
       </nav>
     </header>
 
-    <!-- main -->
-    <main class="min-h-screen flex items-center justify-center pt-32 px-6">
-      <div class="max-w-xl w-full space-y-6">
-        <div class="text-center">
-          <h1 class="text-4xl md:text-5xl font-semibold mb-4">Reservations</h1>
-          <p class="text-sm md:text-base text-[#3a3a3a]">
-            
-            All reservation requests are sent via WhatsApp to our team.
-            Reservations for groups of more than five guests are accepted at least two hours in advance and are confirmed with a non-refundable deposit of 150 GEL.
-The deposit will be applied towards the final bill upon your visit.
-          </p>
-        </div>
-
-        <!-- card -->
-        <div
-          class="bg-black/85 text-white rounded-xl shadow-lg p-6 md:p-8 space-y-4"
-          style="font-family: 'GlacialBold', Arial, sans-serif;"
+    <main class="min-h-screen flex items-start justify-center px-4 sm:px-6 pb-14">
+      <div class="reservation-main-wrap">
+        <div class="reservation-hero px-2">
+        <h1
+          class="reservation-title text-[#1a1a1a]"
+          style="font-family: 'LatoLocal', Arial, sans-serif; font-weight: 400;"
         >
-          <p class="text-xs uppercase tracking-wide text-white/70">
-            Step <span id="step-current">1</span> of 3
-          </p>
+          Reservations
+        </h1>
 
-          <!-- step 1 -->
-          <div id="step-1" class="space-y-4">
-            <h2 class="text-lg font-semibold">Your details:</h2>
+        <p class="reservation-copy text-[#2f2f2f]">
+          All reservation requests are sent via WhatsApp to our team. Reservations for groups of more
+          than five guests are accepted at least two hours in advance and are confirmed with a
+          non-refundable deposit of 150 GEL. The deposit will be applied towards the final bill upon
+          your visit.
+        </p>
+      </div>
+
+        <div class="reservation-card-wrap">
+  <div class="booking-card text-white p-6 md:p-8 space-y-6">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <p class="eyebrow mb-2">Reservation request</p>
+              <h2 class="heading-font text-2xl md:text-3xl">Details</h2>
+            </div>
+            <div class="step-chip">Step <span id="step-current">1</span> of 3</div>
+          </div>
+
+          <div class="progress-track">
+            <div id="progress-bar" class="progress-bar"></div>
+          </div>
+
+          <div id="status-banner" class="status-banner hidden" data-type="info"></div>
+
+          <section id="step-1" class="space-y-5">
+            <div>
+              <h3 class="heading-font text-xl mb-1">Your details</h3>
+              <p class="subtle-copy">Minimal typing, no weird inputs, just the essentials.</p>
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm mb-1">Name *</label>
+              <div id="field-name" class="field-wrap">
+                <label class="field-label" for="input-name">Name *</label>
                 <input
                   id="input-name"
                   type="text"
-                  class="w-full text-black/60 border border-black/20 rounded-md px-3 py-2 text-sm bg-white/95 focus:outline-none focus:ring-1 focus:ring-black/40"
+                  class="text-input"
                   autocomplete="given-name"
+                  placeholder="Enter your name"
                 />
+                <p id="error-name" class="field-error-text hidden"></p>
               </div>
-              <div>
-                <label class="block text-sm mb-1">Surname *</label>
+
+              <div id="field-surname" class="field-wrap">
+                <label class="field-label" for="input-surname">Surname *</label>
                 <input
                   id="input-surname"
                   type="text"
-                  class="w-full border text-black/60 border-black/20 rounded-md px-3 py-2 text-sm bg-white/95 focus:outline-none focus:ring-1 focus:ring-black/40"
+                  class="text-input"
                   autocomplete="family-name"
+                  placeholder="Enter your surname"
                 />
+                <p id="error-surname" class="field-error-text hidden"></p>
               </div>
             </div>
-            <div>
-              <label class="block text-sm mb-1">Your phone number *</label>
+
+            <div id="field-email" class="field-wrap">
+              <label class="field-label" for="input-email">Email *</label>
               <input
-                id="input-phone"
-                type="tel"
-                placeholder="+995..."
-                class="w-full border  text-black/60 border-black/20 rounded-md px-3 py-2 text-sm bg-white/95 focus:outline-none focus:ring-1 focus:ring-black/40"
-                autocomplete="tel"
+                id="input-email"
+                type="email"
+                class="text-input"
+                autocomplete="email"
+                placeholder="name@example.com"
               />
+              <p id="error-email" class="field-error-text hidden"></p>
             </div>
 
-            <div class="flex flex-col gap-3 pt-4">
-              <div class="flex justify-end">
-                <button
-                  id="btn-next-1"
-                  class="px-4 py-2 rounded-md bg-white text-black text-sm hover:bg-[#D0842F] hover:text-white transition"
-                >
-                  Next
-                </button>
-              </div>
+            <div id="field-phone" class="field-wrap">
+              <label class="field-label" for="input-phone">Phone number *</label>
+              <div class="phone-shell">
+                <div class="select-shell" id="country-select-shell" data-display="+995">
+                  <select id="input-country-code" class="country-code-select" autocomplete="tel-country-code"></select>
+                  <span class="select-chevron">⌄</span>
+                </div>
 
-              <button
-                class="btn-open-whatsapp-empty w-full px-4 py-2 rounded-md border border-green-700 text-white bg-green-700 text-sm hover:bg-white/30 transition"
-              >
-                Open WhatsApp with a custom message
-              </button>
-            </div>
-          </div>
-
-          <!-- step 2 -->
-          <div id="step-2" class="space-y-4 hidden">
-            <h2 class="text-lg font-GlacialBold">Date and time</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm mb-1">Date *</label>
                 <input
-                  id="input-date"
-                  type="date"
-                  class="w-full border border-black/20  text-black/60 rounded-md px-3 py-2 text-sm bg-white/95 focus:outline-none focus:ring-1 focus:ring-black/40"
+                  id="input-phone"
+                  type="tel"
+                  class="text-input"
+                  inputmode="numeric"
+                  autocomplete="tel-national"
+                  placeholder="555 123 123"
                 />
               </div>
-              <div>
-                <label class="block text-sm mb-1">
-                  Time * <span class="text-[11px] text-white/70">(09:00–21:30)</span>
-                </label>
-                <input
-                  id="input-time"
-                  type="time"
-                  class="w-full text-black/60 border border-black/20 rounded-md px-3 py-2 text-sm bg-white/95 focus:outline-none focus:ring-1 focus:ring-black/40"
-                />
+              <p id="error-phone" class="field-error-text hidden"></p>
+            </div>
+
+            <div class="flex justify-end pt-2">
+              <button id="btn-next-1" type="button" class="button-primary">Next</button>
+            </div>
+          </section>
+
+          <section id="step-2" class="space-y-5 hidden">
+            <div>
+              <h3 class="heading-font text-xl mb-1">Date, time and guests</h3>
+              <p class="subtle-copy">24-hour time, 15-minute intervals, no ugly browser pickers.</p>
+            </div>
+
+            <div id="field-date" class="field-wrap selector-wrap" data-selector="date">
+              <label class="field-label">Date *</label>
+              <button id="trigger-date" type="button" class="selector-trigger">
+                <span id="label-date" class="placeholder">Select date</span>
+                <span class="selector-chevron-inline">⌄</span>
+              </button>
+
+              <div id="panel-date" class="selector-panel hidden">
+                <div class="calendar-shell">
+                  <div class="calendar-header">
+                    <button id="calendar-prev" type="button" class="calendar-nav-btn" aria-label="Previous month">
+                      &#8249;
+                    </button>
+                    <div id="calendar-title" class="calendar-title">Month Year</div>
+                    <button id="calendar-next" type="button" class="calendar-nav-btn" aria-label="Next month">
+                      &#8250;
+                    </button>
+                  </div>
+
+                  <div class="calendar-weekdays">
+                    <div class="calendar-weekday">Mon</div>
+                    <div class="calendar-weekday">Tue</div>
+                    <div class="calendar-weekday">Wed</div>
+                    <div class="calendar-weekday">Thu</div>
+                    <div class="calendar-weekday">Fri</div>
+                    <div class="calendar-weekday">Sat</div>
+                    <div class="calendar-weekday">Sun</div>
+                  </div>
+
+                  <div id="calendar-grid" class="calendar-grid"></div>
+                  <p class="calendar-legend">Greyed out dates are unavailable.</p>
+                </div>
               </div>
-            </div>
-            <div>
-              <label class="block text-sm mb-1">Number of guests *</label>
-              <input
-                id="input-guests"
-                type="number"
-                min="1"
-                class="w-full border  text-black/60 border-black/20 rounded-md px-3 py-2 text-sm bg-white/95 focus:outline-none focus:ring-1 focus:ring-black/40"
-              />
+
+              <p id="error-date" class="field-error-text hidden"></p>
             </div>
 
-            <div class="flex justify-between gap-3 pt-4">
-              <button
-                id="btn-back-2"
-                class="px-4 py-2 rounded-md bg-white text-black text-sm hover:bg-[#D0842F] hover:text-white transition"
-              >
-                Back
+            <div id="field-time" class="field-wrap selector-wrap" data-selector="time">
+              <label class="field-label">Time *</label>
+              <button id="trigger-time" type="button" class="selector-trigger">
+                <span id="label-time" class="placeholder">Select time</span>
+                <span class="selector-chevron-inline">⌄</span>
               </button>
-              <button
-                id="btn-next-2"
-                class="px-4 py-2 rounded-md bg-white text-black text-sm hover:bg-[#D0842F] hover:text-white transition"
-              >
-                Next
-              </button>
-            </div>
-          </div>
 
-          <!-- step 3 -->
-          <div id="step-3" class="space-y-4 hidden">
-            <h2 class="text-lg font-family: 'GlacialBold'">Special requests</h2>
+              <div id="panel-time" class="selector-panel hidden">
+                <div class="panel-inner">
+                  <div id="time-list" class="time-list"></div>
+                </div>
+              </div>
+
+              <p id="error-time" class="field-error-text hidden"></p>
+            </div>
+
+            <div id="field-guests" class="field-wrap selector-wrap" data-selector="guests">
+              <label class="field-label">Number of guests *</label>
+              <button id="trigger-guests" type="button" class="selector-trigger">
+                <span id="label-guests" class="placeholder">Select guests</span>
+                <span class="selector-chevron-inline">⌄</span>
+              </button>
+
+              <div id="panel-guests" class="selector-panel hidden">
+                <div class="panel-inner">
+                  <div id="guests-grid" class="people-grid"></div>
+                </div>
+              </div>
+
+              <p id="error-guests" class="field-error-text hidden"></p>
+            </div>
+
+            <div id="large-group-note" class="hint-box hidden">
+              For 6 guests, a non-refundable 150 GEL deposit applies and the booking must be made at least
+              2 hours in advance.
+            </div>
+
+            <div class="flex justify-between gap-3 pt-2">
+              <button id="btn-back-2" type="button" class="button-secondary">Back</button>
+              <button id="btn-next-2" type="button" class="button-primary">Next</button>
+            </div>
+          </section>
+
+          <section id="step-3" class="space-y-5 hidden">
             <div>
-              <label class="block text-sm mb-1">(optional)</label>
+              <h3 class="heading-font text-xl mb-1">Review and requests</h3>
+              <p class="subtle-copy">One last look before continuing.</p>
+            </div>
+
+            <div id="field-requests" class="field-wrap">
+              <label class="field-label" for="input-requests">Special requests (optional)</label>
               <textarea
                 id="input-requests"
-                rows="3"
-                class="w-full text-black/60 border border-black/20 rounded-md px-3 py-2 text-sm bg-white/95 focus:outline-none focus:ring-1 focus:ring-black/40"
-                placeholder="Allergies, occasions, seating preferences..."
+                class="textarea-input"
+                placeholder="Allergies, celebrations, seating preferences..."
               ></textarea>
+              <p id="error-requests" class="field-error-text hidden"></p>
             </div>
 
-            
-
-            <div class="flex flex-col gap-3 pt-4">
-              <div class="flex justify-between gap-3">
-                <button
-                  id="btn-back-3"
-                  class="px-4 py-2 rounded-md bg-white text-black text-sm hover:bg-[#D0842F] hover:text-white transition"
-                >
-                  Back
-                </button>
-                  <button
-                  id="btn-send-booking"
-                  class="px-4 py-2 rounded-md bg-green-700 text-white text-sm hover:bg-green-800 transition"
-                >
-                    Continue to deposit
-              </button>
+            <div class="summary-card">
+              <div class="summary-row">
+                <div class="summary-label">Guest</div>
+                <div id="summary-name" class="summary-value">—</div>
               </div>
-
-              <button
-                class="btn-open-whatsapp-empty w-full px-4 py-2 rounded-md border border-green-700 text-green-900 text-sm hover:bg-white/90 transition"
-              >
-                Open WhatsApp with a custom message
-              </button>
+              <div class="summary-row">
+                <div class="summary-label">Email</div>
+                <div id="summary-email" class="summary-value">—</div>
+              </div>
+              <div class="summary-row">
+                <div class="summary-label">Phone</div>
+                <div id="summary-phone" class="summary-value">—</div>
+              </div>
+              <div class="summary-row">
+                <div class="summary-label">Date</div>
+                <div id="summary-date" class="summary-value">—</div>
+              </div>
+              <div class="summary-row">
+                <div class="summary-label">Time</div>
+                <div id="summary-time" class="summary-value">—</div>
+              </div>
+              <div class="summary-row">
+                <div class="summary-label">Guests</div>
+                <div id="summary-guests" class="summary-value">—</div>
+              </div>
+              <div id="summary-deposit-row" class="summary-row hidden">
+                <div class="summary-label">Deposit</div>
+                <div class="summary-value">150 GEL required</div>
+              </div>
+              <div class="summary-row">
+                <div class="summary-label">Requests</div>
+                <div id="summary-requests" class="summary-value">None</div>
+              </div>
             </div>
-          </div>
 
-          <p class="text-[11px] text-white/70">
-            Your reservation is confirmed only after our team replies to you in WhatsApp.
-          </p>
+            <p class="subtle-copy">
+              Reservations are confirmed only after our team processes the request and, where applicable,
+              the deposit step is completed.
+            </p>
+
+            <div class="flex justify-between gap-3 pt-2">
+              <button id="btn-back-3" type="button" class="button-secondary">Back</button>
+              <button id="btn-submit" type="button" class="button-primary">Continue to deposit</button>
+            </div>
+          </section>
+          </div>
         </div>
       </div>
     </main>
 
-    <!-- ===== FOOTER SOCIAL (same as index) ===== -->
     <footer class="bg-black py-10">
-  <div class="max-w-7xl mx-auto px-6 md:px-16 flex items-center justify-center gap-5">
-    
-    <a
-      href="https://api.whatsapp.com/send/?phone=%2B995595313344&text=&type=phone_number&app_absent=0"
-      target="_blank"
-      aria-label="WhatsApp"
-      class="social-btn inline-flex items-center justify-center w-10 h-10 rounded-full border border-white/20 hover:border-white/40"
-    >
-      <img
-        src="images/Digital_Glyph_White.svg"
-        alt="WhatsApp icon"
-        class="w-5 h-5"
-        draggable="false"
-      />
-    </a>
+      <div class="max-w-7xl mx-auto px-6 md:px-16 flex items-center justify-center gap-5">
+        <a
+          href="https://api.whatsapp.com/send/?phone=%2B995595313344&text=&type=phone_number&app_absent=0"
+          target="_blank"
+          aria-label="WhatsApp"
+          class="social-btn inline-flex items-center justify-center w-10 h-10 rounded-full border border-white/20 hover:border-white/40"
+        >
+          <img
+            src="images/Digital_Glyph_White.svg"
+            alt="WhatsApp icon"
+            class="w-5 h-5"
+            draggable="false"
+          />
+        </a>
 
-    <a
-      href="https://www.instagram.com/reserve.tbilisi/"
-      target="_blank"
-      aria-label="Instagram"
-      class="social-btn inline-flex items-center justify-center w-10 h-10 rounded-full border border-white/20 hover:border-white/40"
-    >
-      <img
-        src="images/Instagram_Glyph_White.svg"
-        alt="Instagram icon"
-        class="w-5 h-5"
-        draggable="false"
-      />
-    </a>
+        <a
+          href="https://www.instagram.com/reserve.tbilisi/"
+          target="_blank"
+          aria-label="Instagram"
+          class="social-btn inline-flex items-center justify-center w-10 h-10 rounded-full border border-white/20 hover:border-white/40"
+        >
+          <img
+            src="images/Instagram_Glyph_White.svg"
+            alt="Instagram icon"
+            class="w-5 h-5"
+            draggable="false"
+          />
+        </a>
 
-    <a
-      href="mailto:info@reservetbilisi.ge"
-      class="text-white hover:underline underline-offset-4 transition"
-    >
-      info@reservetbilisi.ge
-    </a>
-
-  </div>
-</footer>
-
+        <a
+          href="mailto:info@reservetbilisi.ge"
+          class="text-white hover:underline underline-offset-4 transition"
+        >
+          info@reservetbilisi.ge
+        </a>
+      </div>
+    </footer>
 
     <script>
-      // curtain
       const overlay = document.getElementById("page-overlay");
       const panel = document.getElementById("page-panel");
       const logo = document.getElementById("page-logo");
@@ -358,7 +1064,6 @@ The deposit will be applied towards the final bill upon your visit.
         setTimeout(() => {
           logo.classList.remove("opacity-100");
           logo.classList.add("opacity-0");
-
           panel.classList.add("translate-y-full");
 
           setTimeout(() => {
@@ -367,213 +1072,1129 @@ The deposit will be applied towards the final bill upon your visit.
         }, 150);
       });
 
-      // config times
+      const API_ENABLED = false;
+      const API_ENDPOINT = "/api/reservations/create";
+
       const OPEN_TIME = "09:00";
       const CLOSE_TIME = "21:30";
+      const SLOT_INTERVAL_MINUTES = 15;
 
-      // steps
+      const MAX_GUESTS = 6;
+      const LARGE_GROUP_THRESHOLD = 5;
+      const LARGE_GROUP_MIN_HOURS = 2;
+      const DEPOSIT_AMOUNT = 150;
+
+      const DISABLED_DATES = [];
+      const DISABLED_TIME_SLOTS = [];
+      const DISABLED_GUEST_COUNTS = [];
+
+      const COUNTRY_OPTIONS = [
+        { name: "Afghanistan", iso: "AF", code: "+93" },
+        { name: "Albania", iso: "AL", code: "+355" },
+        { name: "Algeria", iso: "DZ", code: "+213" },
+        { name: "American Samoa", iso: "AS", code: "+1-684" },
+        { name: "Andorra", iso: "AD", code: "+376" },
+        { name: "Angola", iso: "AO", code: "+244" },
+        { name: "Anguilla", iso: "AI", code: "+1-264" },
+        { name: "Antigua and Barbuda", iso: "AG", code: "+1-268" },
+        { name: "Argentina", iso: "AR", code: "+54" },
+        { name: "Armenia", iso: "AM", code: "+374" },
+        { name: "Aruba", iso: "AW", code: "+297" },
+        { name: "Australia", iso: "AU", code: "+61" },
+        { name: "Austria", iso: "AT", code: "+43" },
+        { name: "Azerbaijan", iso: "AZ", code: "+994" },
+        { name: "Bahamas", iso: "BS", code: "+1-242" },
+        { name: "Bahrain", iso: "BH", code: "+973" },
+        { name: "Bangladesh", iso: "BD", code: "+880" },
+        { name: "Barbados", iso: "BB", code: "+1-246" },
+        { name: "Belarus", iso: "BY", code: "+375" },
+        { name: "Belgium", iso: "BE", code: "+32" },
+        { name: "Belize", iso: "BZ", code: "+501" },
+        { name: "Benin", iso: "BJ", code: "+229" },
+        { name: "Bermuda", iso: "BM", code: "+1-441" },
+        { name: "Bhutan", iso: "BT", code: "+975" },
+        { name: "Bolivia", iso: "BO", code: "+591" },
+        { name: "Bosnia and Herzegovina", iso: "BA", code: "+387" },
+        { name: "Botswana", iso: "BW", code: "+267" },
+        { name: "Brazil", iso: "BR", code: "+55" },
+        { name: "British Virgin Islands", iso: "VG", code: "+1-284" },
+        { name: "Brunei", iso: "BN", code: "+673" },
+        { name: "Bulgaria", iso: "BG", code: "+359" },
+        { name: "Burkina Faso", iso: "BF", code: "+226" },
+        { name: "Burundi", iso: "BI", code: "+257" },
+        { name: "Cambodia", iso: "KH", code: "+855" },
+        { name: "Cameroon", iso: "CM", code: "+237" },
+        { name: "Canada", iso: "CA", code: "+1" },
+        { name: "Cape Verde", iso: "CV", code: "+238" },
+        { name: "Cayman Islands", iso: "KY", code: "+1-345" },
+        { name: "Central African Republic", iso: "CF", code: "+236" },
+        { name: "Chad", iso: "TD", code: "+235" },
+        { name: "Chile", iso: "CL", code: "+56" },
+        { name: "China", iso: "CN", code: "+86" },
+        { name: "Colombia", iso: "CO", code: "+57" },
+        { name: "Comoros", iso: "KM", code: "+269" },
+        { name: "Congo", iso: "CG", code: "+242" },
+        { name: "Congo (DRC)", iso: "CD", code: "+243" },
+        { name: "Cook Islands", iso: "CK", code: "+682" },
+        { name: "Costa Rica", iso: "CR", code: "+506" },
+        { name: "Croatia", iso: "HR", code: "+385" },
+        { name: "Cuba", iso: "CU", code: "+53" },
+        { name: "Curaçao", iso: "CW", code: "+599" },
+        { name: "Cyprus", iso: "CY", code: "+357" },
+        { name: "Czech Republic", iso: "CZ", code: "+420" },
+        { name: "Denmark", iso: "DK", code: "+45" },
+        { name: "Djibouti", iso: "DJ", code: "+253" },
+        { name: "Dominica", iso: "DM", code: "+1-767" },
+        { name: "Dominican Republic", iso: "DO", code: "+1-809" },
+        { name: "Dominican Republic", iso: "DO", code: "+1-829" },
+        { name: "Dominican Republic", iso: "DO", code: "+1-849" },
+        { name: "Ecuador", iso: "EC", code: "+593" },
+        { name: "Egypt", iso: "EG", code: "+20" },
+        { name: "El Salvador", iso: "SV", code: "+503" },
+        { name: "Equatorial Guinea", iso: "GQ", code: "+240" },
+        { name: "Eritrea", iso: "ER", code: "+291" },
+        { name: "Estonia", iso: "EE", code: "+372" },
+        { name: "Eswatini", iso: "SZ", code: "+268" },
+        { name: "Ethiopia", iso: "ET", code: "+251" },
+        { name: "Faroe Islands", iso: "FO", code: "+298" },
+        { name: "Fiji", iso: "FJ", code: "+679" },
+        { name: "Finland", iso: "FI", code: "+358" },
+        { name: "France", iso: "FR", code: "+33" },
+        { name: "French Guiana", iso: "GF", code: "+594" },
+        { name: "French Polynesia", iso: "PF", code: "+689" },
+        { name: "Gabon", iso: "GA", code: "+241" },
+        { name: "Gambia", iso: "GM", code: "+220" },
+        { name: "Georgia", iso: "GE", code: "+995" },
+        { name: "Germany", iso: "DE", code: "+49" },
+        { name: "Ghana", iso: "GH", code: "+233" },
+        { name: "Gibraltar", iso: "GI", code: "+350" },
+        { name: "Greece", iso: "GR", code: "+30" },
+        { name: "Greenland", iso: "GL", code: "+299" },
+        { name: "Grenada", iso: "GD", code: "+1-473" },
+        { name: "Guadeloupe", iso: "GP", code: "+590" },
+        { name: "Guam", iso: "GU", code: "+1-671" },
+        { name: "Guatemala", iso: "GT", code: "+502" },
+        { name: "Guernsey", iso: "GG", code: "+44-1481" },
+        { name: "Guinea", iso: "GN", code: "+224" },
+        { name: "Guinea-Bissau", iso: "GW", code: "+245" },
+        { name: "Guyana", iso: "GY", code: "+592" },
+        { name: "Haiti", iso: "HT", code: "+509" },
+        { name: "Honduras", iso: "HN", code: "+504" },
+        { name: "Hong Kong", iso: "HK", code: "+852" },
+        { name: "Hungary", iso: "HU", code: "+36" },
+        { name: "Iceland", iso: "IS", code: "+354" },
+        { name: "India", iso: "IN", code: "+91" },
+        { name: "Indonesia", iso: "ID", code: "+62" },
+        { name: "Iran", iso: "IR", code: "+98" },
+        { name: "Iraq", iso: "IQ", code: "+964" },
+        { name: "Ireland", iso: "IE", code: "+353" },
+        { name: "Isle of Man", iso: "IM", code: "+44-1624" },
+        { name: "Israel", iso: "IL", code: "+972" },
+        { name: "Italy", iso: "IT", code: "+39" },
+        { name: "Ivory Coast", iso: "CI", code: "+225" },
+        { name: "Jamaica", iso: "JM", code: "+1-876" },
+        { name: "Japan", iso: "JP", code: "+81" },
+        { name: "Jersey", iso: "JE", code: "+44-1534" },
+        { name: "Jordan", iso: "JO", code: "+962" },
+        { name: "Kazakhstan", iso: "KZ", code: "+7" },
+        { name: "Kenya", iso: "KE", code: "+254" },
+        { name: "Kiribati", iso: "KI", code: "+686" },
+        { name: "Kosovo", iso: "XK", code: "+383" },
+        { name: "Kuwait", iso: "KW", code: "+965" },
+        { name: "Kyrgyzstan", iso: "KG", code: "+996" },
+        { name: "Laos", iso: "LA", code: "+856" },
+        { name: "Latvia", iso: "LV", code: "+371" },
+        { name: "Lebanon", iso: "LB", code: "+961" },
+        { name: "Lesotho", iso: "LS", code: "+266" },
+        { name: "Liberia", iso: "LR", code: "+231" },
+        { name: "Libya", iso: "LY", code: "+218" },
+        { name: "Liechtenstein", iso: "LI", code: "+423" },
+        { name: "Lithuania", iso: "LT", code: "+370" },
+        { name: "Luxembourg", iso: "LU", code: "+352" },
+        { name: "Macau", iso: "MO", code: "+853" },
+        { name: "Madagascar", iso: "MG", code: "+261" },
+        { name: "Malawi", iso: "MW", code: "+265" },
+        { name: "Malaysia", iso: "MY", code: "+60" },
+        { name: "Maldives", iso: "MV", code: "+960" },
+        { name: "Mali", iso: "ML", code: "+223" },
+        { name: "Malta", iso: "MT", code: "+356" },
+        { name: "Marshall Islands", iso: "MH", code: "+692" },
+        { name: "Martinique", iso: "MQ", code: "+596" },
+        { name: "Mauritania", iso: "MR", code: "+222" },
+        { name: "Mauritius", iso: "MU", code: "+230" },
+        { name: "Mayotte", iso: "YT", code: "+262" },
+        { name: "Mexico", iso: "MX", code: "+52" },
+        { name: "Micronesia", iso: "FM", code: "+691" },
+        { name: "Moldova", iso: "MD", code: "+373" },
+        { name: "Monaco", iso: "MC", code: "+377" },
+        { name: "Mongolia", iso: "MN", code: "+976" },
+        { name: "Montenegro", iso: "ME", code: "+382" },
+        { name: "Montserrat", iso: "MS", code: "+1-664" },
+        { name: "Morocco", iso: "MA", code: "+212" },
+        { name: "Mozambique", iso: "MZ", code: "+258" },
+        { name: "Myanmar", iso: "MM", code: "+95" },
+        { name: "Namibia", iso: "NA", code: "+264" },
+        { name: "Nauru", iso: "NR", code: "+674" },
+        { name: "Nepal", iso: "NP", code: "+977" },
+        { name: "Netherlands", iso: "NL", code: "+31" },
+        { name: "New Caledonia", iso: "NC", code: "+687" },
+        { name: "New Zealand", iso: "NZ", code: "+64" },
+        { name: "Nicaragua", iso: "NI", code: "+505" },
+        { name: "Niger", iso: "NE", code: "+227" },
+        { name: "Nigeria", iso: "NG", code: "+234" },
+        { name: "Niue", iso: "NU", code: "+683" },
+        { name: "North Korea", iso: "KP", code: "+850" },
+        { name: "North Macedonia", iso: "MK", code: "+389" },
+        { name: "Northern Mariana Islands", iso: "MP", code: "+1-670" },
+        { name: "Norway", iso: "NO", code: "+47" },
+        { name: "Oman", iso: "OM", code: "+968" },
+        { name: "Pakistan", iso: "PK", code: "+92" },
+        { name: "Palau", iso: "PW", code: "+680" },
+        { name: "Palestine", iso: "PS", code: "+970" },
+        { name: "Panama", iso: "PA", code: "+507" },
+        { name: "Papua New Guinea", iso: "PG", code: "+675" },
+        { name: "Paraguay", iso: "PY", code: "+595" },
+        { name: "Peru", iso: "PE", code: "+51" },
+        { name: "Philippines", iso: "PH", code: "+63" },
+        { name: "Poland", iso: "PL", code: "+48" },
+        { name: "Portugal", iso: "PT", code: "+351" },
+        { name: "Puerto Rico", iso: "PR", code: "+1-787" },
+        { name: "Puerto Rico", iso: "PR", code: "+1-939" },
+        { name: "Qatar", iso: "QA", code: "+974" },
+        { name: "Réunion", iso: "RE", code: "+262" },
+        { name: "Romania", iso: "RO", code: "+40" },
+        { name: "Russia", iso: "RU", code: "+7" },
+        { name: "Rwanda", iso: "RW", code: "+250" },
+        { name: "Saint Barthélemy", iso: "BL", code: "+590" },
+        { name: "Saint Helena", iso: "SH", code: "+290" },
+        { name: "Saint Kitts and Nevis", iso: "KN", code: "+1-869" },
+        { name: "Saint Lucia", iso: "LC", code: "+1-758" },
+        { name: "Saint Martin", iso: "MF", code: "+590" },
+        { name: "Saint Pierre and Miquelon", iso: "PM", code: "+508" },
+        { name: "Saint Vincent and the Grenadines", iso: "VC", code: "+1-784" },
+        { name: "Samoa", iso: "WS", code: "+685" },
+        { name: "San Marino", iso: "SM", code: "+378" },
+        { name: "Sao Tome and Principe", iso: "ST", code: "+239" },
+        { name: "Saudi Arabia", iso: "SA", code: "+966" },
+        { name: "Senegal", iso: "SN", code: "+221" },
+        { name: "Serbia", iso: "RS", code: "+381" },
+        { name: "Seychelles", iso: "SC", code: "+248" },
+        { name: "Sierra Leone", iso: "SL", code: "+232" },
+        { name: "Singapore", iso: "SG", code: "+65" },
+        { name: "Sint Maarten", iso: "SX", code: "+1-721" },
+        { name: "Slovakia", iso: "SK", code: "+421" },
+        { name: "Slovenia", iso: "SI", code: "+386" },
+        { name: "Solomon Islands", iso: "SB", code: "+677" },
+        { name: "Somalia", iso: "SO", code: "+252" },
+        { name: "South Africa", iso: "ZA", code: "+27" },
+        { name: "South Korea", iso: "KR", code: "+82" },
+        { name: "South Sudan", iso: "SS", code: "+211" },
+        { name: "Spain", iso: "ES", code: "+34" },
+        { name: "Sri Lanka", iso: "LK", code: "+94" },
+        { name: "Sudan", iso: "SD", code: "+249" },
+        { name: "Suriname", iso: "SR", code: "+597" },
+        { name: "Sweden", iso: "SE", code: "+46" },
+        { name: "Switzerland", iso: "CH", code: "+41" },
+        { name: "Syria", iso: "SY", code: "+963" },
+        { name: "Taiwan", iso: "TW", code: "+886" },
+        { name: "Tajikistan", iso: "TJ", code: "+992" },
+        { name: "Tanzania", iso: "TZ", code: "+255" },
+        { name: "Thailand", iso: "TH", code: "+66" },
+        { name: "Timor-Leste", iso: "TL", code: "+670" },
+        { name: "Togo", iso: "TG", code: "+228" },
+        { name: "Tokelau", iso: "TK", code: "+690" },
+        { name: "Tonga", iso: "TO", code: "+676" },
+        { name: "Trinidad and Tobago", iso: "TT", code: "+1-868" },
+        { name: "Tunisia", iso: "TN", code: "+216" },
+        { name: "Turkey", iso: "TR", code: "+90" },
+        { name: "Turkmenistan", iso: "TM", code: "+993" },
+        { name: "Turks and Caicos Islands", iso: "TC", code: "+1-649" },
+        { name: "Tuvalu", iso: "TV", code: "+688" },
+        { name: "U.S. Virgin Islands", iso: "VI", code: "+1-340" },
+        { name: "Uganda", iso: "UG", code: "+256" },
+        { name: "Ukraine", iso: "UA", code: "+380" },
+        { name: "United Arab Emirates", iso: "AE", code: "+971" },
+        { name: "United Kingdom", iso: "GB", code: "+44" },
+        { name: "United States", iso: "US", code: "+1" },
+        { name: "Uruguay", iso: "UY", code: "+598" },
+        { name: "Uzbekistan", iso: "UZ", code: "+998" },
+        { name: "Vanuatu", iso: "VU", code: "+678" },
+        { name: "Vatican City", iso: "VA", code: "+379" },
+        { name: "Venezuela", iso: "VE", code: "+58" },
+        { name: "Vietnam", iso: "VN", code: "+84" },
+        { name: "Wallis and Futuna", iso: "WF", code: "+681" },
+        { name: "Yemen", iso: "YE", code: "+967" },
+        { name: "Zambia", iso: "ZM", code: "+260" },
+        { name: "Zimbabwe", iso: "ZW", code: "+263" }
+      ];
+
       const stepCurrent = document.getElementById("step-current");
+      const progressBar = document.getElementById("progress-bar");
       const steps = [
         document.getElementById("step-1"),
         document.getElementById("step-2"),
         document.getElementById("step-3"),
       ];
+
+      const statusBanner = document.getElementById("status-banner");
+
       let currentStep = 1;
+
+      const inputName = document.getElementById("input-name");
+      const inputSurname = document.getElementById("input-surname");
+      const inputEmail = document.getElementById("input-email");
+      const inputCountryCode = document.getElementById("input-country-code");
+      const inputPhone = document.getElementById("input-phone");
+      const inputRequests = document.getElementById("input-requests");
+
+      const triggerDate = document.getElementById("trigger-date");
+      const triggerTime = document.getElementById("trigger-time");
+      const triggerGuests = document.getElementById("trigger-guests");
+
+      const labelDate = document.getElementById("label-date");
+      const labelTime = document.getElementById("label-time");
+      const labelGuests = document.getElementById("label-guests");
+
+      const panelDate = document.getElementById("panel-date");
+      const panelTime = document.getElementById("panel-time");
+      const panelGuests = document.getElementById("panel-guests");
+
+      const calendarTitle = document.getElementById("calendar-title");
+      const calendarPrev = document.getElementById("calendar-prev");
+      const calendarNext = document.getElementById("calendar-next");
+      const calendarGrid = document.getElementById("calendar-grid");
+
+      const timeList = document.getElementById("time-list");
+      const guestsGrid = document.getElementById("guests-grid");
+
+      const largeGroupNote = document.getElementById("large-group-note");
+
+      const summaryName = document.getElementById("summary-name");
+      const summaryEmail = document.getElementById("summary-email");
+      const summaryPhone = document.getElementById("summary-phone");
+      const summaryDate = document.getElementById("summary-date");
+      const summaryTime = document.getElementById("summary-time");
+      const summaryGuests = document.getElementById("summary-guests");
+      const summaryRequests = document.getElementById("summary-requests");
+      const summaryDepositRow = document.getElementById("summary-deposit-row");
+
+      const btnNext1 = document.getElementById("btn-next-1");
+      const btnBack2 = document.getElementById("btn-back-2");
+      const btnNext2 = document.getElementById("btn-next-2");
+      const btnBack3 = document.getElementById("btn-back-3");
+      const btnSubmit = document.getElementById("btn-submit");
+
+      const countrySelectShell = document.getElementById("country-select-shell");
+
+      const now = new Date();
+      const todayStart = startOfDay(now);
+
+      const state = {
+        date: "",
+        time: "",
+        guests: null,
+      };
+
+      let openPanelName = null;
+      let calendarCursor = new Date(todayStart.getFullYear(), todayStart.getMonth(), 1);
 
       function showStep(step) {
         currentStep = step;
-        steps.forEach((s, i) => {
-          if (i === step - 1) s.classList.remove("hidden");
-          else s.classList.add("hidden");
+
+        steps.forEach((section, index) => {
+          section.classList.toggle("hidden", index !== step - 1);
         });
-        stepCurrent.textContent = step;
-        if (step === 3) updateSummary();
+
+        stepCurrent.textContent = String(step);
+        progressBar.style.width = `${(step / 3) * 100}%`;
+
+        clearBanner();
+        closeAllPanels();
+
+        if (step === 3) {
+          updateSummary();
+        }
       }
 
-      // inputs
-      const inputName = document.getElementById("input-name");
-      const inputSurname = document.getElementById("input-surname");
-      const inputPhone = document.getElementById("input-phone");
-      const inputDate = document.getElementById("input-date");
-      const inputTime = document.getElementById("input-time");
-      const inputGuests = document.getElementById("input-guests");
-      const inputRequests = document.getElementById("input-requests");
-      const summaryText = document.getElementById("summary-text");
-
-      // phone
-      const restaurantPhone = "+995595313344";
-
-      function setMinDateToday() {
-        const now = new Date();
-        const y = now.getFullYear();
-        const m = String(now.getMonth() + 1).padStart(2, "0");
-        const d = String(now.getDate()).padStart(2, "0");
-        inputDate.min = `${y}-${m}-${d}`;
+      function startOfDay(date) {
+        const d = new Date(date);
+        d.setHours(0, 0, 0, 0);
+        return d;
       }
 
-      function setTimeLimits() {
-        inputTime.min = OPEN_TIME;
-        inputTime.max = CLOSE_TIME;
+      function pad(value) {
+        return String(value).padStart(2, "0");
       }
 
-      function formatDateDisplay(dateStr) {
+      function formatDateISO(date) {
+        return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+      }
+
+      function formatDateShort(dateStr) {
         if (!dateStr) return "";
+        return dateStr.slice(2);
+      }
+
+      function parseDateString(dateStr) {
         const parts = dateStr.split("-");
-        if (parts.length !== 3) return dateStr;
-        const [y, m, d] = parts;
-        return `${d}/${m}/${y}`;
+        if (parts.length !== 3) return null;
+
+        const year = Number(parts[0]);
+        const month = Number(parts[1]);
+        const day = Number(parts[2]);
+
+        if (!year || !month || !day) return null;
+
+        return new Date(year, month - 1, day);
       }
 
-      function validateDateTime(dateStr, timeStr) {
-        if (!dateStr || !timeStr) return "missing";
-        if (timeStr < OPEN_TIME) return "before-open";
-        if (timeStr > CLOSE_TIME) return "after-close";
-
-        const now = new Date();
-        const selected = new Date(`${dateStr}T${timeStr}`);
-        if (selected < now) return "past";
-
-        return "";
+      function parseTimeToMinutes(timeStr) {
+        const [hours, minutes] = timeStr.split(":").map(Number);
+        return hours * 60 + minutes;
       }
 
-      function buildMessage() {
+      function formatMinutesToTime(totalMinutes) {
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
+        return `${pad(hours)}:${pad(minutes)}`;
+      }
+
+      function isEmailValid(email) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+      }
+
+      function isValidTimeSlotFormat(timeStr) {
+        return /^([01]\d|2[0-3]):(00|15|30|45)$/.test(timeStr);
+      }
+
+      function getPhoneLocalDigits() {
+        const raw = inputPhone.value || "";
+        const rawDigits = raw.replace(/\D/g, "");
+        const codeDigits = inputCountryCode.value.replace(/\D/g, "");
+
+        let localDigits = rawDigits;
+
+        if (localDigits.startsWith(codeDigits)) {
+          localDigits = localDigits.slice(codeDigits.length);
+        }
+
+        localDigits = localDigits.replace(/^0+/, "");
+        return localDigits;
+      }
+
+      function getPhoneFull() {
+        return `${inputCountryCode.value}${getPhoneLocalDigits()}`;
+      }
+
+      function getSelectedDateTime() {
+        if (!state.date || !state.time) return null;
+        return new Date(`${state.date}T${state.time}:00`);
+      }
+
+      function isPastDate(dateStr) {
+        const selected = parseDateString(dateStr);
+        if (!selected) return true;
+        return startOfDay(selected).getTime() < todayStart.getTime();
+      }
+
+      function isDateDisabled(dateStr) {
+        return isPastDate(dateStr) || DISABLED_DATES.includes(dateStr);
+      }
+
+      function isTimeDisabledForDate(timeStr, dateStr) {
+        if (DISABLED_TIME_SLOTS.includes(timeStr)) return true;
+        if (!dateStr) return false;
+
+        const selectedDateTime = new Date(`${dateStr}T${timeStr}:00`);
+        return selectedDateTime.getTime() < Date.now();
+      }
+
+      function isGuestCountDisabled(count) {
+        return DISABLED_GUEST_COUNTS.includes(count);
+      }
+
+      function triggerShake(fieldName) {
+        const field = document.getElementById(`field-${fieldName}`);
+        if (!field) return;
+
+        field.classList.remove("shake");
+        void field.offsetWidth;
+        field.classList.add("shake");
+
+        setTimeout(() => field.classList.remove("shake"), 320);
+      }
+
+      function setFieldError(fieldName, message) {
+        const field = document.getElementById(`field-${fieldName}`);
+        const error = document.getElementById(`error-${fieldName}`);
+
+        if (!field || !error) return;
+
+        field.classList.add("has-error");
+        error.textContent = message;
+        error.classList.remove("hidden");
+        triggerShake(fieldName);
+      }
+
+      function clearFieldError(fieldName) {
+        const field = document.getElementById(`field-${fieldName}`);
+        const error = document.getElementById(`error-${fieldName}`);
+
+        if (!field || !error) return;
+
+        field.classList.remove("has-error");
+        error.textContent = "";
+        error.classList.add("hidden");
+      }
+
+      function clearAllErrors() {
+        ["name", "surname", "email", "phone", "date", "time", "guests", "requests"].forEach(clearFieldError);
+      }
+
+      function showBanner(type, message) {
+        statusBanner.dataset.type = type;
+        statusBanner.textContent = message;
+        statusBanner.classList.remove("hidden");
+      }
+
+      function clearBanner() {
+        statusBanner.textContent = "";
+        statusBanner.classList.add("hidden");
+      }
+
+      function setSelectorLabel(element, text, hasValue) {
+        element.textContent = text;
+        element.className = hasValue ? "value" : "placeholder";
+      }
+
+      function scrollFormIntoView() {
+        document.querySelector(".booking-card")?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
+
+      function populateCountryCodes() {
+        inputCountryCode.innerHTML = "";
+
+        COUNTRY_OPTIONS.forEach((country) => {
+          const option = document.createElement("option");
+          option.value = country.code;
+          option.textContent = `${country.name} ${country.code}`;
+          option.selected = country.iso === "GE" && country.code === "+995";
+          inputCountryCode.appendChild(option);
+        });
+      }
+
+      function shortenCountrySelectLabel() {
+        const selectedOption = inputCountryCode.options[inputCountryCode.selectedIndex];
+        if (!selectedOption || !countrySelectShell) return;
+
+        const fullText = selectedOption.textContent || "";
+        const match = fullText.match(/(\+\d[\d-]*)$/);
+        countrySelectShell.setAttribute("data-display", match ? match[1] : (inputCountryCode.value || "+995"));
+      }
+
+      const panelMap = {
+        date: panelDate,
+        time: panelTime,
+        guests: panelGuests,
+      };
+
+      const wrapMap = {
+        date: document.querySelector('[data-selector="date"]'),
+        time: document.querySelector('[data-selector="time"]'),
+        guests: document.querySelector('[data-selector="guests"]'),
+      };
+
+      function openPanel(name) {
+        closeAllPanels();
+        panelMap[name].classList.remove("hidden");
+        wrapMap[name].classList.add("open");
+        openPanelName = name;
+
+        if (name === "date") renderCalendar();
+        if (name === "time") renderTimeOptions();
+        if (name === "guests") renderGuestOptions();
+      }
+
+      function closeAllPanels() {
+        Object.keys(panelMap).forEach((name) => {
+          panelMap[name].classList.add("hidden");
+          wrapMap[name].classList.remove("open");
+        });
+        openPanelName = null;
+      }
+
+      function togglePanel(name) {
+        if (openPanelName === name) {
+          closeAllPanels();
+          return;
+        }
+        openPanel(name);
+      }
+
+      document.addEventListener("click", (event) => {
+        const clickedInsideSelector = event.target.closest("[data-selector]");
+        if (!clickedInsideSelector) {
+          closeAllPanels();
+        }
+      });
+
+      triggerDate.addEventListener("click", (event) => {
+        event.stopPropagation();
+        togglePanel("date");
+      });
+
+      triggerTime.addEventListener("click", (event) => {
+        event.stopPropagation();
+        togglePanel("time");
+      });
+
+      triggerGuests.addEventListener("click", (event) => {
+        event.stopPropagation();
+        togglePanel("guests");
+      });
+
+      panelDate.addEventListener("click", (event) => event.stopPropagation());
+      panelTime.addEventListener("click", (event) => event.stopPropagation());
+      panelGuests.addEventListener("click", (event) => event.stopPropagation());
+
+      const monthNames = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+      ];
+
+      function renderCalendar() {
+        const year = calendarCursor.getFullYear();
+        const month = calendarCursor.getMonth();
+
+        calendarTitle.textContent = `${monthNames[month]} ${year}`;
+
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+
+        let firstWeekday = firstDay.getDay();
+        if (firstWeekday === 0) firstWeekday = 7;
+
+        calendarGrid.innerHTML = "";
+
+        for (let i = 1; i < firstWeekday; i += 1) {
+          const filler = document.createElement("div");
+          filler.className = "calendar-cell";
+          calendarGrid.appendChild(filler);
+        }
+
+        for (let day = 1; day <= lastDay.getDate(); day += 1) {
+          const cell = document.createElement("div");
+          cell.className = "calendar-cell";
+
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "calendar-day";
+
+          const dateObj = new Date(year, month, day);
+          const iso = formatDateISO(dateObj);
+
+          button.textContent = String(day);
+
+          const disabled = isDateDisabled(iso);
+          const isSelected = state.date === iso;
+          const isToday = iso === formatDateISO(todayStart);
+
+          if (disabled) {
+            button.disabled = true;
+            button.classList.add("disabled");
+          }
+
+          if (isSelected) {
+            button.classList.add("selected");
+          }
+
+          if (isToday) {
+            button.classList.add("today");
+          }
+
+          button.addEventListener("click", () => {
+            state.date = iso;
+            clearFieldError("date");
+            setSelectorLabel(labelDate, formatDateShort(iso), true);
+
+            if (state.time && isTimeDisabledForDate(state.time, state.date)) {
+              state.time = "";
+              setSelectorLabel(labelTime, "Select time", false);
+            }
+
+            renderCalendar();
+            renderTimeOptions();
+            closeAllPanels();
+          });
+
+          cell.appendChild(button);
+          calendarGrid.appendChild(cell);
+        }
+
+        const currentMonthStart = new Date(todayStart.getFullYear(), todayStart.getMonth(), 1);
+        calendarPrev.disabled =
+          calendarCursor.getFullYear() === currentMonthStart.getFullYear() &&
+          calendarCursor.getMonth() === currentMonthStart.getMonth();
+      }
+
+      calendarPrev.addEventListener("click", () => {
+        const currentMonthStart = new Date(todayStart.getFullYear(), todayStart.getMonth(), 1);
+        const nextCursor = new Date(calendarCursor.getFullYear(), calendarCursor.getMonth() - 1, 1);
+
+        if (nextCursor < currentMonthStart) return;
+
+        calendarCursor = nextCursor;
+        renderCalendar();
+      });
+
+      calendarNext.addEventListener("click", () => {
+        calendarCursor = new Date(calendarCursor.getFullYear(), calendarCursor.getMonth() + 1, 1);
+        renderCalendar();
+      });
+
+      function getTimeSlots() {
+        const slots = [];
+        const startMinutes = parseTimeToMinutes(OPEN_TIME);
+        const endMinutes = parseTimeToMinutes(CLOSE_TIME);
+
+        for (let minutes = startMinutes; minutes <= endMinutes; minutes += SLOT_INTERVAL_MINUTES) {
+          slots.push(formatMinutesToTime(minutes));
+        }
+
+        return slots;
+      }
+
+      function renderTimeOptions() {
+        timeList.innerHTML = "";
+
+        if (!state.date) {
+          const empty = document.createElement("div");
+          empty.className = "panel-empty";
+          empty.textContent = "Choose a date first.";
+          timeList.appendChild(empty);
+          return;
+        }
+
+        const slots = getTimeSlots();
+        const enabledCount = slots.filter((slot) => !isTimeDisabledForDate(slot, state.date)).length;
+
+        if (enabledCount === 0) {
+          const empty = document.createElement("div");
+          empty.className = "panel-empty";
+          empty.textContent = "No available time slots for this date.";
+          timeList.appendChild(empty);
+          return;
+        }
+
+        slots.forEach((slot) => {
+          const disabled = isTimeDisabledForDate(slot, state.date);
+          const selected = state.time === slot;
+
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "time-option";
+          if (disabled) button.classList.add("disabled");
+          if (selected) button.classList.add("selected");
+          button.disabled = disabled;
+
+          const timeEl = document.createElement("div");
+          timeEl.className = "time-option-time";
+          timeEl.textContent = slot;
+
+          const statusEl = document.createElement("div");
+          statusEl.className = `time-option-status ${disabled ? "unavailable" : "available"}`;
+          statusEl.textContent = disabled ? "Unavailable" : "Available";
+
+          button.appendChild(timeEl);
+          button.appendChild(statusEl);
+
+          button.addEventListener("click", () => {
+            state.time = slot;
+            setSelectorLabel(labelTime, slot, true);
+            clearFieldError("time");
+            closeAllPanels();
+          });
+
+          timeList.appendChild(button);
+        });
+      }
+
+      function renderGuestOptions() {
+        guestsGrid.innerHTML = "";
+
+        for (let count = 1; count <= MAX_GUESTS; count += 1) {
+          const disabled = isGuestCountDisabled(count);
+          const selected = state.guests === count;
+
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "people-option";
+          button.textContent = String(count);
+
+          if (disabled) {
+            button.disabled = true;
+            button.classList.add("disabled");
+          }
+
+          if (selected) {
+            button.classList.add("selected");
+          }
+
+          button.addEventListener("click", () => {
+            state.guests = count;
+            setSelectorLabel(labelGuests, `${count} ${count === 1 ? "guest" : "guests"}`, true);
+            clearFieldError("guests");
+            updateLargeGroupNote();
+            closeAllPanels();
+          });
+
+          guestsGrid.appendChild(button);
+        }
+      }
+
+      function updateLargeGroupNote() {
+        const isLargeGroup = Number(state.guests) > LARGE_GROUP_THRESHOLD;
+        largeGroupNote.classList.toggle("hidden", !isLargeGroup);
+      }
+
+      function validateStep1() {
+        let valid = true;
+
+        clearFieldError("name");
+        clearFieldError("surname");
+        clearFieldError("email");
+        clearFieldError("phone");
+
         const name = inputName.value.trim();
         const surname = inputSurname.value.trim();
-        const phone = inputPhone.value.trim();
-        const date = inputDate.value;
-        const time = inputTime.value;
-        const guests = inputGuests.value;
-        const req = inputRequests.value.trim() || "None";
+        const email = inputEmail.value.trim();
+        const phoneLocalDigits = getPhoneLocalDigits();
 
-        return (
-          "Reservation request:\n\n" +
-          "Name: " + name + " " + surname + "\n" +
-          "Guest phone: " + phone + "\n" +
-          "Date: " + formatDateDisplay(date) + "\n" +
-          "Time: " + time + "\n" +
-          "Guests: " + guests + "\n" +
-          "Special requests: " + req
-        );
+        if (!name) {
+          setFieldError("name", "Please enter the guest's name.");
+          valid = false;
+        }
+
+        if (!surname) {
+          setFieldError("surname", "Please enter the guest's surname.");
+          valid = false;
+        }
+
+        if (!email) {
+          setFieldError("email", "Please enter an email address.");
+          valid = false;
+        } else if (!isEmailValid(email)) {
+          setFieldError("email", "Please enter a valid email address.");
+          valid = false;
+        }
+
+        if (!phoneLocalDigits) {
+          setFieldError("phone", "Please enter a phone number.");
+          valid = false;
+        } else if (phoneLocalDigits.length < 6) {
+          setFieldError("phone", "Please enter a real phone number.");
+          valid = false;
+        }
+
+        return valid;
+      }
+
+      function validateDateValue() {
+        clearFieldError("date");
+
+        if (!state.date) {
+          setFieldError("date", "Please select a date.");
+          return false;
+        }
+
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(state.date)) {
+          setFieldError("date", "Date format is invalid.");
+          return false;
+        }
+
+        if (isDateDisabled(state.date)) {
+          setFieldError("date", "Please choose an available date.");
+          return false;
+        }
+
+        return true;
+      }
+
+      function validateTimeValue() {
+        clearFieldError("time");
+
+        if (!state.time) {
+          setFieldError("time", "Please select a time.");
+          return false;
+        }
+
+        if (!isValidTimeSlotFormat(state.time)) {
+          setFieldError("time", "Time format is invalid.");
+          return false;
+        }
+
+        const timeMinutes = parseTimeToMinutes(state.time);
+        if (timeMinutes < parseTimeToMinutes(OPEN_TIME) || timeMinutes > parseTimeToMinutes(CLOSE_TIME)) {
+          setFieldError("time", `Please choose a time between ${OPEN_TIME} and ${CLOSE_TIME}.`);
+          return false;
+        }
+
+        if (isTimeDisabledForDate(state.time, state.date)) {
+          setFieldError("time", "Please choose an available time.");
+          return false;
+        }
+
+        return true;
+      }
+
+      function validateGuestsValue() {
+        clearFieldError("guests");
+
+        if (!state.guests) {
+          setFieldError("guests", "Please select the number of guests.");
+          return false;
+        }
+
+        const guests = Number(state.guests);
+
+        if (!Number.isInteger(guests) || guests < 1 || guests > MAX_GUESTS) {
+          setFieldError("guests", `Guests must be between 1 and ${MAX_GUESTS}.`);
+          return false;
+        }
+
+        if (isGuestCountDisabled(guests)) {
+          setFieldError("guests", "This guest count is currently unavailable.");
+          return false;
+        }
+
+        return true;
+      }
+
+      function validateLargeGroupRules() {
+        clearFieldError("time");
+
+        if (Number(state.guests) <= LARGE_GROUP_THRESHOLD) return true;
+
+        const selectedDateTime = getSelectedDateTime();
+        if (!selectedDateTime) return false;
+
+        const minAllowed = new Date(Date.now() + LARGE_GROUP_MIN_HOURS * 60 * 60 * 1000);
+
+        if (selectedDateTime.getTime() < minAllowed.getTime()) {
+          setFieldError(
+            "time",
+            `For 6 guests, the reservation must be made at least ${LARGE_GROUP_MIN_HOURS} hours in advance.`
+          );
+          return false;
+        }
+
+        return true;
+      }
+
+      function validateStep2() {
+        const dateOk = validateDateValue();
+        const guestsOk = validateGuestsValue();
+        const timeOk = validateTimeValue();
+
+        if (!dateOk || !guestsOk || !timeOk) {
+          return false;
+        }
+
+        return validateLargeGroupRules();
+      }
+
+      function validateEntireForm() {
+        clearBanner();
+        const step1Ok = validateStep1();
+        const step2Ok = validateStep2();
+
+        if (!step1Ok) {
+          showStep(1);
+          showBanner("error", "Please complete the required personal details.");
+          scrollFormIntoView();
+          return false;
+        }
+
+        if (!step2Ok) {
+          showStep(2);
+          showBanner("error", "Please complete the reservation details correctly.");
+          scrollFormIntoView();
+          return false;
+        }
+
+        return true;
       }
 
       function updateSummary() {
-        summaryText.textContent = buildMessage();
+        summaryName.textContent = `${inputName.value.trim()} ${inputSurname.value.trim()}`.trim() || "—";
+        summaryEmail.textContent = inputEmail.value.trim() || "—";
+        summaryPhone.textContent = getPhoneFull() || "—";
+        summaryDate.textContent = state.date ? formatDateShort(state.date) : "—";
+        summaryTime.textContent = state.time || "—";
+        summaryGuests.textContent = state.guests ? `${state.guests}` : "—";
+        summaryRequests.textContent = inputRequests.value.trim() || "None";
+
+        const showDeposit = Number(state.guests) > LARGE_GROUP_THRESHOLD;
+        summaryDepositRow.classList.toggle("hidden", !showDeposit);
       }
 
-      // next/back buttons
-      document.getElementById("btn-next-1").addEventListener("click", () => {
-        if (!inputName.value.trim() || !inputSurname.value.trim() || !inputPhone.value.trim()) {
-          alert("Please fill in your name, surname and phone number.");
+      function buildPayload() {
+        return {
+          first_name: inputName.value.trim(),
+          last_name: inputSurname.value.trim(),
+          email: inputEmail.value.trim(),
+          phone_country_code: inputCountryCode.value,
+          phone_local: getPhoneLocalDigits(),
+          phone: getPhoneFull(),
+          booking_date: state.date,
+          booking_date_display: formatDateShort(state.date),
+          booking_time: state.time,
+          guests: Number(state.guests),
+          requests: inputRequests.value.trim(),
+          deposit_required: Number(state.guests) > LARGE_GROUP_THRESHOLD,
+          deposit_amount_gel: Number(state.guests) > LARGE_GROUP_THRESHOLD ? DEPOSIT_AMOUNT : 0,
+        };
+      }
+
+      btnNext1.addEventListener("click", () => {
+        clearBanner();
+
+        if (!validateStep1()) {
+          showBanner("error", "Please complete the required personal details.");
+          scrollFormIntoView();
           return;
         }
+
         showStep(2);
       });
 
-      document.getElementById("btn-back-2").addEventListener("click", () => showStep(1));
+      btnBack2.addEventListener("click", () => showStep(1));
 
-      document.getElementById("btn-next-2").addEventListener("click", () => {
-        if (!inputDate.value || !inputTime.value || !inputGuests.value) {
-          alert("Please fill in date, time and number of guests.");
+      btnNext2.addEventListener("click", () => {
+        clearBanner();
+
+        if (!validateStep2()) {
+          showBanner("error", "Please complete the reservation details correctly.");
+          scrollFormIntoView();
           return;
         }
-
-        const reason = validateDateTime(inputDate.value, inputTime.value);
-        if (reason === "before-open") { alert("Reservations are available from " + OPEN_TIME + " onward."); return; }
-        if (reason === "after-close") { alert("Reservations are available until " + CLOSE_TIME + "."); return; }
-        if (reason === "past") { alert("You cannot choose a past date and time."); return; }
 
         showStep(3);
       });
 
-      document.getElementById("btn-back-3").addEventListener("click", () => showStep(2));
+      btnBack3.addEventListener("click", () => showStep(2));
 
-      // nmo more watsap :<
-      document.getElementById("btn-send-booking").addEventListener("click", async () => {
-  if (
-    !inputName.value.trim() ||
-    !inputSurname.value.trim() ||
-    !inputPhone.value.trim() ||
-    !inputDate.value ||
-    !inputTime.value ||
-    !inputGuests.value
-  ) {
-    alert("Please complete all required fields first.");
-    return;
-  }
+      btnSubmit.addEventListener("click", async () => {
+        if (!validateEntireForm()) return;
 
-  const reason = validateDateTime(inputDate.value, inputTime.value);
-  if (reason === "before-open") {
-    alert("Reservations are available from " + OPEN_TIME + " onward.");
-    return;
-  }
-  if (reason === "after-close") {
-    alert("Reservations are available until " + CLOSE_TIME + ".");
-    return;
-  }
-  if (reason === "past") {
-    alert("You cannot choose a past date and time.");
-    return;
-  }
+        updateSummary();
 
-  const payload = {
-    first_name: inputName.value.trim(),
-    last_name: inputSurname.value.trim(),
-    phone: inputPhone.value.trim(),
-    booking_date: inputDate.value,
-    booking_time: inputTime.value,
-    guests: Number(inputGuests.value),
-    requests: inputRequests.value.trim(),
-  };
+        const payload = buildPayload();
+        const originalText = btnSubmit.textContent;
+        btnSubmit.disabled = true;
+        btnSubmit.textContent = "Processing...";
 
-  const button = document.getElementById("btn-send-booking");
-  const originalText = button.textContent;
-  button.disabled = true;
-  button.textContent = "Processing...";
+        try {
+          if (!API_ENABLED) {
+            console.log("Reservation payload preview:", payload);
+            showBanner("info", "Frontend is ready. API is still disabled right now, so nothing was sent yet.");
+            showStep(3);
+            return;
+          }
 
-  try {
-    const response = await fetch("/api/reservations/create", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
+          const response = await fetch(API_ENDPOINT, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
+          });
 
-    const data = await response.json();
+          const data = await response.json().catch(() => ({}));
 
-    if (!response.ok || !data.ok) {
-      alert(data.error || "Failed to create reservation.");
-      button.disabled = false;
-      button.textContent = originalText;
-      return;
-    }
+          if (!response.ok || !data.ok) {
+            showBanner("error", data.error || "Unable to create the reservation right now.");
+            return;
+          }
 
-    window.location.href = data.redirectUrl;
-  } catch (error) {
-    alert("Something went wrong. Please try again.");
-    button.disabled = false;
-    button.textContent = originalText;
-  }
-});
-      // header turns dark after the light page background starts showing
+          if (data.redirectUrl) {
+            window.location.href = data.redirectUrl;
+            return;
+          }
+
+          showBanner("success", "Reservation created successfully.");
+        } catch (error) {
+          showBanner("error", "Something went wrong. Please try again.");
+        } finally {
+          btnSubmit.disabled = false;
+          btnSubmit.textContent = originalText;
+        }
+      });
+
+      [inputName, inputSurname, inputEmail].forEach((input) => {
+        input.addEventListener("input", () => {
+          clearFieldError(input.id.replace("input-", ""));
+        });
+      });
+
+      inputPhone.addEventListener("input", () => {
+        inputPhone.value = inputPhone.value.replace(/[^\d\s()+-]/g, "");
+        clearFieldError("phone");
+      });
+
+      inputPhone.addEventListener("blur", () => {
+        const localDigits = getPhoneLocalDigits();
+        inputPhone.value = localDigits;
+      });
+
+      inputCountryCode.addEventListener("change", () => {
+        clearFieldError("phone");
+        shortenCountrySelectLabel();
+      });
+
+      inputRequests.addEventListener("input", () => {
+        clearFieldError("requests");
+      });
+
       const header = document.getElementById("site-header");
       const mainEl = document.querySelector("main");
 
       const mainIO = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
-            if (entry.isIntersecting) header.classList.add("header-dark");
-            else header.classList.remove("header-dark");
+            if (entry.isIntersecting) {
+              header.classList.add("header-dark");
+            } else {
+              header.classList.remove("header-dark");
+            }
           });
         },
         { threshold: 0.01 }
       );
+
       mainIO.observe(mainEl);
 
-      // init
-      showStep(1);
-      setMinDateToday();
-      setTimeLimits();
+      function init() {
+        populateCountryCodes();
+        shortenCountrySelectLabel();
+        clearAllErrors();
+        clearBanner();
+
+        setSelectorLabel(labelDate, "Select date", false);
+        setSelectorLabel(labelTime, "Select time", false);
+        setSelectorLabel(labelGuests, "Select guests", false);
+
+        renderCalendar();
+        renderTimeOptions();
+        renderGuestOptions();
+        updateLargeGroupNote();
+        showStep(1);
+      }
+
+      init();
     </script>
   </body>
 </html>
