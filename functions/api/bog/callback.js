@@ -77,31 +77,36 @@ function mapBogOrderStatus(orderStatusKey) {
         payment_status: "completed",
         paid: true,
       };
+
     case "rejected":
       return {
         status: "payment_failed",
         payment_status: "rejected",
         paid: false,
       };
+
     case "processing":
       return {
         status: "pending_payment",
         payment_status: "processing",
         paid: false,
       };
+
     case "created":
       return {
         status: "pending_payment",
         payment_status: "created",
         paid: false,
       };
+
     case "refunded":
     case "refunded_partially":
       return {
-        status: "refunded",
+        status: "cancelled", // ✅ FIXED
         payment_status: orderStatusKey,
         paid: false,
       };
+
     default:
       return {
         status: "pending_payment",
