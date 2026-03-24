@@ -19,6 +19,91 @@ function parseDateTime(dateStr, timeStr) {
   return new Date(`${dateStr}T${timeStr}:00`);
 }
 
+async function getBogAccessToken(env) {
+  const tokenUrl = "https://oauth2.bog.ge/auth/realms/bog/protocol/openid-connect/token";
+
+  const basic = btoa(`${env.BOG_CLIENT_ID}:${env.BOG_CLIENT_SECRET}`);
+
+  const response = await fetch(tokenUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "Authorization": `Basic ${basic}`,
+    },
+    body: "grant_type=client_credentials",
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(`BOG token request failed: ${response.status} ${JSON.stringify(data)}`);
+  }
+
+  if (!data.access_token) {
+    throw new Error(`BOG token response missing access_token: ${JSON.stringify(data)}`);
+  }
+
+  return data.access_token;
+}
+
+async function createBogOrder({ env, request, reservation, amount }) {
+  const accessToken = await getBogAccessToken(env);
+  const origin = new URL(request.url).origin;
+
+  const payload = {
+    callback_url: `${origin}/api/bog/callback`,
+    external_order_id: reservation.id,
+    purchase_units: {
+      currency: "GEL",
+      total_amount: amount,
+      basket: [
+        {
+          product_id: "reservation-deposit",
+          description: `Reserve Restaurant deposit for ${reservation.booking_date} ${reservation.booking_time}`,
+          quantity: 1,
+          unit_price: amount,
+          total_price: amount,
+        },
+      ],
+    },
+    redirect_urls: {
+      success: `${origin}/reservation-success.html?reservationId=${encodeURIComponent(reservation.id)}`,
+      fail: `${origin}/reservation-failed.html?reservationId=${encodeURIComponent(reservation.id)}`,
+    },
+  };
+
+  const response = await fetch("https://api.bog.ge/payments/v1/ecommerce/orders", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${accessToken}`,
+      "Accept-Language": "en",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(`BOG order creation failed: ${response.status} ${JSON.stringify(data)}`);
+  }
+
+  const orderId = data?.id || null;
+  const redirectUrl = data?._links?.redirect?.href || null;
+  const detailsUrl = data?._links?.details?.href || null;
+
+  if (!orderId || !redirectUrl) {
+    throw new Error(`BOG order response missing required fields: ${JSON.stringify(data)}`);
+  }
+
+  return {
+    orderId,
+    redirectUrl,
+    detailsUrl,
+    raw: data,
+  };
+}
+
 export async function onRequestPost(context) {
   try {
     const { DB } = context.env;
@@ -26,6 +111,7 @@ export async function onRequestPost(context) {
 
     const firstName = (body.first_name || "").trim();
     const lastName = (body.last_name || "").trim();
+    const email = (body.email || "").trim();
     const phone = (body.phone || "").trim();
     const bookingDate = (body.booking_date || "").trim();
     const bookingTime = (body.booking_time || "").trim();
@@ -70,12 +156,8 @@ export async function onRequestPost(context) {
       return json({ ok: false, error: "You cannot book in the past." }, 400);
     }
 
-    const minAdvanceMs = 2 * 60 * 60 * 1000;
-    if (selectedDateTime.getTime() - now.getTime() < minAdvanceMs) {
-      return json({ ok: false, error: "Reservations must be made at least 2 hours in advance." }, 400);
-    }
-
-    const depositAmount = 150;
+    const depositRequired = true;
+    const depositAmount = 100;
 
     const id = crypto.randomUUID();
     const createdAt = new Date().toISOString();
@@ -121,12 +203,67 @@ export async function onRequestPost(context) {
       updatedAt
     ).run();
 
-    return json({
-      ok: true,
-      reservationId: id,
-      depositAmount,
-      redirectUrl: `/mock-payment.html?reservationId=${encodeURIComponent(id)}`,
-    });
+    try {
+      const bogOrder = await createBogOrder({
+        env: context.env,
+        request: context.request,
+        reservation: {
+          id,
+          first_name: firstName,
+          last_name: lastName,
+          email,
+          phone,
+          booking_date: bookingDate,
+          booking_time: bookingTime,
+          guests,
+        },
+        amount: depositAmount,
+      });
+
+      await DB.prepare(`
+        UPDATE reservations
+        SET
+          payment_provider = ?,
+          payment_ref = ?,
+          payment_order_id = ?,
+          updated_at = ?
+        WHERE id = ?
+      `).bind(
+        "bog",
+        bogOrder.detailsUrl,
+        bogOrder.orderId,
+        new Date().toISOString(),
+        id
+      ).run();
+
+      return json({
+        ok: true,
+        reservationId: id,
+        depositRequired: true,
+        depositAmount,
+        redirectUrl: bogOrder.redirectUrl,
+      });
+    } catch (bogError) {
+      await DB.prepare(`
+        UPDATE reservations
+        SET
+          status = ?,
+          payment_provider = ?,
+          updated_at = ?
+        WHERE id = ?
+      `).bind(
+        "payment_init_failed",
+        "bog",
+        new Date().toISOString(),
+        id
+      ).run();
+
+      return json({
+        ok: false,
+        error: "Failed to initialize payment.",
+        details: String(bogError?.message || bogError),
+      }, 500);
+    }
   } catch (error) {
     return json({
       ok: false,

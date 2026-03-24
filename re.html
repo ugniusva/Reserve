@@ -772,9 +772,8 @@
         </h1>
 
         <p class="reservation-copy text-[#2f2f2f]">
-          All reservation requests are sent via WhatsApp to our team. Reservations for groups of more
-          than five guests are accepted at least two hours in advance and are confirmed with a
-          non-refundable deposit of 150 GEL. The deposit will be applied towards the final bill upon
+          All reservation requests are sent via WhatsApp to our team. 
+          non-refundable deposit of 100 GEL is needed. The deposit will be applied towards the final bill upon
           your visit.
         </p>
       </div>
@@ -940,7 +939,7 @@
             </div>
 
             <div id="large-group-note" class="hint-box hidden">
-              For 6 guests, a non-refundable 150 GEL deposit applies and the booking must be made at least
+              For 6 guests, a non-refundable 100 GEL deposit applies and the booking must be made at least
               2 hours in advance.
             </div>
 
@@ -1072,7 +1071,7 @@
         }, 150);
       });
 
-      const API_ENABLED = false;
+      const API_ENABLED = true;
       const API_ENDPOINT = "/api/reservations/create";
 
       const OPEN_TIME = "09:00";
@@ -1080,9 +1079,7 @@
       const SLOT_INTERVAL_MINUTES = 15;
 
       const MAX_GUESTS = 6;
-      const LARGE_GROUP_THRESHOLD = 5;
-      const LARGE_GROUP_MIN_HOURS = 2;
-      const DEPOSIT_AMOUNT = 150;
+      const DEPOSIT_AMOUNT = 100;
 
       const DISABLED_DATES = [];
       const DISABLED_TIME_SLOTS = [];
@@ -1856,10 +1853,10 @@
       }
 
       function updateLargeGroupNote() {
-        const isLargeGroup = Number(state.guests) > LARGE_GROUP_THRESHOLD;
-        largeGroupNote.classList.toggle("hidden", !isLargeGroup);
-      }
-
+  largeGroupNote.classList.remove("hidden");
+  largeGroupNote.innerHTML =
+    "A non-refundable deposit of 100 GEL is required for all reservations. The deposit will be applied towards your final bill.";
+}
       function validateStep1() {
         let valid = true;
 
@@ -1974,25 +1971,8 @@
       }
 
       function validateLargeGroupRules() {
-        clearFieldError("time");
-
-        if (Number(state.guests) <= LARGE_GROUP_THRESHOLD) return true;
-
-        const selectedDateTime = getSelectedDateTime();
-        if (!selectedDateTime) return false;
-
-        const minAllowed = new Date(Date.now() + LARGE_GROUP_MIN_HOURS * 60 * 60 * 1000);
-
-        if (selectedDateTime.getTime() < minAllowed.getTime()) {
-          setFieldError(
-            "time",
-            `For 6 guests, the reservation must be made at least ${LARGE_GROUP_MIN_HOURS} hours in advance.`
-          );
-          return false;
-        }
-
-        return true;
-      }
+  return true;
+}
 
       function validateStep2() {
         const dateOk = validateDateValue();
@@ -2037,8 +2017,7 @@
         summaryGuests.textContent = state.guests ? `${state.guests}` : "—";
         summaryRequests.textContent = inputRequests.value.trim() || "None";
 
-        const showDeposit = Number(state.guests) > LARGE_GROUP_THRESHOLD;
-        summaryDepositRow.classList.toggle("hidden", !showDeposit);
+        summaryDepositRow.classList.remove("hidden");
       }
 
       function buildPayload() {
@@ -2054,8 +2033,8 @@
           booking_time: state.time,
           guests: Number(state.guests),
           requests: inputRequests.value.trim(),
-          deposit_required: Number(state.guests) > LARGE_GROUP_THRESHOLD,
-          deposit_amount_gel: Number(state.guests) > LARGE_GROUP_THRESHOLD ? DEPOSIT_AMOUNT : 0,
+          deposit_required: true,
+          deposit_amount_gel: DEPOSIT_AMOUNT, 
         };
       }
 
