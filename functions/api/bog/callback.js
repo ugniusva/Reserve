@@ -73,7 +73,7 @@ function mapBogOrderStatus(orderStatusKey) {
   switch (orderStatusKey) {
     case "completed":
       return {
-        status: "paid",
+        status: "confirmed",
         payment_status: "completed",
         paid: true,
       };
