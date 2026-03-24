@@ -118,7 +118,7 @@ export async function onRequestPost(context) {
     const guests = Number(body.guests);
     const requests = (body.requests || "").trim();
 
-    if (!firstName || !lastName || !phone || !bookingDate || !bookingTime || !guests) {
+    if (!firstName || !lastName || !email || !phone || !bookingDate || !bookingTime || !guests) {
       return json({ ok: false, error: "Missing required fields." }, 400);
     }
 
@@ -156,7 +156,6 @@ export async function onRequestPost(context) {
       return json({ ok: false, error: "You cannot book in the past." }, 400);
     }
 
-    const depositRequired = true;
     const depositAmount = 100;
 
     const id = crypto.randomUUID();
@@ -168,6 +167,7 @@ export async function onRequestPost(context) {
         id,
         first_name,
         last_name,
+        email,
         phone,
         booking_date,
         booking_time,
@@ -176,17 +176,21 @@ export async function onRequestPost(context) {
         deposit_amount,
         currency,
         status,
+        payment_status,
         payment_provider,
         payment_ref,
         payment_order_id,
         paid_at,
+        callback_received_at,
+        callback_payload,
         created_at,
         updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       id,
       firstName,
       lastName,
+      email,
       phone,
       bookingDate,
       bookingTime,
@@ -195,6 +199,9 @@ export async function onRequestPost(context) {
       depositAmount,
       "GEL",
       "pending_payment",
+      "created",
+      "bog",
+      null,
       null,
       null,
       null,
@@ -248,11 +255,13 @@ export async function onRequestPost(context) {
         UPDATE reservations
         SET
           status = ?,
+          payment_status = ?,
           payment_provider = ?,
           updated_at = ?
         WHERE id = ?
       `).bind(
         "payment_init_failed",
+        "rejected",
         "bog",
         new Date().toISOString(),
         id
