@@ -1,6 +1,16 @@
 export async function onRequestGet(context) {
   try {
-    const body = await context.request.json();
+    //const body = await context.request.json();
+    const body = {
+  first_name: "Test",
+  last_name: "User",
+  email: "test@test.com",
+  phone: "+995555123123",
+  booking_date: "2026-03-20",
+  booking_time: "18:00",
+  guests: 6,
+  amount: 150
+};
 
     const tokenData = await getBogAccessToken(context.env);
     const accessToken = tokenData.access_token;
