@@ -1,4 +1,4 @@
-export async function onRequestPost(context) {
+export async function onRequestGet(context) {
   try {
     const body = await context.request.json();
 
