@@ -1,3 +1,12 @@
+import {
+  OPEN_TIME,
+  CLOSE_TIME,
+  isValidDate,
+  isValidTimeSlotFormat,
+  parseDateTime,
+  canFitReservation,
+} from "./_availability.js";
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -7,16 +16,25 @@ function json(data, status = 200) {
   });
 }
 
-function isValidDate(dateStr) {
-  return /^\d{4}-\d{2}-\d{2}$/.test(dateStr);
-}
-
-function isValidTime(timeStr) {
-  return /^\d{2}:\d{2}$/.test(timeStr);
-}
-
-function parseDateTime(dateStr, timeStr) {
-  return new Date(`${dateStr}T${timeStr}:00`);
+function availabilityReasonToMessage(reason) {
+  switch (reason) {
+    case "min_advance":
+      return "Reservations must be made at least 2 hours in advance.";
+    case "capacity":
+    case "two_tables_full":
+    case "four_tables_full":
+    case "large_group_limit":
+      return "This time is no longer available.";
+    case "invalid_guests":
+      return "Invalid guest count.";
+    case "invalid_date":
+      return "Invalid date format.";
+    case "invalid_time":
+    case "invalid_datetime":
+      return "Invalid date/time.";
+    default:
+      return "This time is not available.";
+  }
 }
 
 async function getBogAccessToken(env) {
@@ -100,7 +118,6 @@ async function createBogOrder({ env, request, reservation, amount }) {
     orderId,
     redirectUrl,
     detailsUrl,
-    raw: data,
   };
 }
 
@@ -126,16 +143,13 @@ export async function onRequestPost(context) {
       return json({ ok: false, error: "Invalid date format." }, 400);
     }
 
-    if (!isValidTime(bookingTime)) {
+    if (!isValidTimeSlotFormat(bookingTime)) {
       return json({ ok: false, error: "Invalid time format." }, 400);
     }
 
-    if (!Number.isInteger(guests) || guests < 1) {
+    if (!Number.isInteger(guests) || guests < 1 || guests > 6) {
       return json({ ok: false, error: "Invalid guest count." }, 400);
     }
-
-    const OPEN_TIME = "09:00";
-    const CLOSE_TIME = "21:30";
 
     if (bookingTime < OPEN_TIME) {
       return json({ ok: false, error: `Reservations start from ${OPEN_TIME}.` }, 400);
@@ -145,15 +159,31 @@ export async function onRequestPost(context) {
       return json({ ok: false, error: `Reservations are available until ${CLOSE_TIME}.` }, 400);
     }
 
-    const now = new Date();
     const selectedDateTime = parseDateTime(bookingDate, bookingTime);
-
     if (Number.isNaN(selectedDateTime.getTime())) {
       return json({ ok: false, error: "Invalid date/time." }, 400);
     }
 
-    if (selectedDateTime <= now) {
-      return json({ ok: false, error: "You cannot book in the past." }, 400);
+    const confirmedRows = await DB.prepare(`
+      SELECT id, booking_date, booking_time, guests, status
+      FROM reservations
+      WHERE booking_date = ?
+        AND status IN ('confirmed', 'completed')
+    `).bind(bookingDate).all();
+
+    const availability = canFitReservation({
+      dateStr: bookingDate,
+      timeStr: bookingTime,
+      guests,
+      reservations: confirmedRows.results || [],
+      now: new Date(),
+    });
+
+    if (!availability.available) {
+      return json({
+        ok: false,
+        error: availabilityReasonToMessage(availability.reason),
+      }, 409);
     }
 
     const depositAmount = 100;

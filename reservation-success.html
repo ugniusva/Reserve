@@ -1,20 +1,172 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Reservation Success</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="min-h-screen bg-black text-white flex items-center justify-center px-6">
-  <div class="max-w-md w-full bg-white/10 rounded-xl p-8 space-y-4 text-center">
-    <h1 class="text-2xl font-semibold">Payment successful</h1>
-    <p class="text-white/80">
-      Your reservation payment was simulated successfully.
-    </p>
-    <a href="/reservations.html" class="inline-block px-4 py-2 rounded-md bg-white text-black">
-      Back to reservations
-    </a>
-  </div>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Reserve Restaurant – Payment Successful</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="images/R.svg" />
+
+    <style>
+      @font-face {
+        font-family: "LatoLocal";
+        src: url("fonts/Lato-Regular.ttf") format("truetype");
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      @font-face {
+        font-family: "GlacialBold";
+        src: url("fonts/GlacialIndifference-Bold.otf") format("opentype");
+        font-weight: 700;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      :root {
+        --accent: #d0842f;
+        --panel-bg: rgba(12, 12, 12, 0.82);
+        --panel-border: rgba(255, 255, 255, 0.14);
+        --text-main: #ffffff;
+        --text-soft: rgba(255, 255, 255, 0.8);
+        --shadow-lg: 0 26px 80px rgba(0, 0, 0, 0.34);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+      }
+
+      body {
+        font-family: "LatoLocal", Arial, sans-serif;
+        color: var(--text-main);
+        background-image: url("images/background9.jpg");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+      }
+
+      .overlay {
+        min-height: 100vh;
+        background: rgba(0, 0, 0, 0.34);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+      }
+
+      .card {
+        width: min(100%, 640px);
+        background: var(--panel-bg);
+        border: 1px solid var(--panel-border);
+        border-radius: 26px;
+        box-shadow: var(--shadow-lg);
+        backdrop-filter: blur(10px);
+        text-align: center;
+        padding: 42px 28px;
+      }
+
+      .logo {
+        width: min(220px, 62vw);
+        height: auto;
+        display: block;
+        margin: 0 auto 28px;
+      }
+
+      .eyebrow {
+        font-family: "GlacialBold", Arial, sans-serif;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        font-size: 0.72rem;
+        color: rgba(255, 255, 255, 0.7);
+        margin-bottom: 14px;
+      }
+
+      h1 {
+        margin: 0 0 16px;
+        font-family: "GlacialBold", Arial, sans-serif;
+        font-size: clamp(2rem, 5vw, 3rem);
+        line-height: 1.05;
+      }
+
+      p {
+        margin: 0 auto;
+        max-width: 460px;
+        color: var(--text-soft);
+        font-size: 1rem;
+        line-height: 1.75;
+      }
+
+      .accent-line {
+        width: 88px;
+        height: 4px;
+        border-radius: 999px;
+        background: var(--accent);
+        margin: 24px auto 22px;
+      }
+
+      .countdown {
+        margin-top: 28px;
+        color: rgba(255, 255, 255, 0.72);
+        font-size: 0.95rem;
+      }
+
+      .link-btn {
+        display: inline-block;
+        margin-top: 22px;
+        padding: 12px 18px;
+        border-radius: 14px;
+        background: var(--accent);
+        color: white;
+        text-decoration: none;
+        transition: transform 160ms ease, opacity 160ms ease;
+      }
+
+      .link-btn:hover {
+        transform: translateY(-1px);
+        opacity: 0.95;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="overlay">
+      <div class="card">
+        <img src="images/logowhite.svg" alt="Reserve" class="logo" draggable="false" />
+
+        <div class="eyebrow">Reservation payment</div>
+        <h1>Payment successful</h1>
+        <div class="accent-line"></div>
+
+        <p>
+          Your deposit has been received successfully. Our team will now process your reservation.
+          You will be redirected to the homepage shortly.
+        </p>
+
+        <a href="index.html" class="link-btn">Return now</a>
+        <div class="countdown">Redirecting in <span id="countdown">8</span> seconds...</div>
+      </div>
+    </div>
+
+    <script>
+      let seconds = 8;
+      const countdownEl = document.getElementById("countdown");
+
+      const timer = setInterval(() => {
+        seconds -= 1;
+        countdownEl.textContent = String(seconds);
+
+        if (seconds <= 0) {
+          clearInterval(timer);
+          window.location.href = "index.html";
+        }
+      }, 1000);
+    </script>
+  </body>
 </html>

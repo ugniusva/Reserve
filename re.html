@@ -271,7 +271,7 @@
 
       .phone-shell {
         display: grid;
-        grid-template-columns: 220px 1fr;
+        grid-template-columns: 110px 1fr;
         gap: 0.75rem;
       }
 
@@ -289,15 +289,15 @@
       .select-shell::before {
         content: attr(data-display);
         position: absolute;
-        left: 0.95rem;
+        left: 0.8rem;
         top: 50%;
         transform: translateY(-50%);
         color: #1a1a1a;
-        font-size: 0.96rem;
+        font-size: 0.95rem;
         pointer-events: none;
         z-index: 1;
         white-space: nowrap;
-        max-width: calc(100% - 2.4rem);
+        max-width: calc(100% - 2rem);
         overflow: hidden;
         text-overflow: ellipsis;
       }
@@ -1073,6 +1073,7 @@
 
       const API_ENABLED = true;
       const API_ENDPOINT = "/api/reservations/create";
+      const AVAILABILITY_ENDPOINT = "/api/reservations/availability";
 
       const OPEN_TIME = "09:00";
       const CLOSE_TIME = "21:30";
@@ -1387,10 +1388,13 @@
       const todayStart = startOfDay(now);
 
       const state = {
-        date: "",
-        time: "",
-        guests: null,
-      };
+    date: "",
+    time: "",
+    guests: null,
+    availability: new Map(),
+    availabilityLoading: false,
+    availabilityError: "",
+  };
 
       let openPanelName = null;
       let calendarCursor = new Date(todayStart.getFullYear(), todayStart.getMonth(), 1);
@@ -1412,6 +1416,12 @@
           updateSummary();
         }
       }
+      function isoToFlagEmoji(iso) {
+        if (!iso || iso.length !== 2) return "";
+        return String.fromCodePoint(
+          ...iso.toUpperCase().split("").map(char => 127397 + char.charCodeAt(0))
+        );
+}
 
       function startOfDay(date) {
         const d = new Date(date);
@@ -1499,12 +1509,21 @@
       }
 
       function isTimeDisabledForDate(timeStr, dateStr) {
-        if (DISABLED_TIME_SLOTS.includes(timeStr)) return true;
-        if (!dateStr) return false;
+          if (DISABLED_TIME_SLOTS.includes(timeStr)) return true;
+          if (!dateStr) return false;
 
-        const selectedDateTime = new Date(`${dateStr}T${timeStr}:00`);
-        return selectedDateTime.getTime() < Date.now();
-      }
+          const selectedDateTime = new Date(`${dateStr}T${timeStr}:00`);
+          if (selectedDateTime.getTime() < Date.now()) return true;
+
+          if (state.date === dateStr && state.availability.size > 0) {
+            const slotInfo = state.availability.get(timeStr);
+            if (slotInfo) {
+              return !slotInfo.available;
+            }
+          }
+
+          return false;
+}
 
       function isGuestCountDisabled(count) {
         return DISABLED_GUEST_COUNTS.includes(count);
@@ -1571,17 +1590,75 @@
         });
       }
 
-      function populateCountryCodes() {
-        inputCountryCode.innerHTML = "";
 
-        COUNTRY_OPTIONS.forEach((country) => {
-          const option = document.createElement("option");
-          option.value = country.code;
-          option.textContent = `${country.name} ${country.code}`;
-          option.selected = country.iso === "GE" && country.code === "+995";
-          inputCountryCode.appendChild(option);
-        });
+      function resetAvailability() {
+  state.availability = new Map();
+  state.availabilityLoading = false;
+  state.availabilityError = "";
+}
+
+    async function loadAvailability() {
+      if (!state.date || !state.guests) {
+        resetAvailability();
+        renderTimeOptions();
+        return;
       }
+
+      state.availabilityLoading = true;
+      state.availabilityError = "";
+      renderTimeOptions();
+
+      try {
+        const url =
+          `${AVAILABILITY_ENDPOINT}?date=${encodeURIComponent(state.date)}&guests=${encodeURIComponent(state.guests)}`;
+
+        const response = await fetch(url, {
+          headers: {
+            "Accept": "application/json",
+          },
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok || !data.ok || !Array.isArray(data.slots)) {
+          throw new Error(data.error || "Unable to load availability.");
+        }
+
+        state.availability = new Map(
+          data.slots.map((slot) => [slot.time, slot])
+        );
+        state.availabilityError = "";
+      } catch (error) {
+        state.availability = new Map();
+        state.availabilityError = String(error.message || error);
+      } finally {
+        state.availabilityLoading = false;
+
+        if (state.time) {
+          const selectedSlot = state.availability.get(state.time);
+          if (selectedSlot && !selectedSlot.available) {
+            state.time = "";
+            setSelectorLabel(labelTime, "Select time", false);
+          }
+        }
+
+        renderTimeOptions();
+      }
+    }
+
+      function populateCountryCodes() {
+      inputCountryCode.innerHTML = "";
+
+      COUNTRY_OPTIONS.forEach((country) => {
+        const option = document.createElement("option");
+        option.value = country.code;
+        option.textContent = `${isoToFlagEmoji(country.iso)} ${country.name} ${country.code}`;
+        option.dataset.flag = isoToFlagEmoji(country.iso);
+        option.dataset.iso = country.iso;
+        option.selected = country.iso === "GE" && country.code === "+995";
+        inputCountryCode.appendChild(option);
+      });
+}
 
       function shortenCountrySelectLabel() {
         const selectedOption = inputCountryCode.options[inputCountryCode.selectedIndex];
@@ -1589,7 +1666,10 @@
 
         const fullText = selectedOption.textContent || "";
         const match = fullText.match(/(\+\d[\d-]*)$/);
-        countrySelectShell.setAttribute("data-display", match ? match[1] : (inputCountryCode.value || "+995"));
+        const flag = selectedOption.dataset.flag || "";
+        const code = match ? match[1] : (inputCountryCode.value || "+995");
+
+        countrySelectShell.setAttribute("data-display", `${flag} ${code}`.trim());
       }
 
       const panelMap = {
@@ -1712,20 +1792,16 @@
             button.classList.add("today");
           }
 
-          button.addEventListener("click", () => {
-            state.date = iso;
-            clearFieldError("date");
-            setSelectorLabel(labelDate, formatDateShort(iso), true);
+          
+            button.addEventListener("click", async () => {
+          state.date = iso;
+          clearFieldError("date");
+          setSelectorLabel(labelDate, formatDateShort(iso), true);
 
-            if (state.time && isTimeDisabledForDate(state.time, state.date)) {
-              state.time = "";
-              setSelectorLabel(labelTime, "Select time", false);
-            }
-
-            renderCalendar();
-            renderTimeOptions();
-            closeAllPanels();
-          });
+          renderCalendar();
+          await loadAvailability();
+          closeAllPanels();
+        });
 
           cell.appendChild(button);
           calendarGrid.appendChild(cell);
@@ -1764,60 +1840,91 @@
         return slots;
       }
 
-      function renderTimeOptions() {
-        timeList.innerHTML = "";
+      
+        function renderTimeOptions() {
+  timeList.innerHTML = "";
 
-        if (!state.date) {
-          const empty = document.createElement("div");
-          empty.className = "panel-empty";
-          empty.textContent = "Choose a date first.";
-          timeList.appendChild(empty);
-          return;
-        }
+  if (!state.date || !state.guests) {
+    const empty = document.createElement("div");
+    empty.className = "panel-empty";
+    empty.textContent = "Choose a date and guest count first.";
+    timeList.appendChild(empty);
+    return;
+  }
 
-        const slots = getTimeSlots();
-        const enabledCount = slots.filter((slot) => !isTimeDisabledForDate(slot, state.date)).length;
+  if (state.availabilityLoading) {
+    const loading = document.createElement("div");
+    loading.className = "panel-empty";
+    loading.textContent = "Checking availability...";
+    timeList.appendChild(loading);
+    return;
+  }
 
-        if (enabledCount === 0) {
-          const empty = document.createElement("div");
-          empty.className = "panel-empty";
-          empty.textContent = "No available time slots for this date.";
-          timeList.appendChild(empty);
-          return;
-        }
+  if (state.availabilityError) {
+    const error = document.createElement("div");
+    error.className = "panel-empty";
+    error.textContent = state.availabilityError;
+    timeList.appendChild(error);
+    return;
+  }
 
-        slots.forEach((slot) => {
-          const disabled = isTimeDisabledForDate(slot, state.date);
-          const selected = state.time === slot;
+  const slots = getTimeSlots();
+  const enabledCount = slots.filter((slot) => {
+    const info = state.availability.get(slot);
+    return info ? info.available : !isTimeDisabledForDate(slot, state.date);
+  }).length;
 
-          const button = document.createElement("button");
-          button.type = "button";
-          button.className = "time-option";
-          if (disabled) button.classList.add("disabled");
-          if (selected) button.classList.add("selected");
-          button.disabled = disabled;
+  if (enabledCount === 0) {
+    const empty = document.createElement("div");
+    empty.className = "panel-empty";
+    empty.textContent = "No available time slots for this date.";
+    timeList.appendChild(empty);
+    return;
+  }
 
-          const timeEl = document.createElement("div");
-          timeEl.className = "time-option-time";
-          timeEl.textContent = slot;
+  slots.forEach((slot) => {
+    const slotInfo = state.availability.get(slot);
+    const disabled = slotInfo ? !slotInfo.available : isTimeDisabledForDate(slot, state.date);
+    const selected = state.time === slot;
 
-          const statusEl = document.createElement("div");
-          statusEl.className = `time-option-status ${disabled ? "unavailable" : "available"}`;
-          statusEl.textContent = disabled ? "Unavailable" : "Available";
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "time-option";
+    if (disabled) button.classList.add("disabled");
+    if (selected) button.classList.add("selected");
+    button.disabled = disabled;
 
-          button.appendChild(timeEl);
-          button.appendChild(statusEl);
+    const timeEl = document.createElement("div");
+    timeEl.className = "time-option-time";
+    timeEl.textContent = slot;
 
-          button.addEventListener("click", () => {
-            state.time = slot;
-            setSelectorLabel(labelTime, slot, true);
-            clearFieldError("time");
-            closeAllPanels();
-          });
+    const statusEl = document.createElement("div");
+    statusEl.className = `time-option-status ${disabled ? "unavailable" : "available"}`;
 
-          timeList.appendChild(button);
-        });
-      }
+    if (!disabled) {
+      statusEl.textContent = "Available";
+    } else if (slotInfo?.reason === "min_advance") {
+      statusEl.textContent = "Too soon";
+    } else {
+      statusEl.textContent = "Fully booked";
+    }
+
+    button.appendChild(timeEl);
+    button.appendChild(statusEl);
+
+    button.addEventListener("click", () => {
+      state.time = slot;
+      setSelectorLabel(labelTime, slot, true);
+      clearFieldError("time");
+      closeAllPanels();
+    });
+
+    timeList.appendChild(button);
+  });
+}
+
+
+
 
       function renderGuestOptions() {
         guestsGrid.innerHTML = "";
@@ -1840,11 +1947,13 @@
             button.classList.add("selected");
           }
 
-          button.addEventListener("click", () => {
-            state.guests = count;
-            setSelectorLabel(labelGuests, `${count} ${count === 1 ? "guest" : "guests"}`, true);
-            clearFieldError("guests");
-            updateLargeGroupNote();
+          button.addEventListener("click", async () => {
+            state.date = iso;
+            clearFieldError("date");
+            setSelectorLabel(labelDate, formatDateShort(iso), true);
+
+            renderCalendar();
+            await loadAvailability();
             closeAllPanels();
           });
 
@@ -2161,6 +2270,7 @@
         shortenCountrySelectLabel();
         clearAllErrors();
         clearBanner();
+        resetAvailability();
 
         setSelectorLabel(labelDate, "Select date", false);
         setSelectorLabel(labelTime, "Select time", false);
