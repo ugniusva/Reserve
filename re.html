@@ -38,63 +38,62 @@
         --shadow-lg: 0 26px 80px rgba(0, 0, 0, 0.34);
       }
 
-.reservation-main-wrap {
-  width: 100%;
-  max-width: 900px;
-  margin: 0 auto;
-  padding-top: clamp(110px, 11vh, 160px);
-}
+      .reservation-main-wrap {
+        width: 100%;
+        max-width: 900px;
+        margin: 0 auto;
+        padding-top: clamp(110px, 11vh, 160px);
+      }
 
-.reservation-hero {
-  text-align: center;
-  padding-top: clamp(12px, 2vh, 28px);
-  padding-bottom: clamp(10px, 2vh, 22px);
-}
+      .reservation-hero {
+        text-align: center;
+        padding-top: clamp(12px, 2vh, 28px);
+        padding-bottom: clamp(10px, 2vh, 22px);
+      }
 
-.reservation-title {
-  font-size: clamp(3rem, 5.8vw, 5.2rem);
-  line-height: 0.98;
-  margin-bottom: clamp(16px, 2vh, 24px);
-}
+      .reservation-title {
+        font-size: clamp(3rem, 5.8vw, 5.2rem);
+        line-height: 0.98;
+        margin-bottom: clamp(16px, 2vh, 24px);
+      }
 
-.reservation-copy {
-  font-size: clamp(1rem, 1.15vw, 1.08rem);
-  line-height: 1.9;
-  max-width: 760px;
-  margin: 0 auto;
-}
+      .reservation-copy {
+        font-size: clamp(1rem, 1.15vw, 1.08rem);
+        line-height: 1.9;
+        max-width: 760px;
+        margin: 0 auto;
+      }
 
-.reservation-card-wrap {
-  display: flex;
-  justify-content: center;
-  margin-top: clamp(18px, 3vh, 34px);
-}
+      .reservation-card-wrap {
+        display: flex;
+        justify-content: center;
+        margin-top: clamp(18px, 3vh, 34px);
+      }
 
-.booking-card {
-  width: min(100%, 620px);
-}
+      .booking-card {
+        width: min(100%, 620px);
+      }
 
-@media (max-width: 768px) {
-  .reservation-main-wrap {
-    padding-top: 120px;
-  }
+      @media (max-width: 768px) {
+        .reservation-main-wrap {
+          padding-top: 120px;
+        }
 
-  .reservation-copy {
-    line-height: 1.75;
-  }
+        .reservation-copy {
+          line-height: 1.75;
+        }
 
-  .booking-card {
-    width: 100%;
-  }
-}
+        .booking-card {
+          width: 100%;
+        }
+      }
 
-@media (min-width: 1600px) {
-  .reservation-main-wrap {
-    padding-top: 130px;
-  }
-}
-      
-      
+      @media (min-width: 1600px) {
+        .reservation-main-wrap {
+          padding-top: 130px;
+        }
+      }
+
       html {
         scroll-behavior: smooth;
       }
@@ -336,6 +335,11 @@
 
       .selector-wrap {
         position: relative;
+        z-index: 1;
+      }
+
+      .selector-wrap.open {
+        z-index: 80;
       }
 
       .selector-trigger {
@@ -388,7 +392,8 @@
         top: calc(100% + 0.65rem);
         left: 0;
         width: 100%;
-        z-index: 40;
+        z-index: 90;
+        pointer-events: auto;
         border-radius: 18px;
         border: 1px solid rgba(255, 255, 255, 0.14);
         background: rgba(17, 17, 17, 0.98);
@@ -764,252 +769,249 @@
     <main class="min-h-screen flex items-start justify-center px-4 sm:px-6 pb-14">
       <div class="reservation-main-wrap">
         <div class="reservation-hero px-2">
-        <h1
-          class="reservation-title text-[#1a1a1a]"
-          style="font-family: 'LatoLocal', Arial, sans-serif; font-weight: 400;"
-        >
-          Reservations
-        </h1>
+          <h1
+            class="reservation-title text-[#1a1a1a]"
+            style="font-family: 'LatoLocal', Arial, sans-serif; font-weight: 400;"
+          >
+            Reservations
+          </h1>
 
-        <p class="reservation-copy text-[#2f2f2f]">
-          All reservation requests are sent via WhatsApp to our team. 
-          non-refundable deposit of 100 GEL is needed. The deposit will be applied towards the final bill upon
-          your visit.
-        </p>
-      </div>
+          <p class="reservation-copy text-[#2f2f2f]">
+            All reservation requests are sent via WhatsApp to our team. A non-refundable deposit of 100 GEL is
+            required. The deposit will be applied towards the final bill upon your visit.
+          </p>
+        </div>
 
         <div class="reservation-card-wrap">
-  <div class="booking-card text-white p-6 md:p-8 space-y-6">
-          <div class="flex items-center justify-between gap-3">
-            <div>
-              <p class="eyebrow mb-2">Reservation request</p>
-              <h2 class="heading-font text-2xl md:text-3xl">Details</h2>
-            </div>
-            <div class="step-chip">Step <span id="step-current">1</span> of 3</div>
-          </div>
-
-          <div class="progress-track">
-            <div id="progress-bar" class="progress-bar"></div>
-          </div>
-
-          <div id="status-banner" class="status-banner hidden" data-type="info"></div>
-
-          <section id="step-1" class="space-y-5">
-            <div>
-              <h3 class="heading-font text-xl mb-1">Your details</h3>
-              <p class="subtle-copy">Minimal typing, no weird inputs, just the essentials.</p>
+          <div class="booking-card text-white p-6 md:p-8 space-y-6">
+            <div class="flex items-center justify-between gap-3">
+              <div>
+                <p class="eyebrow mb-2">Reservation request</p>
+                <h2 class="heading-font text-2xl md:text-3xl">Details</h2>
+              </div>
+              <div class="step-chip">Step <span id="step-current">1</span> of 3</div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div id="field-name" class="field-wrap">
-                <label class="field-label" for="input-name">Name *</label>
-                <input
-                  id="input-name"
-                  type="text"
-                  class="text-input"
-                  autocomplete="given-name"
-                  placeholder="Enter your name"
-                />
-                <p id="error-name" class="field-error-text hidden"></p>
+            <div class="progress-track">
+              <div id="progress-bar" class="progress-bar"></div>
+            </div>
+
+            <div id="status-banner" class="status-banner hidden" data-type="info"></div>
+
+            <section id="step-1" class="space-y-5">
+              <div>
+                <h3 class="heading-font text-xl mb-1">Your details</h3>
+                <p class="subtle-copy">Minimal typing, no weird inputs, just the essentials.</p>
               </div>
 
-              <div id="field-surname" class="field-wrap">
-                <label class="field-label" for="input-surname">Surname *</label>
-                <input
-                  id="input-surname"
-                  type="text"
-                  class="text-input"
-                  autocomplete="family-name"
-                  placeholder="Enter your surname"
-                />
-                <p id="error-surname" class="field-error-text hidden"></p>
-              </div>
-            </div>
-
-            <div id="field-email" class="field-wrap">
-              <label class="field-label" for="input-email">Email *</label>
-              <input
-                id="input-email"
-                type="email"
-                class="text-input"
-                autocomplete="email"
-                placeholder="name@example.com"
-              />
-              <p id="error-email" class="field-error-text hidden"></p>
-            </div>
-
-            <div id="field-phone" class="field-wrap">
-              <label class="field-label" for="input-phone">Phone number *</label>
-              <div class="phone-shell">
-                <div class="select-shell" id="country-select-shell" data-display="+995">
-                  <select id="input-country-code" class="country-code-select" autocomplete="tel-country-code"></select>
-                  <span class="select-chevron">⌄</span>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div id="field-name" class="field-wrap">
+                  <label class="field-label" for="input-name">Name *</label>
+                  <input
+                    id="input-name"
+                    type="text"
+                    class="text-input"
+                    autocomplete="given-name"
+                    placeholder="Enter your name"
+                  />
+                  <p id="error-name" class="field-error-text hidden"></p>
                 </div>
 
-                <input
-                  id="input-phone"
-                  type="tel"
-                  class="text-input"
-                  inputmode="numeric"
-                  autocomplete="tel-national"
-                  placeholder="555 123 123"
-                />
+                <div id="field-surname" class="field-wrap">
+                  <label class="field-label" for="input-surname">Surname *</label>
+                  <input
+                    id="input-surname"
+                    type="text"
+                    class="text-input"
+                    autocomplete="family-name"
+                    placeholder="Enter your surname"
+                  />
+                  <p id="error-surname" class="field-error-text hidden"></p>
+                </div>
               </div>
-              <p id="error-phone" class="field-error-text hidden"></p>
-            </div>
 
-            <div class="flex justify-end pt-2">
-              <button id="btn-next-1" type="button" class="button-primary">Next</button>
-            </div>
-          </section>
+              <div id="field-email" class="field-wrap">
+                <label class="field-label" for="input-email">Email *</label>
+                <input
+                  id="input-email"
+                  type="email"
+                  class="text-input"
+                  autocomplete="email"
+                  placeholder="name@example.com"
+                />
+                <p id="error-email" class="field-error-text hidden"></p>
+              </div>
 
-          <section id="step-2" class="space-y-5 hidden">
-            <div>
-              <h3 class="heading-font text-xl mb-1">Date, time and guests</h3>
-              <p class="subtle-copy">24-hour time, 15-minute intervals, no ugly browser pickers.</p>
-            </div>
-
-            <div id="field-date" class="field-wrap selector-wrap" data-selector="date">
-              <label class="field-label">Date *</label>
-              <button id="trigger-date" type="button" class="selector-trigger">
-                <span id="label-date" class="placeholder">Select date</span>
-                <span class="selector-chevron-inline">⌄</span>
-              </button>
-
-              <div id="panel-date" class="selector-panel hidden">
-                <div class="calendar-shell">
-                  <div class="calendar-header">
-                    <button id="calendar-prev" type="button" class="calendar-nav-btn" aria-label="Previous month">
-                      &#8249;
-                    </button>
-                    <div id="calendar-title" class="calendar-title">Month Year</div>
-                    <button id="calendar-next" type="button" class="calendar-nav-btn" aria-label="Next month">
-                      &#8250;
-                    </button>
+              <div id="field-phone" class="field-wrap">
+                <label class="field-label" for="input-phone">Phone number *</label>
+                <div class="phone-shell">
+                  <div class="select-shell" id="country-select-shell" data-display="+995">
+                    <select id="input-country-code" class="country-code-select" autocomplete="tel-country-code"></select>
+                    <span class="select-chevron">⌄</span>
                   </div>
 
-                  <div class="calendar-weekdays">
-                    <div class="calendar-weekday">Mon</div>
-                    <div class="calendar-weekday">Tue</div>
-                    <div class="calendar-weekday">Wed</div>
-                    <div class="calendar-weekday">Thu</div>
-                    <div class="calendar-weekday">Fri</div>
-                    <div class="calendar-weekday">Sat</div>
-                    <div class="calendar-weekday">Sun</div>
+                  <input
+                    id="input-phone"
+                    type="tel"
+                    class="text-input"
+                    inputmode="numeric"
+                    autocomplete="tel-national"
+                    placeholder="555 123 123"
+                  />
+                </div>
+                <p id="error-phone" class="field-error-text hidden"></p>
+              </div>
+
+              <div class="flex justify-end pt-2">
+                <button id="btn-next-1" type="button" class="button-primary">Next</button>
+              </div>
+            </section>
+
+            <section id="step-2" class="space-y-5 hidden">
+              <div>
+                <h3 class="heading-font text-xl mb-1">Date, time and guests</h3>
+                <p class="subtle-copy">24-hour time, 15-minute intervals, no ugly browser pickers.</p>
+              </div>
+
+              <div id="field-date" class="field-wrap selector-wrap" data-selector="date">
+                <label class="field-label">Date *</label>
+                <button id="trigger-date" type="button" class="selector-trigger">
+                  <span id="label-date" class="placeholder">Select date</span>
+                  <span class="selector-chevron-inline">⌄</span>
+                </button>
+
+                <div id="panel-date" class="selector-panel hidden">
+                  <div class="calendar-shell">
+                    <div class="calendar-header">
+                      <button id="calendar-prev" type="button" class="calendar-nav-btn" aria-label="Previous month">
+                        &#8249;
+                      </button>
+                      <div id="calendar-title" class="calendar-title">Month Year</div>
+                      <button id="calendar-next" type="button" class="calendar-nav-btn" aria-label="Next month">
+                        &#8250;
+                      </button>
+                    </div>
+
+                    <div class="calendar-weekdays">
+                      <div class="calendar-weekday">Mon</div>
+                      <div class="calendar-weekday">Tue</div>
+                      <div class="calendar-weekday">Wed</div>
+                      <div class="calendar-weekday">Thu</div>
+                      <div class="calendar-weekday">Fri</div>
+                      <div class="calendar-weekday">Sat</div>
+                      <div class="calendar-weekday">Sun</div>
+                    </div>
+
+                    <div id="calendar-grid" class="calendar-grid"></div>
+                    <p class="calendar-legend">Greyed out dates are unavailable.</p>
                   </div>
+                </div>
 
-                  <div id="calendar-grid" class="calendar-grid"></div>
-                  <p class="calendar-legend">Greyed out dates are unavailable.</p>
+                <p id="error-date" class="field-error-text hidden"></p>
+              </div>
+
+              <div id="field-guests" class="field-wrap selector-wrap" data-selector="guests">
+                <label class="field-label">Number of guests *</label>
+                <button id="trigger-guests" type="button" class="selector-trigger">
+                  <span id="label-guests" class="placeholder">Select guests</span>
+                  <span class="selector-chevron-inline">⌄</span>
+                </button>
+
+                <div id="panel-guests" class="selector-panel hidden">
+                  <div class="panel-inner">
+                    <div id="guests-grid" class="people-grid"></div>
+                  </div>
+                </div>
+
+                <p id="error-guests" class="field-error-text hidden"></p>
+              </div>
+
+              <div id="field-time" class="field-wrap selector-wrap" data-selector="time">
+                <label class="field-label">Time *</label>
+                <button id="trigger-time" type="button" class="selector-trigger">
+                  <span id="label-time" class="placeholder">Select time</span>
+                  <span class="selector-chevron-inline">⌄</span>
+                </button>
+
+                <div id="panel-time" class="selector-panel hidden">
+                  <div class="panel-inner">
+                    <div id="time-list" class="time-list"></div>
+                  </div>
+                </div>
+
+                <p id="error-time" class="field-error-text hidden"></p>
+              </div>
+
+              <div id="large-group-note" class="hint-box hidden">
+                A non-refundable deposit of 100 GEL is required for all reservations. The deposit will be applied towards your final bill.
+              </div>
+
+              <div class="flex justify-between gap-3 pt-2">
+                <button id="btn-back-2" type="button" class="button-secondary">Back</button>
+                <button id="btn-next-2" type="button" class="button-primary">Next</button>
+              </div>
+            </section>
+
+            <section id="step-3" class="space-y-5 hidden">
+              <div>
+                <h3 class="heading-font text-xl mb-1">Review and requests</h3>
+                <p class="subtle-copy">One last look before continuing.</p>
+              </div>
+
+              <div id="field-requests" class="field-wrap">
+                <label class="field-label" for="input-requests">Special requests (optional)</label>
+                <textarea
+                  id="input-requests"
+                  class="textarea-input"
+                  placeholder="Allergies, celebrations, seating preferences..."
+                ></textarea>
+                <p id="error-requests" class="field-error-text hidden"></p>
+              </div>
+
+              <div class="summary-card">
+                <div class="summary-row">
+                  <div class="summary-label">Guest</div>
+                  <div id="summary-name" class="summary-value">—</div>
+                </div>
+                <div class="summary-row">
+                  <div class="summary-label">Email</div>
+                  <div id="summary-email" class="summary-value">—</div>
+                </div>
+                <div class="summary-row">
+                  <div class="summary-label">Phone</div>
+                  <div id="summary-phone" class="summary-value">—</div>
+                </div>
+                <div class="summary-row">
+                  <div class="summary-label">Date</div>
+                  <div id="summary-date" class="summary-value">—</div>
+                </div>
+                <div class="summary-row">
+                  <div class="summary-label">Time</div>
+                  <div id="summary-time" class="summary-value">—</div>
+                </div>
+                <div class="summary-row">
+                  <div class="summary-label">Guests</div>
+                  <div id="summary-guests" class="summary-value">—</div>
+                </div>
+                <div id="summary-deposit-row" class="summary-row hidden">
+                  <div class="summary-label">Deposit</div>
+                  <div class="summary-value">100 GEL required</div>
+                </div>
+                <div class="summary-row">
+                  <div class="summary-label">Requests</div>
+                  <div id="summary-requests" class="summary-value">None</div>
                 </div>
               </div>
 
-              <p id="error-date" class="field-error-text hidden"></p>
-            </div>
+              <p class="subtle-copy">
+                Reservations are confirmed only after our team processes the request and the deposit step is completed.
+              </p>
 
-            <div id="field-time" class="field-wrap selector-wrap" data-selector="time">
-              <label class="field-label">Time *</label>
-              <button id="trigger-time" type="button" class="selector-trigger">
-                <span id="label-time" class="placeholder">Select time</span>
-                <span class="selector-chevron-inline">⌄</span>
-              </button>
-
-              <div id="panel-time" class="selector-panel hidden">
-                <div class="panel-inner">
-                  <div id="time-list" class="time-list"></div>
-                </div>
+              <div class="flex justify-between gap-3 pt-2">
+                <button id="btn-back-3" type="button" class="button-secondary">Back</button>
+                <button id="btn-submit" type="button" class="button-primary">Continue to deposit</button>
               </div>
-
-              <p id="error-time" class="field-error-text hidden"></p>
-            </div>
-
-            <div id="field-guests" class="field-wrap selector-wrap" data-selector="guests">
-              <label class="field-label">Number of guests *</label>
-              <button id="trigger-guests" type="button" class="selector-trigger">
-                <span id="label-guests" class="placeholder">Select guests</span>
-                <span class="selector-chevron-inline">⌄</span>
-              </button>
-
-              <div id="panel-guests" class="selector-panel hidden">
-                <div class="panel-inner">
-                  <div id="guests-grid" class="people-grid"></div>
-                </div>
-              </div>
-
-              <p id="error-guests" class="field-error-text hidden"></p>
-            </div>
-
-            <div id="large-group-note" class="hint-box hidden">
-              For 6 guests, a non-refundable 100 GEL deposit applies and the booking must be made at least
-              2 hours in advance.
-            </div>
-
-            <div class="flex justify-between gap-3 pt-2">
-              <button id="btn-back-2" type="button" class="button-secondary">Back</button>
-              <button id="btn-next-2" type="button" class="button-primary">Next</button>
-            </div>
-          </section>
-
-          <section id="step-3" class="space-y-5 hidden">
-            <div>
-              <h3 class="heading-font text-xl mb-1">Review and requests</h3>
-              <p class="subtle-copy">One last look before continuing.</p>
-            </div>
-
-            <div id="field-requests" class="field-wrap">
-              <label class="field-label" for="input-requests">Special requests (optional)</label>
-              <textarea
-                id="input-requests"
-                class="textarea-input"
-                placeholder="Allergies, celebrations, seating preferences..."
-              ></textarea>
-              <p id="error-requests" class="field-error-text hidden"></p>
-            </div>
-
-            <div class="summary-card">
-              <div class="summary-row">
-                <div class="summary-label">Guest</div>
-                <div id="summary-name" class="summary-value">—</div>
-              </div>
-              <div class="summary-row">
-                <div class="summary-label">Email</div>
-                <div id="summary-email" class="summary-value">—</div>
-              </div>
-              <div class="summary-row">
-                <div class="summary-label">Phone</div>
-                <div id="summary-phone" class="summary-value">—</div>
-              </div>
-              <div class="summary-row">
-                <div class="summary-label">Date</div>
-                <div id="summary-date" class="summary-value">—</div>
-              </div>
-              <div class="summary-row">
-                <div class="summary-label">Time</div>
-                <div id="summary-time" class="summary-value">—</div>
-              </div>
-              <div class="summary-row">
-                <div class="summary-label">Guests</div>
-                <div id="summary-guests" class="summary-value">—</div>
-              </div>
-              <div id="summary-deposit-row" class="summary-row hidden">
-                <div class="summary-label">Deposit</div>
-                <div class="summary-value">150 GEL required</div>
-              </div>
-              <div class="summary-row">
-                <div class="summary-label">Requests</div>
-                <div id="summary-requests" class="summary-value">None</div>
-              </div>
-            </div>
-
-            <p class="subtle-copy">
-              Reservations are confirmed only after our team processes the request and, where applicable,
-              the deposit step is completed.
-            </p>
-
-            <div class="flex justify-between gap-3 pt-2">
-              <button id="btn-back-3" type="button" class="button-secondary">Back</button>
-              <button id="btn-submit" type="button" class="button-primary">Continue to deposit</button>
-            </div>
-          </section>
+            </section>
           </div>
         </div>
       </div>
@@ -1388,13 +1390,13 @@
       const todayStart = startOfDay(now);
 
       const state = {
-    date: "",
-    time: "",
-    guests: null,
-    availability: new Map(),
-    availabilityLoading: false,
-    availabilityError: "",
-  };
+        date: "",
+        time: "",
+        guests: null,
+        availability: new Map(),
+        availabilityLoading: false,
+        availabilityError: "",
+      };
 
       let openPanelName = null;
       let calendarCursor = new Date(todayStart.getFullYear(), todayStart.getMonth(), 1);
@@ -1416,12 +1418,13 @@
           updateSummary();
         }
       }
+
       function isoToFlagEmoji(iso) {
         if (!iso || iso.length !== 2) return "";
         return String.fromCodePoint(
           ...iso.toUpperCase().split("").map(char => 127397 + char.charCodeAt(0))
         );
-}
+      }
 
       function startOfDay(date) {
         const d = new Date(date);
@@ -1509,21 +1512,21 @@
       }
 
       function isTimeDisabledForDate(timeStr, dateStr) {
-          if (DISABLED_TIME_SLOTS.includes(timeStr)) return true;
-          if (!dateStr) return false;
+        if (DISABLED_TIME_SLOTS.includes(timeStr)) return true;
+        if (!dateStr) return false;
 
-          const selectedDateTime = new Date(`${dateStr}T${timeStr}:00`);
-          if (selectedDateTime.getTime() < Date.now()) return true;
+        const selectedDateTime = new Date(`${dateStr}T${timeStr}:00`);
+        if (selectedDateTime.getTime() < Date.now()) return true;
 
-          if (state.date === dateStr && state.availability.size > 0) {
-            const slotInfo = state.availability.get(timeStr);
-            if (slotInfo) {
-              return !slotInfo.available;
-            }
+        if (state.date === dateStr && state.availability.size > 0) {
+          const slotInfo = state.availability.get(timeStr);
+          if (slotInfo) {
+            return !slotInfo.available;
           }
+        }
 
-          return false;
-}
+        return false;
+      }
 
       function isGuestCountDisabled(count) {
         return DISABLED_GUEST_COUNTS.includes(count);
@@ -1590,75 +1593,74 @@
         });
       }
 
-
       function resetAvailability() {
-  state.availability = new Map();
-  state.availabilityLoading = false;
-  state.availabilityError = "";
-}
-
-    async function loadAvailability() {
-      if (!state.date || !state.guests) {
-        resetAvailability();
-        renderTimeOptions();
-        return;
-      }
-
-      state.availabilityLoading = true;
-      state.availabilityError = "";
-      renderTimeOptions();
-
-      try {
-        const url =
-          `${AVAILABILITY_ENDPOINT}?date=${encodeURIComponent(state.date)}&guests=${encodeURIComponent(state.guests)}`;
-
-        const response = await fetch(url, {
-          headers: {
-            "Accept": "application/json",
-          },
-        });
-
-        const data = await response.json().catch(() => ({}));
-
-        if (!response.ok || !data.ok || !Array.isArray(data.slots)) {
-          throw new Error(data.error || "Unable to load availability.");
-        }
-
-        state.availability = new Map(
-          data.slots.map((slot) => [slot.time, slot])
-        );
-        state.availabilityError = "";
-      } catch (error) {
         state.availability = new Map();
-        state.availabilityError = String(error.message || error);
-      } finally {
         state.availabilityLoading = false;
+        state.availabilityError = "";
+      }
 
-        if (state.time) {
-          const selectedSlot = state.availability.get(state.time);
-          if (selectedSlot && !selectedSlot.available) {
-            state.time = "";
-            setSelectorLabel(labelTime, "Select time", false);
-          }
+      async function loadAvailability() {
+        if (!state.date || !state.guests) {
+          resetAvailability();
+          renderTimeOptions();
+          return;
         }
 
+        state.availabilityLoading = true;
+        state.availabilityError = "";
         renderTimeOptions();
+
+        try {
+          const url =
+            `${AVAILABILITY_ENDPOINT}?date=${encodeURIComponent(state.date)}&guests=${encodeURIComponent(state.guests)}`;
+
+          const response = await fetch(url, {
+            headers: {
+              "Accept": "application/json",
+            },
+          });
+
+          const data = await response.json().catch(() => ({}));
+
+          if (!response.ok || !data.ok || !Array.isArray(data.slots)) {
+            throw new Error(data.error || "Unable to load availability.");
+          }
+
+          state.availability = new Map(
+            data.slots.map((slot) => [slot.time, slot])
+          );
+          state.availabilityError = "";
+        } catch (error) {
+          state.availability = new Map();
+          state.availabilityError = String(error.message || error);
+        } finally {
+          state.availabilityLoading = false;
+
+          if (state.time) {
+            const selectedSlot = state.availability.get(state.time);
+            if (selectedSlot && !selectedSlot.available) {
+              state.time = "";
+              setSelectorLabel(labelTime, "Select time", false);
+            }
+          }
+
+          renderTimeOptions();
+        }
       }
-    }
 
       function populateCountryCodes() {
-      inputCountryCode.innerHTML = "";
+        inputCountryCode.innerHTML = "";
 
-      COUNTRY_OPTIONS.forEach((country) => {
-        const option = document.createElement("option");
-        option.value = country.code;
-        option.textContent = `${isoToFlagEmoji(country.iso)} ${country.name} ${country.code}`;
-        option.dataset.flag = isoToFlagEmoji(country.iso);
-        option.dataset.iso = country.iso;
-        option.selected = country.iso === "GE" && country.code === "+995";
-        inputCountryCode.appendChild(option);
-      });
-}
+        COUNTRY_OPTIONS.forEach((country) => {
+          const option = document.createElement("option");
+          option.value = country.code;
+          option.textContent = `${isoToFlagEmoji(country.iso)} ${country.name} ${country.code}`;
+          option.dataset.flag = isoToFlagEmoji(country.iso);
+          option.dataset.iso = country.iso;
+          option.selected = country.iso === "GE" && country.code === "+995";
+          inputCountryCode.appendChild(option);
+        });
+      }
 
       function shortenCountrySelectLabel() {
         const selectedOption = inputCountryCode.options[inputCountryCode.selectedIndex];
@@ -1792,16 +1794,15 @@
             button.classList.add("today");
           }
 
-          
-            button.addEventListener("click", async () => {
-          state.date = iso;
-          clearFieldError("date");
-          setSelectorLabel(labelDate, formatDateShort(iso), true);
+          button.addEventListener("click", async () => {
+            state.date = iso;
+            clearFieldError("date");
+            setSelectorLabel(labelDate, formatDateShort(iso), true);
 
-          renderCalendar();
-          await loadAvailability();
-          closeAllPanels();
-        });
+            renderCalendar();
+            await loadAvailability();
+            closeAllPanels();
+          });
 
           cell.appendChild(button);
           calendarGrid.appendChild(cell);
@@ -1840,91 +1841,87 @@
         return slots;
       }
 
-      
-        function renderTimeOptions() {
-  timeList.innerHTML = "";
+      function renderTimeOptions() {
+        timeList.innerHTML = "";
 
-  if (!state.date || !state.guests) {
-    const empty = document.createElement("div");
-    empty.className = "panel-empty";
-    empty.textContent = "Choose a date and guest count first.";
-    timeList.appendChild(empty);
-    return;
-  }
+        if (!state.date || !state.guests) {
+          const empty = document.createElement("div");
+          empty.className = "panel-empty";
+          empty.textContent = "Choose a date and guest count first.";
+          timeList.appendChild(empty);
+          return;
+        }
 
-  if (state.availabilityLoading) {
-    const loading = document.createElement("div");
-    loading.className = "panel-empty";
-    loading.textContent = "Checking availability...";
-    timeList.appendChild(loading);
-    return;
-  }
+        if (state.availabilityLoading) {
+          const loading = document.createElement("div");
+          loading.className = "panel-empty";
+          loading.textContent = "Checking availability...";
+          timeList.appendChild(loading);
+          return;
+        }
 
-  if (state.availabilityError) {
-    const error = document.createElement("div");
-    error.className = "panel-empty";
-    error.textContent = state.availabilityError;
-    timeList.appendChild(error);
-    return;
-  }
+        if (state.availabilityError) {
+          const error = document.createElement("div");
+          error.className = "panel-empty";
+          error.textContent = state.availabilityError;
+          timeList.appendChild(error);
+          return;
+        }
 
-  const slots = getTimeSlots();
-  const enabledCount = slots.filter((slot) => {
-    const info = state.availability.get(slot);
-    return info ? info.available : !isTimeDisabledForDate(slot, state.date);
-  }).length;
+        const slots = getTimeSlots();
+        const enabledCount = slots.filter((slot) => {
+          const info = state.availability.get(slot);
+          return info ? info.available : !isTimeDisabledForDate(slot, state.date);
+        }).length;
 
-  if (enabledCount === 0) {
-    const empty = document.createElement("div");
-    empty.className = "panel-empty";
-    empty.textContent = "No available time slots for this date.";
-    timeList.appendChild(empty);
-    return;
-  }
+        if (enabledCount === 0) {
+          const empty = document.createElement("div");
+          empty.className = "panel-empty";
+          empty.textContent = "No available time slots for this date.";
+          timeList.appendChild(empty);
+          return;
+        }
 
-  slots.forEach((slot) => {
-    const slotInfo = state.availability.get(slot);
-    const disabled = slotInfo ? !slotInfo.available : isTimeDisabledForDate(slot, state.date);
-    const selected = state.time === slot;
+        slots.forEach((slot) => {
+          const slotInfo = state.availability.get(slot);
+          const disabled = slotInfo ? !slotInfo.available : isTimeDisabledForDate(slot, state.date);
+          const selected = state.time === slot;
 
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "time-option";
-    if (disabled) button.classList.add("disabled");
-    if (selected) button.classList.add("selected");
-    button.disabled = disabled;
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "time-option";
+          if (disabled) button.classList.add("disabled");
+          if (selected) button.classList.add("selected");
+          button.disabled = disabled;
 
-    const timeEl = document.createElement("div");
-    timeEl.className = "time-option-time";
-    timeEl.textContent = slot;
+          const timeEl = document.createElement("div");
+          timeEl.className = "time-option-time";
+          timeEl.textContent = slot;
 
-    const statusEl = document.createElement("div");
-    statusEl.className = `time-option-status ${disabled ? "unavailable" : "available"}`;
+          const statusEl = document.createElement("div");
+          statusEl.className = `time-option-status ${disabled ? "unavailable" : "available"}`;
 
-    if (!disabled) {
-      statusEl.textContent = "Available";
-    } else if (slotInfo?.reason === "min_advance") {
-      statusEl.textContent = "Too soon";
-    } else {
-      statusEl.textContent = "Fully booked";
-    }
+          if (!disabled) {
+            statusEl.textContent = "Available";
+          } else if (slotInfo?.reason === "min_advance") {
+            statusEl.textContent = "Too soon";
+          } else {
+            statusEl.textContent = "Fully booked";
+          }
 
-    button.appendChild(timeEl);
-    button.appendChild(statusEl);
+          button.appendChild(timeEl);
+          button.appendChild(statusEl);
 
-    button.addEventListener("click", () => {
-      state.time = slot;
-      setSelectorLabel(labelTime, slot, true);
-      clearFieldError("time");
-      closeAllPanels();
-    });
+          button.addEventListener("click", () => {
+            state.time = slot;
+            setSelectorLabel(labelTime, slot, true);
+            clearFieldError("time");
+            closeAllPanels();
+          });
 
-    timeList.appendChild(button);
-  });
-}
-
-
-
+          timeList.appendChild(button);
+        });
+      }
 
       function renderGuestOptions() {
         guestsGrid.innerHTML = "";
@@ -1947,14 +1944,13 @@
             button.classList.add("selected");
           }
 
-          button.addEventListener("click", async () => {
-            state.date = iso;
-            clearFieldError("date");
-            setSelectorLabel(labelDate, formatDateShort(iso), true);
-
-            renderCalendar();
-            await loadAvailability();
+          button.addEventListener("click", () => {
+            state.guests = count;
+            setSelectorLabel(labelGuests, `${count} ${count === 1 ? "guest" : "guests"}`, true);
+            clearFieldError("guests");
+            updateLargeGroupNote();
             closeAllPanels();
+            loadAvailability();
           });
 
           guestsGrid.appendChild(button);
@@ -1962,10 +1958,11 @@
       }
 
       function updateLargeGroupNote() {
-  largeGroupNote.classList.remove("hidden");
-  largeGroupNote.innerHTML =
-    "A non-refundable deposit of 100 GEL is required for all reservations. The deposit will be applied towards your final bill.";
-}
+        largeGroupNote.classList.remove("hidden");
+        largeGroupNote.innerHTML =
+          "A non-refundable deposit of 100 GEL is required for all reservations. The deposit will be applied towards your final bill.";
+      }
+
       function validateStep1() {
         let valid = true;
 
@@ -2080,8 +2077,8 @@
       }
 
       function validateLargeGroupRules() {
-  return true;
-}
+        return true;
+      }
 
       function validateStep2() {
         const dateOk = validateDateValue();
@@ -2143,7 +2140,7 @@
           guests: Number(state.guests),
           requests: inputRequests.value.trim(),
           deposit_required: true,
-          deposit_amount_gel: DEPOSIT_AMOUNT, 
+          deposit_amount_gel: DEPOSIT_AMOUNT,
         };
       }
 
