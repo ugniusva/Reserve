@@ -2183,15 +2183,21 @@
         btnSubmit.textContent = "Processing...";
 
         try {
+
+          alert("Reservation ID: " + data.reservationId)
+
+
+
           if (!API_ENABLED) {
             console.log("Reservation payload preview:", payload);
             showBanner("info", "Frontend is ready. API is still disabled right now, so nothing was sent yet.");
             showStep(3);
             return;
           }
-
+          
           const response = await fetch(API_ENDPOINT, {
             method: "POST",
+            
             headers: {
               "Content-Type": "application/json",
             },
