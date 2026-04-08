@@ -6,80 +6,164 @@
   <title>Reserve Admin</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body { background: #0a0a0a; color: white; }
+    body {
+      background: #0a0a0a;
+      color: white;
+    }
+
+    .filter-chip {
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.88);
+      transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
+    }
+
+    .filter-chip:hover {
+      background: rgba(255,255,255,0.12);
+      transform: translateY(-1px);
+    }
+
+    .filter-chip.active {
+      background: #D0842F;
+      border-color: #D0842F;
+      color: white;
+    }
+
+    .sort-chip {
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.88);
+      transition: background 180ms ease, border-color 180ms ease;
+    }
+
+    .sort-chip:hover {
+      background: rgba(255,255,255,0.12);
+    }
+
+    .sort-chip.active {
+      background: rgba(208, 132, 47, 0.16);
+      border-color: rgba(208, 132, 47, 0.5);
+      color: #ffd8aa;
+    }
+
+    .today-row {
+      background: rgba(208, 132, 47, 0.08);
+    }
   </style>
 </head>
 <body class="min-h-screen px-4 py-8 md:px-8">
   <div class="max-w-7xl mx-auto space-y-6">
-    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-      <div>
-        <p class="text-white/60 text-sm uppercase tracking-[0.2em]">Reserve</p>
-        <h1 class="text-3xl md:text-4xl font-semibold">Reservations Admin</h1>
-        <p class="text-white/60 mt-2">Staff dashboard for bookings</p>
+    <div class="flex flex-col gap-5">
+      <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+        <div>
+          <p class="text-white/60 text-sm uppercase tracking-[0.2em]">Reserve</p>
+          <h1 class="text-3xl md:text-4xl font-semibold">Reservations Admin</h1>
+          <p class="text-white/60 mt-2">Simple dashboard for staff</p>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-3">
+          <div>
+            <label class="block text-sm text-white/70 mb-1">Date</label>
+            <input
+              id="filter-date"
+              type="date"
+              class="px-3 py-2 rounded-md bg-white text-black"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm text-white/70 mb-1">Status</label>
+            <select
+              id="filter-status"
+              class="px-3 py-2 rounded-md bg-white text-black"
+            >
+              <option value="">All</option>
+              <option value="pending_payment">Pending payment</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="payment_failed">Payment failed</option>
+              <option value="cancelled">Cancelled</option>
+              <option value="completed">Completed</option>
+              <option value="no_show">No show</option>
+            </select>
+          </div>
+
+          <div class="flex items-end">
+            <button
+              id="btn-refresh"
+              class="px-4 py-2 rounded-md bg-[#D0842F] text-white hover:opacity-90 transition"
+            >
+              Refresh
+            </button>
+          </div>
+
+          <div class="flex items-end">
+            <button
+              id="btn-logout"
+              class="px-4 py-2 rounded-md bg-white/10 text-white hover:bg-white/20 transition"
+            >
+              Log out
+            </button>
+          </div>
+        </div>
       </div>
 
-      <div class="flex flex-col sm:flex-row gap-3">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
-          <label class="block text-sm text-white/70 mb-1">Date</label>
-          <input
-            id="filter-date"
-            type="date"
-            class="px-3 py-2 rounded-md bg-white text-black"
-          />
+          <p class="text-sm text-white/60 mb-2">Quick filters</p>
+          <div class="flex flex-wrap gap-2">
+            <button id="quick-today-paid" class="filter-chip active px-4 py-2 rounded-full text-sm">
+              Today paid
+            </button>
+            <button id="quick-today-all" class="filter-chip px-4 py-2 rounded-full text-sm">
+              Today all
+            </button>
+            <button id="quick-upcoming-paid" class="filter-chip px-4 py-2 rounded-full text-sm">
+              Upcoming paid
+            </button>
+            <button id="quick-all" class="filter-chip px-4 py-2 rounded-full text-sm">
+              All
+            </button>
+          </div>
         </div>
 
         <div>
-          <label class="block text-sm text-white/70 mb-1">Status</label>
-          <select
-            id="filter-status"
-            class="px-3 py-2 rounded-md bg-white text-black"
-          >
-            <option value="">All</option>
-            <option value="pending_payment">Pending payment</option>
-            <option value="confirmed">Confirmed</option>
-            <option value="payment_failed">Payment failed</option>
-            <option value="cancelled">Cancelled</option>
-            <option value="completed">Completed</option>
-            <option value="no_show">No show</option>
-          </select>
-        </div>
-
-        <div class="flex items-end">
-          <button
-            id="btn-refresh"
-            class="px-4 py-2 rounded-md bg-[#D0842F] text-white hover:opacity-90 transition"
-          >
-            Refresh
-          </button>
-        </div>
-
-        <div class="flex items-end">
-          <button
-            id="btn-logout"
-            class="px-4 py-2 rounded-md bg-white/10 text-white hover:bg-white/20 transition"
-          >
-            Log out
-          </button>
+          <p class="text-sm text-white/60 mb-2">Sort order</p>
+          <div class="flex flex-wrap gap-2">
+            <button id="sort-asc" class="sort-chip active px-4 py-2 rounded-full text-sm">
+              Earliest first
+            </button>
+            <button id="sort-desc" class="sort-chip px-4 py-2 rounded-full text-sm">
+              Latest first
+            </button>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
       <div class="rounded-xl bg-white/5 border border-white/10 p-4">
-        <p class="text-white/60 text-sm">Total reservations</p>
+        <p class="text-white/60 text-sm">Visible reservations</p>
         <p id="stat-total" class="text-3xl font-semibold mt-2">0</p>
+      </div>
+      <div class="rounded-xl bg-white/5 border border-white/10 p-4">
+        <p class="text-white/60 text-sm">Today paid</p>
+        <p id="stat-today-paid" class="text-3xl font-semibold mt-2">0</p>
       </div>
       <div class="rounded-xl bg-white/5 border border-white/10 p-4">
         <p class="text-white/60 text-sm">Pending payment</p>
         <p id="stat-pending" class="text-3xl font-semibold mt-2">0</p>
       </div>
       <div class="rounded-xl bg-white/5 border border-white/10 p-4">
-        <p class="text-white/60 text-sm">Confirmed</p>
+        <p class="text-white/60 text-sm">Confirmed / completed</p>
         <p id="stat-confirmed" class="text-3xl font-semibold mt-2">0</p>
       </div>
     </div>
 
     <div class="rounded-2xl border border-white/10 bg-white/5 overflow-hidden">
+      <div class="px-4 py-3 border-b border-white/10 text-sm text-white/60">
+        <span id="table-caption">Showing today’s paid reservations, sorted by time.</span>
+      </div>
+
       <div class="overflow-x-auto">
         <table class="min-w-full text-sm">
           <thead class="bg-white/10 text-left text-white/70">
@@ -113,10 +197,26 @@
     const btnRefresh = document.getElementById("btn-refresh");
     const btnLogout = document.getElementById("btn-logout");
     const bodyEl = document.getElementById("reservations-body");
+    const tableCaption = document.getElementById("table-caption");
 
     const statTotal = document.getElementById("stat-total");
+    const statTodayPaid = document.getElementById("stat-today-paid");
     const statPending = document.getElementById("stat-pending");
     const statConfirmed = document.getElementById("stat-confirmed");
+
+    const quickTodayPaid = document.getElementById("quick-today-paid");
+    const quickTodayAll = document.getElementById("quick-today-all");
+    const quickUpcomingPaid = document.getElementById("quick-upcoming-paid");
+    const quickAll = document.getElementById("quick-all");
+
+    const sortAscBtn = document.getElementById("sort-asc");
+    const sortDescBtn = document.getElementById("sort-desc");
+
+    const todayIso = new Date().toISOString().slice(0, 10);
+
+    let allReservations = [];
+    let currentQuickFilter = "today_paid";
+    let currentSort = "asc";
 
     function escapeHtml(value) {
       return String(value ?? "")
@@ -125,6 +225,14 @@
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
+    }
+
+    function isPaidStatus(status) {
+      return status === "confirmed" || status === "completed";
+    }
+
+    function getReservationDateTime(r) {
+      return new Date(`${r.booking_date}T${r.booking_time}:00`).getTime();
     }
 
     function statusBadge(status) {
@@ -137,11 +245,21 @@
         no_show: "bg-pink-500/20 text-pink-300 border-pink-400/30",
       };
 
+      const labels = {
+        pending_payment: "Pending payment",
+        confirmed: "Confirmed",
+        payment_failed: "Payment failed",
+        cancelled: "Cancelled",
+        completed: "Completed",
+        no_show: "No show",
+      };
+
       const cls = styles[status] || "bg-white/10 text-white border-white/20";
+      const label = labels[status] || status;
 
       return `
         <span class="inline-flex px-2 py-1 rounded-full border text-xs ${cls}">
-          ${escapeHtml(status)}
+          ${escapeHtml(label)}
         </span>
       `;
     }
@@ -158,42 +276,136 @@
         return;
       }
 
-      bodyEl.innerHTML = reservations.map(r => `
-        <tr class="hover:bg-white/5 align-top">
-          <td class="px-4 py-4 whitespace-nowrap">${escapeHtml(r.booking_date)}</td>
-          <td class="px-4 py-4 whitespace-nowrap">${escapeHtml(r.booking_time)}</td>
-          <td class="px-4 py-4">
-            <div class="font-medium">${escapeHtml(r.first_name)} ${escapeHtml(r.last_name)}</div>
-          </td>
-          <td class="px-4 py-4 whitespace-nowrap">${escapeHtml(r.phone)}</td>
-          <td class="px-4 py-4 whitespace-nowrap">${escapeHtml(r.guests)}</td>
-          <td class="px-4 py-4 whitespace-nowrap">${escapeHtml(r.deposit_amount)} ${escapeHtml(r.currency)}</td>
-          <td class="px-4 py-4 whitespace-nowrap">${statusBadge(r.status)}</td>
-          <td class="px-4 py-4 text-white/70">${escapeHtml(r.requests || "—")}</td>
-          <td class="px-4 py-4 whitespace-nowrap">
-            <div class="flex gap-2">
-              <button
-                class="edit-btn px-3 py-1 rounded-md bg-white/10 hover:bg-white/20 transition"
-                data-id="${escapeHtml(r.id)}"
-              >
-                Edit
-              </button>
-              <button
-                class="delete-btn px-3 py-1 rounded-md bg-red-500/20 text-red-300 hover:bg-red-500/30 transition"
-                data-id="${escapeHtml(r.id)}"
-              >
-                Delete
-              </button>
-            </div>
-          </td>
-        </tr>
-      `).join("");
+      bodyEl.innerHTML = reservations.map(r => {
+        const isToday = r.booking_date === todayIso;
+        return `
+          <tr class="hover:bg-white/5 align-top ${isToday ? "today-row" : ""}">
+            <td class="px-4 py-4 whitespace-nowrap">${escapeHtml(r.booking_date)}</td>
+            <td class="px-4 py-4 whitespace-nowrap font-medium">${escapeHtml(r.booking_time)}</td>
+            <td class="px-4 py-4">
+              <div class="font-medium">${escapeHtml(r.first_name)} ${escapeHtml(r.last_name)}</div>
+            </td>
+            <td class="px-4 py-4 whitespace-nowrap">${escapeHtml(r.phone)}</td>
+            <td class="px-4 py-4 whitespace-nowrap">${escapeHtml(r.guests)}</td>
+            <td class="px-4 py-4 whitespace-nowrap">${escapeHtml(r.deposit_amount)} ${escapeHtml(r.currency)}</td>
+            <td class="px-4 py-4 whitespace-nowrap">${statusBadge(r.status)}</td>
+            <td class="px-4 py-4 text-white/70">${escapeHtml(r.requests || "—")}</td>
+            <td class="px-4 py-4 whitespace-nowrap">
+              <div class="flex gap-2">
+                <button
+                  class="edit-btn px-3 py-1 rounded-md bg-white/10 hover:bg-white/20 transition"
+                  data-id="${escapeHtml(r.id)}"
+                >
+                  Edit
+                </button>
+                <button
+                  class="delete-btn px-3 py-1 rounded-md bg-red-500/20 text-red-300 hover:bg-red-500/30 transition"
+                  data-id="${escapeHtml(r.id)}"
+                >
+                  Delete
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("");
     }
 
-    function updateStats(reservations) {
-      statTotal.textContent = reservations.length;
-      statPending.textContent = reservations.filter(r => r.status === "pending_payment").length;
-      statConfirmed.textContent = reservations.filter(r => r.status === "confirmed").length;
+    function updateStats(sourceReservations, visibleReservations) {
+      statTotal.textContent = visibleReservations.length;
+      statTodayPaid.textContent = sourceReservations.filter(r => r.booking_date === todayIso && isPaidStatus(r.status)).length;
+      statPending.textContent = sourceReservations.filter(r => r.status === "pending_payment").length;
+      statConfirmed.textContent = sourceReservations.filter(r => isPaidStatus(r.status)).length;
+    }
+
+    function setQuickFilterButtonState() {
+      [quickTodayPaid, quickTodayAll, quickUpcomingPaid, quickAll].forEach(btn => {
+        btn.classList.remove("active");
+      });
+
+      if (currentQuickFilter === "today_paid") quickTodayPaid.classList.add("active");
+      if (currentQuickFilter === "today_all") quickTodayAll.classList.add("active");
+      if (currentQuickFilter === "upcoming_paid") quickUpcomingPaid.classList.add("active");
+      if (currentQuickFilter === "all") quickAll.classList.add("active");
+    }
+
+    function setSortButtonState() {
+      sortAscBtn.classList.toggle("active", currentSort === "asc");
+      sortDescBtn.classList.toggle("active", currentSort === "desc");
+    }
+
+    function applyQuickFilter(reservations) {
+      if (currentQuickFilter === "today_paid") {
+        return reservations.filter(r => r.booking_date === todayIso && isPaidStatus(r.status));
+      }
+
+      if (currentQuickFilter === "today_all") {
+        return reservations.filter(r => r.booking_date === todayIso);
+      }
+
+      if (currentQuickFilter === "upcoming_paid") {
+        return reservations.filter(r => r.booking_date >= todayIso && isPaidStatus(r.status));
+      }
+
+      return reservations.slice();
+    }
+
+    function applyManualFilters(reservations) {
+      let result = reservations.slice();
+
+      if (filterDate.value) {
+        result = result.filter(r => r.booking_date === filterDate.value);
+      }
+
+      if (filterStatus.value) {
+        result = result.filter(r => r.status === filterStatus.value);
+      }
+
+      return result;
+    }
+
+    function sortReservations(reservations) {
+      const sorted = reservations.slice().sort((a, b) => {
+        const diff = getReservationDateTime(a) - getReservationDateTime(b);
+        return currentSort === "asc" ? diff : -diff;
+      });
+
+      return sorted;
+    }
+
+    function updateCaption(reservations) {
+      let base = "";
+
+      if (currentQuickFilter === "today_paid") base = "Showing today’s paid reservations";
+      else if (currentQuickFilter === "today_all") base = "Showing all of today’s reservations";
+      else if (currentQuickFilter === "upcoming_paid") base = "Showing upcoming paid reservations";
+      else base = "Showing all reservations";
+
+      if (filterDate.value) {
+        base += ` on ${filterDate.value}`;
+      }
+
+      if (filterStatus.value) {
+        base += ` with status "${filterStatus.value}"`;
+      }
+
+      base += currentSort === "asc" ? ", earliest first." : ", latest first.";
+      base += ` Total: ${reservations.length}.`;
+
+      tableCaption.textContent = base;
+    }
+
+    function applyView() {
+      const quickFiltered = applyQuickFilter(allReservations);
+      const manualFiltered = applyManualFilters(quickFiltered);
+      const sorted = sortReservations(manualFiltered);
+
+      renderRows(sorted);
+      updateStats(allReservations, sorted);
+      updateCaption(sorted);
+      attachRowActions(sorted);
+      setQuickFilterButtonState();
+      setSortButtonState();
     }
 
     function attachRowActions(reservations) {
@@ -293,13 +505,8 @@
         </tr>
       `;
 
-      const params = new URLSearchParams();
-
-      if (filterDate.value) params.set("date", filterDate.value);
-      if (filterStatus.value) params.set("status", filterStatus.value);
-
       try {
-        const response = await fetch(`/api/admin/reservations?${params.toString()}`, {
+        const response = await fetch(`/api/admin/reservations`, {
           credentials: "same-origin",
         });
 
@@ -309,9 +516,8 @@
           throw new Error(data.error || "Failed to load reservations.");
         }
 
-        renderRows(data.reservations);
-        updateStats(data.reservations);
-        attachRowActions(data.reservations);
+        allReservations = Array.isArray(data.reservations) ? data.reservations.slice() : [];
+        applyView();
       } catch (error) {
         bodyEl.innerHTML = `
           <tr>
@@ -323,9 +529,39 @@
       }
     }
 
+    quickTodayPaid.addEventListener("click", () => {
+      currentQuickFilter = "today_paid";
+      applyView();
+    });
+
+    quickTodayAll.addEventListener("click", () => {
+      currentQuickFilter = "today_all";
+      applyView();
+    });
+
+    quickUpcomingPaid.addEventListener("click", () => {
+      currentQuickFilter = "upcoming_paid";
+      applyView();
+    });
+
+    quickAll.addEventListener("click", () => {
+      currentQuickFilter = "all";
+      applyView();
+    });
+
+    sortAscBtn.addEventListener("click", () => {
+      currentSort = "asc";
+      applyView();
+    });
+
+    sortDescBtn.addEventListener("click", () => {
+      currentSort = "desc";
+      applyView();
+    });
+
     btnRefresh.addEventListener("click", loadReservations);
-    filterDate.addEventListener("change", loadReservations);
-    filterStatus.addEventListener("change", loadReservations);
+    filterDate.addEventListener("change", applyView);
+    filterStatus.addEventListener("change", applyView);
 
     btnLogout.addEventListener("click", async () => {
       await fetch("/api/admin/logout", {

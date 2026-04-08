@@ -186,7 +186,8 @@ export async function onRequestPost(context) {
       }, 409);
     }
 
-    const depositAmount = 100;
+const DEPOSIT_PER_PERSON = 1; // later change to 50
+const depositAmount = guests * DEPOSIT_PER_PERSON;
 
     const id = crypto.randomUUID();
     const createdAt = new Date().toISOString();
