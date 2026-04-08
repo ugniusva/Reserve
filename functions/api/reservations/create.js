@@ -310,22 +310,20 @@ export async function onRequestPost(context) {
       });
 
       await DB.prepare(`
-        UPDATE reservations
-        SET
-          payment_provider = ?,
-          payment_ref = ?,
-          payment_order_id = ?,
-          payment_status = ?,
-          updated_at = ?
-        WHERE id = ?
-      `).bind(
-        "bog",
-        bogOrder.detailsUrl,
-        bogOrder.orderId,
-        "created",
-        new Date().toISOString(),
-        id
-      ).run();
+  UPDATE reservations
+  SET
+    payment_provider = ?,
+    payment_order_id = ?,
+    payment_status = ?,
+    updated_at = ?
+  WHERE id = ?
+`).bind(
+  "bog",
+  bogOrder.orderId,
+  "created",
+  new Date().toISOString(),
+  id
+).run();
 
       return json({
         ok: true,
