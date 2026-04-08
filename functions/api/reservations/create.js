@@ -7,6 +7,8 @@ import {
   canFitReservation,
 } from "./_availability.js";
 
+const DEPOSIT_PER_PERSON = 1; // testing; later change to 50
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -37,8 +39,36 @@ function availabilityReasonToMessage(reason) {
   }
 }
 
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || "").trim());
+}
+
+function maskEmail(email) {
+  const value = String(email || "").trim();
+  const at = value.indexOf("@");
+
+  if (at <= 1) return value || undefined;
+
+  const name = value.slice(0, at);
+  const domain = value.slice(at);
+  const visible = name.slice(0, 2);
+
+  return `${visible}${"*".repeat(Math.max(1, name.length - 2))}${domain}`;
+}
+
+function maskPhone(phone) {
+  const value = String(phone || "").trim();
+  const digits = value.replace(/\D/g, "");
+
+  if (digits.length < 4) return value || undefined;
+
+  const tail = digits.slice(-4);
+  return `****${tail}`;
+}
+
 async function getBogAccessToken(env) {
-  const tokenUrl = "https://oauth2.bog.ge/auth/realms/bog/protocol/openid-connect/token";
+  const tokenUrl =
+    "https://oauth2.bog.ge/auth/realms/bog/protocol/openid-connect/token";
 
   const basic = btoa(`${env.BOG_CLIENT_ID}:${env.BOG_CLIENT_SECRET}`);
 
@@ -67,6 +97,7 @@ async function getBogAccessToken(env) {
 async function createBogOrder({ env, request, reservation, amount }) {
   const accessToken = await getBogAccessToken(env);
   const origin = new URL(request.url).origin;
+  const buyerName = `${reservation.first_name || ""} ${reservation.last_name || ""}`.trim();
 
   const payload = {
     callback_url: `${origin}/api/bog/callback`,
@@ -88,6 +119,11 @@ async function createBogOrder({ env, request, reservation, amount }) {
       success: `${origin}/reservation-success.html?reservationId=${encodeURIComponent(reservation.id)}`,
       fail: `${origin}/reservation-failed.html?reservationId=${encodeURIComponent(reservation.id)}`,
     },
+    buyer: {
+      full_name: buyerName || undefined,
+      masked_email: maskEmail(reservation.email),
+      masked_phone: maskPhone(reservation.phone),
+    },
   };
 
   const response = await fetch("https://api.bog.ge/payments/v1/ecommerce/orders", {
@@ -96,6 +132,7 @@ async function createBogOrder({ env, request, reservation, amount }) {
       "Content-Type": "application/json",
       "Authorization": `Bearer ${accessToken}`,
       "Accept-Language": "en",
+      "Idempotency-Key": crypto.randomUUID(),
     },
     body: JSON.stringify(payload),
   });
@@ -124,19 +161,27 @@ async function createBogOrder({ env, request, reservation, amount }) {
 export async function onRequestPost(context) {
   try {
     const { DB } = context.env;
-    const body = await context.request.json();
+    const body = await context.request.json().catch(() => null);
 
-    const firstName = (body.first_name || "").trim();
-    const lastName = (body.last_name || "").trim();
-    const email = (body.email || "").trim();
-    const phone = (body.phone || "").trim();
-    const bookingDate = (body.booking_date || "").trim();
-    const bookingTime = (body.booking_time || "").trim();
+    if (!body || typeof body !== "object") {
+      return json({ ok: false, error: "Invalid JSON body." }, 400);
+    }
+
+    const firstName = String(body.first_name || "").trim();
+    const lastName = String(body.last_name || "").trim();
+    const email = String(body.email || "").trim();
+    const phone = String(body.phone || "").trim();
+    const bookingDate = String(body.booking_date || "").trim();
+    const bookingTime = String(body.booking_time || "").trim();
     const guests = Number(body.guests);
-    const requests = (body.requests || "").trim();
+    const requests = String(body.requests || "").trim();
 
     if (!firstName || !lastName || !email || !phone || !bookingDate || !bookingTime || !guests) {
       return json({ ok: false, error: "Missing required fields." }, 400);
+    }
+
+    if (!isValidEmail(email)) {
+      return json({ ok: false, error: "Invalid email format." }, 400);
     }
 
     if (!isValidDate(bookingDate)) {
@@ -180,14 +225,20 @@ export async function onRequestPost(context) {
     });
 
     if (!availability.available) {
-      return json({
-        ok: false,
-        error: availabilityReasonToMessage(availability.reason),
-      }, 409);
+      return json(
+        {
+          ok: false,
+          error: availabilityReasonToMessage(availability.reason),
+        },
+        409
+      );
     }
 
-const DEPOSIT_PER_PERSON = 1; // later change to 50
-const depositAmount = guests * DEPOSIT_PER_PERSON;
+    const depositAmount = guests * DEPOSIT_PER_PERSON;
+
+    if (!Number.isFinite(depositAmount) || depositAmount <= 0) {
+      return json({ ok: false, error: "Invalid deposit amount." }, 500);
+    }
 
     const id = crypto.randomUUID();
     const createdAt = new Date().toISOString();
@@ -264,12 +315,14 @@ const depositAmount = guests * DEPOSIT_PER_PERSON;
           payment_provider = ?,
           payment_ref = ?,
           payment_order_id = ?,
+          payment_status = ?,
           updated_at = ?
         WHERE id = ?
       `).bind(
         "bog",
         bogOrder.detailsUrl,
         bogOrder.orderId,
+        "created",
         new Date().toISOString(),
         id
       ).run();
@@ -291,24 +344,30 @@ const depositAmount = guests * DEPOSIT_PER_PERSON;
           updated_at = ?
         WHERE id = ?
       `).bind(
-        "payment_init_failed",
+        "payment_failed",
         "rejected",
         "bog",
         new Date().toISOString(),
         id
       ).run();
 
-      return json({
-        ok: false,
-        error: "Failed to initialize payment.",
-        details: String(bogError?.message || bogError),
-      }, 500);
+      return json(
+        {
+          ok: false,
+          error: "Failed to initialize payment.",
+          details: String(bogError?.message || bogError),
+        },
+        500
+      );
     }
   } catch (error) {
-    return json({
-      ok: false,
-      error: "Server error.",
-      details: String(error),
-    }, 500);
+    return json(
+      {
+        ok: false,
+        error: "Server error.",
+        details: String(error),
+      },
+      500
+    );
   }
 }

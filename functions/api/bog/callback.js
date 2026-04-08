@@ -23,11 +23,14 @@ function pemToArrayBuffer(pem) {
     .replace("-----BEGIN PUBLIC KEY-----", "")
     .replace("-----END PUBLIC KEY-----", "")
     .replace(/\s+/g, "");
+
   const binary = atob(base64);
   const bytes = new Uint8Array(binary.length);
+
   for (let i = 0; i < binary.length; i += 1) {
     bytes[i] = binary.charCodeAt(i);
   }
+
   return bytes.buffer;
 }
 
@@ -47,9 +50,11 @@ async function importBogPublicKey() {
 function base64ToArrayBuffer(base64) {
   const binary = atob(base64);
   const bytes = new Uint8Array(binary.length);
+
   for (let i = 0; i < binary.length; i += 1) {
     bytes[i] = binary.charCodeAt(i);
   }
+
   return bytes.buffer;
 }
 
@@ -99,10 +104,24 @@ function mapBogOrderStatus(orderStatusKey) {
         paid: false,
       };
 
+    case "refund_requested":
+      return {
+        status: "confirmed",
+        payment_status: "refund_requested",
+        paid: true,
+      };
+
+    case "auth_requested":
+      return {
+        status: "pending_payment",
+        payment_status: "auth_requested",
+        paid: false,
+      };
+
     case "refunded":
     case "refunded_partially":
       return {
-        status: "cancelled", // ✅ FIXED
+        status: "cancelled",
         payment_status: orderStatusKey,
         paid: false,
       };
@@ -116,7 +135,7 @@ function mapBogOrderStatus(orderStatusKey) {
   }
 }
 
-async function updateReservationFromCallback(DB, payload) {
+async function updateReservationFromCallback(DB, payload, rawBody) {
   const body = payload?.body || {};
   const orderId = body.order_id || null;
   const externalOrderId = body.external_order_id || null;
@@ -126,7 +145,7 @@ async function updateReservationFromCallback(DB, payload) {
 
   const mapped = mapBogOrderStatus(orderStatusKey);
   const paidAt = mapped.paid ? nowIso : null;
-  const payloadString = JSON.stringify(payload);
+  const payloadString = rawBody || JSON.stringify(payload);
 
   let result = null;
 
@@ -166,6 +185,7 @@ async function updateReservationFromCallback(DB, payload) {
         payment_status = ?,
         payment_provider = ?,
         payment_ref = COALESCE(?, payment_ref),
+        payment_order_id = COALESCE(?, payment_order_id),
         paid_at = COALESCE(?, paid_at),
         callback_received_at = ?,
         callback_payload = ?,
@@ -176,6 +196,7 @@ async function updateReservationFromCallback(DB, payload) {
       mapped.payment_status,
       "bog",
       transactionId,
+      orderId,
       paidAt,
       nowIso,
       payloadString,
@@ -188,6 +209,8 @@ async function updateReservationFromCallback(DB, payload) {
     orderId,
     externalOrderId,
     orderStatusKey,
+    mappedStatus: mapped.status,
+    mappedPaymentStatus: mapped.payment_status,
     updated: !!(result && result.meta && result.meta.changes > 0),
   };
 }
@@ -199,20 +222,44 @@ export async function onRequestPost(context) {
     const signature = context.request.headers.get("Callback-Signature");
     const rawBody = await context.request.text();
 
+    if (!rawBody) {
+      return json({
+        ok: false,
+        error: "Empty callback body.",
+      }, 400);
+    }
+
     let signatureValid = false;
+
     if (signature) {
       try {
         signatureValid = await verifyBogCallbackSignature(rawBody, signature);
       } catch (err) {
         signatureValid = false;
       }
+
+      if (!signatureValid) {
+        return json({
+          ok: false,
+          error: "Invalid callback signature.",
+        }, 401);
+      }
     }
 
-    const payload = JSON.parse(rawBody);
+    let payload = null;
 
-    const updateResult = await updateReservationFromCallback(DB, payload);
+    try {
+      payload = JSON.parse(rawBody);
+    } catch (err) {
+      return json({
+        ok: false,
+        error: "Invalid callback JSON.",
+        details: String(err?.message || err),
+      }, 400);
+    }
 
-    // Return 200 so BOG treats callback as received.
+    const updateResult = await updateReservationFromCallback(DB, payload, rawBody);
+
     return json({
       ok: true,
       signaturePresent: !!signature,
@@ -221,9 +268,10 @@ export async function onRequestPost(context) {
       orderId: updateResult.orderId,
       externalOrderId: updateResult.externalOrderId,
       orderStatus: updateResult.orderStatusKey,
+      mappedStatus: updateResult.mappedStatus,
+      mappedPaymentStatus: updateResult.mappedPaymentStatus,
     }, 200);
   } catch (error) {
-    // If parsing/storage fails, return non-200 so it’s visible and can be retried/checked.
     return json({
       ok: false,
       error: "Callback processing failed.",
