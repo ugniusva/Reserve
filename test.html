@@ -232,6 +232,7 @@
         object-fit: cover;
         display: block;
       }
+      
 
       @media (min-width: 1024px) {
         .split-grid {
@@ -247,14 +248,28 @@
         }
       }
 
-      @media (max-width: 900px), (max-aspect-ratio: 4/5) {
+      @media (max-width: 900px) {
   .about-section-bg,
   .reservations-section-bg,
   .hours-section-bg {
-    background-image: url("images/phone.jpg") !important;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+    position: relative;
+  }
+
+  .about-section-bg::before,
+  .reservations-section-bg::before,
+  .hours-section-bg::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.5);
+    z-index: 0;
+  }
+
+  .about-section-bg > *,
+  .reservations-section-bg > *,
+  .hours-section-bg > * {
+    position: relative;
+    z-index: 1;
   }
 }
 
