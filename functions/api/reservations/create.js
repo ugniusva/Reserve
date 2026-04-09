@@ -7,7 +7,7 @@ import {
   canFitReservation,
 } from "./_availability.js";
 
-const DEPOSIT_PER_PERSON = 1; // testing; later change to 50
+const DEPOSIT_PER_PERSON = 5; // testing; later change to 50
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
