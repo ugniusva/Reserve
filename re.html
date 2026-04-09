@@ -2179,58 +2179,64 @@
       btnBack3.addEventListener("click", () => showStep(2));
 
       btnSubmit.addEventListener("click", async () => {
-        if (!validateEntireForm()) return;
+  console.log("submit clicked");
 
-        updateSummary();
+  if (!validateEntireForm()) {
+    console.log("validateEntireForm returned false");
+    return;
+  }
 
-        const payload = buildPayload();
-        const originalText = btnSubmit.textContent;
-        btnSubmit.disabled = true;
-        btnSubmit.textContent = "Processing...";
+  console.log("validation passed");
 
-        try {
+  updateSummary();
 
-          alert("Reservation ID: " + data.reservationId)
+  const payload = buildPayload();
+  console.log("payload:", payload);
 
+  const originalText = btnSubmit.textContent;
+  btnSubmit.disabled = true;
+  btnSubmit.textContent = "Processing...";
 
+  try {
+    console.log("about to fetch", API_ENDPOINT);
 
-          if (!API_ENABLED) {
-            console.log("Reservation payload preview:", payload);
-            showBanner("info", "Frontend is ready. API is still disabled right now, so nothing was sent yet.");
-            showStep(3);
-            return;
-          }
-          
-          const response = await fetch(API_ENDPOINT, {
-            method: "POST",
-            
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(payload),
-          });
+    const response = await fetch(API_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
 
-          const data = await response.json().catch(() => ({}));
+    console.log("fetch response status:", response.status);
 
-          if (!response.ok || !data.ok) {
-            showBanner("error", data.error || "Unable to create the reservation right now.");
-            return;
-          }
+    const data = await response.json().catch((err) => {
+      console.log("json parse failed:", err);
+      return {};
+    });
 
-          if (data.redirectUrl) {
-            window.location.href = data.redirectUrl;
-            return;
-          }
+    console.log("response data:", data);
 
-          showBanner("success", "Reservation created successfully.");
-        } catch (error) {
-          showBanner("error", "Something went wrong. Please try again.");
-        } finally {
-          btnSubmit.disabled = false;
-          btnSubmit.textContent = originalText;
-        }
-      });
+    if (!response.ok || !data.ok) {
+      showBanner("error", data.error || "Unable to create the reservation right now.");
+      return;
+    }
 
+    if (data.redirectUrl) {
+      console.log("redirecting to:", data.redirectUrl);
+      window.location.href = data.redirectUrl;
+      return;
+    }
+
+    showBanner("success", "Reservation created successfully.");
+  } catch (error) {
+    console.error("submit fetch failed:", error);
+    showBanner("error", String(error?.message || error));
+  } finally {
+    btnSubmit.disabled = false;
+    btnSubmit.textContent = originalText;
+  }
+});
       [inputName, inputSurname, inputEmail].forEach((input) => {
         input.addEventListener("input", () => {
           clearFieldError(input.id.replace("input-", ""));
