@@ -1924,38 +1924,44 @@
       }
 
       function renderGuestOptions() {
-        guestsGrid.innerHTML = "";
+  guestsGrid.innerHTML = "";
 
-        for (let count = 1; count <= MAX_GUESTS; count += 1) {
-          const disabled = isGuestCountDisabled(count);
-          const selected = state.guests === count;
+  for (let count = 1; count <= MAX_GUESTS; count += 1) {
+    const disabled = isGuestCountDisabled(count);
+    const selected = state.guests === count;
 
-          const button = document.createElement("button");
-          button.type = "button";
-          button.className = "people-option";
-          button.textContent = String(count);
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "people-option";
+    button.textContent = String(count);
 
-          if (disabled) {
-            button.disabled = true;
-            button.classList.add("disabled");
-          }
+    if (disabled) {
+      button.disabled = true;
+      button.classList.add("disabled");
+    }
 
-          if (selected) {
-            button.classList.add("selected");
-          }
+    if (selected) {
+      button.classList.add("selected");
+    }
 
-          button.addEventListener("click", () => {
-            state.guests = count;
-            setSelectorLabel(labelGuests, `${count} ${count === 1 ? "guest" : "guests"}`, true);
-            clearFieldError("guests");
-            updateLargeGroupNote();
-            closeAllPanels();
-            loadAvailability();
-          });
+    button.addEventListener("click", async () => {
+      state.guests = count;
+      setSelectorLabel(labelGuests, `${count} ${count === 1 ? "guest" : "guests"}`, true);
+      clearFieldError("guests");
 
-          guestsGrid.appendChild(button);
-        }
+      if (state.time) {
+        state.time = "";
+        setSelectorLabel(labelTime, "Select time", false);
       }
+
+      updateLargeGroupNote();
+      await loadAvailability();
+      closeAllPanels();
+    });
+
+    guestsGrid.appendChild(button);
+  }
+}
 
       function updateLargeGroupNote() {
         largeGroupNote.classList.remove("hidden");
