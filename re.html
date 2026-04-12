@@ -994,7 +994,7 @@
                 </div>
                 <div id="summary-deposit-row" class="summary-row hidden">
                   <div class="summary-label">Deposit</div>
-                  <div class="summary-value">100 GEL required</div>
+                  <div id="summary-deposit-value" class="summary-value"> </div>
                 </div>
                 <div class="summary-row">
                   <div class="summary-label">Requests</div>
@@ -1081,7 +1081,7 @@
       const SLOT_INTERVAL_MINUTES = 15;
 
       const MAX_GUESTS = 6;
-      const DEPOSIT_AMOUNT = 100;
+      const DEPOSIT_AMOUNT = 50;
 
       const DISABLED_DATES = [];
       const DISABLED_TIME_SLOTS = [];
@@ -1374,9 +1374,9 @@
       const summaryDate = document.getElementById("summary-date");
       const summaryTime = document.getElementById("summary-time");
       const summaryGuests = document.getElementById("summary-guests");
-      const summaryRequests = document.getElementById("summary-requests");
-      const summaryDepositRow = document.getElementById("summary-deposit-row");
-
+const summaryRequests = document.getElementById("summary-requests");
+const summaryDepositRow = document.getElementById("summary-deposit-row");
+const summaryDepositValue = document.getElementById("summary-deposit-value");
       const btnNext1 = document.getElementById("btn-next-1");
       const btnBack2 = document.getElementById("btn-back-2");
       const btnNext2 = document.getElementById("btn-next-2");
@@ -2120,17 +2120,25 @@
       }
 
       function updateSummary() {
-        summaryName.textContent = `${inputName.value.trim()} ${inputSurname.value.trim()}`.trim() || "—";
-        summaryEmail.textContent = inputEmail.value.trim() || "—";
-        summaryPhone.textContent = getPhoneFull() || "—";
-        summaryDate.textContent = state.date ? formatDateShort(state.date) : "—";
-        summaryTime.textContent = state.time || "—";
-        summaryGuests.textContent = state.guests ? `${state.guests}` : "—";
-        summaryRequests.textContent = inputRequests.value.trim() || "None";
+  const guestsCount = Number(state.guests) || 0;
+  const totalDeposit = guestsCount * DEPOSIT_AMOUNT;
 
-        summaryDepositRow.classList.remove("hidden");
-      }
+  summaryName.textContent = `${inputName.value.trim()} ${inputSurname.value.trim()}`.trim() || "—";
+  summaryEmail.textContent = inputEmail.value.trim() || "—";
+  summaryPhone.textContent = getPhoneFull() || "—";
+  summaryDate.textContent = state.date ? formatDateShort(state.date) : "—";
+  summaryTime.textContent = state.time || "—";
+  summaryGuests.textContent = guestsCount ? `${guestsCount}` : "—";
+  summaryRequests.textContent = inputRequests.value.trim() || "None";
 
+  if (guestsCount > 0) {
+    summaryDepositValue.textContent = `${totalDeposit} GEL (${guestsCount} × ${DEPOSIT_AMOUNT} GEL)`;
+    summaryDepositRow.classList.remove("hidden");
+  } else {
+    summaryDepositValue.textContent = "—";
+    summaryDepositRow.classList.add("hidden");
+  }
+}
       function buildPayload() {
         return {
           first_name: inputName.value.trim(),
@@ -2145,7 +2153,7 @@
           guests: Number(state.guests),
           requests: inputRequests.value.trim(),
           deposit_required: true,
-          deposit_amount_gel: DEPOSIT_AMOUNT,
+          deposit_amount_gel: (Number(state.guests) || 0) * DEPOSIT_AMOUNT,
         };
       }
 
