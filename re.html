@@ -777,8 +777,7 @@
           </h1>
 
           <p class="reservation-copy text-[#2f2f2f]">
-            All reservation requests are sent via WhatsApp to our team. A non-refundable deposit of 100 GEL is
-            required. The deposit will be applied towards the final bill upon your visit.
+            Reservations are available by request. A deposit of 50 GEL per guest is required to secure your table.
           </p>
         </div>
 
@@ -801,7 +800,7 @@
             <section id="step-1" class="space-y-5">
               <div>
                 <h3 class="heading-font text-xl mb-1">Your details</h3>
-                <p class="subtle-copy">Minimal typing, no weird inputs, just the essentials.</p>
+                
               </div>
 
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -870,7 +869,7 @@
             <section id="step-2" class="space-y-5 hidden">
               <div>
                 <h3 class="heading-font text-xl mb-1">Date, time and guests</h3>
-                <p class="subtle-copy">24-hour time, 15-minute intervals, no ugly browser pickers.</p>
+              
               </div>
 
               <div id="field-date" class="field-wrap selector-wrap" data-selector="date">
@@ -943,7 +942,7 @@
               </div>
 
               <div id="large-group-note" class="hint-box hidden">
-                A non-refundable deposit of 100 GEL is required for all reservations. The deposit will be applied towards your final bill.
+                A non-refundable deposit of 50 GEL per person is required for all reservations. The deposit will be applied towards your final bill.
               </div>
 
               <div class="flex justify-between gap-3 pt-2">
@@ -1966,7 +1965,7 @@
       function updateLargeGroupNote() {
         largeGroupNote.classList.remove("hidden");
         largeGroupNote.innerHTML =
-          "A non-refundable deposit of 100 GEL is required for all reservations. The deposit will be applied towards your final bill.";
+          "A non-refundable deposit of 50 GEL per person is required for all reservations. The deposit will be applied towards your final bill.";
       }
 
       function validateStep1() {
