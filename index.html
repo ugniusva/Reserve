@@ -4,21 +4,16 @@
     <meta charset="UTF-8" />
     <title>Reserve</title>
 
-    <!-- ✅ SEO: meta description -->
     <meta
       name="description"
       content="Reserve is a discreet casual fine dining restaurant in Tbilisi, led by chef Tomi Rissanen. Discover seasonal tasting menus, breakfast, and a carefully curated wine cellar—including Château Leuville—served in an intimate seven-table setting."
     />
 
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-    <!-- tab icon -->
     <link rel="icon" type="image/svg+xml" href="images/R.svg" />
-
     <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
-      /* === LOCAL FONTS (from /fonts) === */
       @font-face {
         font-family: "LatoLocal";
         src: url("fonts/Lato-Regular.ttf") format("truetype");
@@ -26,6 +21,7 @@
         font-style: normal;
         font-display: swap;
       }
+
       @font-face {
         font-family: "GlacialBold";
         src: url("fonts/GlacialIndifference-Bold.otf") format("opentype");
@@ -34,16 +30,39 @@
         font-display: swap;
       }
 
-      #logo-link { position: relative; display: inline-block; }
-      #logo-link img { display: block; }
-      #logo-link .logo-black { display: none; }
-      header.header-dark #logo-link .logo-white { display: none; }
-      header.header-dark #logo-link .logo-black { display: block; }
+      body {
+        font-family: "LatoLocal", Arial, sans-serif;
+      }
 
-      body { font-family: "LatoLocal", Arial, sans-serif; }
-      .address-font { font-family: "GlacialBold", "LatoLocal", Arial, sans-serif; }
+      .address-font {
+        font-family: "GlacialBold", "LatoLocal", Arial, sans-serif;
+      }
 
-      .hero-video { object-fit: cover; }
+      #logo-link {
+        position: relative;
+        display: inline-block;
+      }
+
+      #logo-link img {
+        display: block;
+      }
+
+      #logo-link .logo-black {
+        display: none;
+      }
+
+      header.header-dark #logo-link .logo-white {
+        display: none;
+      }
+
+      header.header-dark #logo-link .logo-black {
+        display: block;
+      }
+
+      .hero-video {
+        object-fit: cover;
+      }
+
       .hero-overlay {
         background: linear-gradient(
           to bottom,
@@ -53,92 +72,234 @@
         );
       }
 
-      /* curtain color */
-      .page-panel { background-color: #D0842F; }
+      .page-panel {
+        background-color: #d0842f;
+      }
 
       #page-logo {
         opacity: 0;
         transition: opacity 0.5s ease-in-out 0.1s;
       }
-      #page-logo.logo-visible { opacity: 1; }
 
-      /* fade-in on scroll (50% longer) */
+      #page-logo.logo-visible {
+        opacity: 1;
+      }
+
       .reveal {
         opacity: 0;
         transform: translateY(10px);
         transition: opacity 1050ms ease, transform 1050ms ease;
         will-change: opacity, transform;
       }
+
       .reveal.is-visible {
         opacity: 1;
         transform: translateY(0);
       }
+
       @media (prefers-reduced-motion: reduce) {
-        .reveal { transition: none; transform: none; }
+        .reveal {
+          transition: none;
+          transform: none;
+        }
       }
 
       .hero-center-shift {
-        transform: translate(-10px, 0px); /* move UP */
+        transform: translate(-10px, 0px);
       }
+
       .herobutton-center-shift {
-        transform: translate(+15px, 10px); /* move UP */
+        transform: translate(15px, 10px);
       }
 
-      /* header color swap (white on hero, dark on gray) */
-      header { transition: color 300ms ease; }
-      header a { transition: color 300ms ease, opacity 200ms ease; }
-      header.header-dark { color: #111 !important; }
-      header.header-dark a { color: #111 !important; }
-      header.header-dark .lang-line { background-color: #111 !important; }
+      header {
+        transition: color 300ms ease;
+      }
 
-      /* small social buttons */
+      header a {
+        transition: color 300ms ease, opacity 200ms ease;
+      }
+
+      header.header-dark {
+        color: #111 !important;
+      }
+
+      header.header-dark a {
+        color: #111 !important;
+      }
+
+      header.header-dark .lang-line {
+        background-color: #111 !important;
+      }
+
       .social-btn {
         opacity: 0.75;
         transition: opacity 200ms ease, transform 200ms ease;
       }
-      .social-btn:hover { opacity: 1; transform: translateY(-1px); }
-      .social-btn:active { transform: translateY(0); }
 
-      /* ====== HEADER POSITIONING FIXES ====== */
+      .social-btn:hover {
+        opacity: 1;
+        transform: translateY(-1px);
+      }
+
+      .social-btn:active {
+        transform: translateY(0);
+      }
+
       .brand-logo {
         height: 188px;
         width: auto;
         display: block;
       }
+
       @media (min-width: 768px) {
-        .brand-logo { height: 222px; }
+        .brand-logo {
+          height: 222px;
+        }
       }
+
       .top-logo-up {
-        transform: translate(20px,-45px);
+        transform: translate(20px, -45px);
       }
 
       .top-buttons-down {
         transform: translateY(40px);
       }
 
-      /* ====== HERO (CENTER) LOGO ====== */
       .hero-logo {
         width: min(320px, 78vw);
         height: auto;
         display: block;
-        transform: translate(-10px, 42px); /* middle logo DOWN more */
+        transform: translate(-10px, 42px);
+      }
+
+      .about-section-bg {
+  background-image: url("images/background4.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.reservations-section-bg {
+  background-image: url("images/background3.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.hours-section-bg {
+  background-image: url("images/background7.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+      .split-grid {
+        min-height: 100vh;
+      }
+
+      .split-copy {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 5rem 1.5rem;
+      }
+
+      .split-copy-inner {
+        width: 100%;
+        max-width: 38rem;
+      }
+
+      .split-copy h2 {
+        font-family: "Helvetica Neue", "Segoe UI", Arial, sans-serif;
+        font-weight: 500;
+        letter-spacing: 0.12em;
+        color: #111111;
+      }
+
+      .split-copy p,
+      .split-copy li {
+        color: #222;
+      }
+
+      .split-media {
+        min-height: 46vh;
+      }
+
+      .split-media img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+      
+
+      @media (min-width: 1024px) {
+        .split-grid {
+          min-height: 100vh;
+        }
+
+        .split-media {
+          min-height: 100vh;
+        }
+
+        .split-copy {
+          padding: 7rem 3.5rem;
+        }
+      }
+
+      @media (max-width: 900px) {
+  .about-section-bg,
+  .reservations-section-bg,
+  .hours-section-bg {
+    position: relative;
+  }
+
+  .about-section-bg::before,
+  .reservations-section-bg::before,
+  .hours-section-bg::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.5);
+    z-index: 0;
+  }
+
+  .about-section-bg > *,
+  .reservations-section-bg > *,
+  .hours-section-bg > * {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+@media (max-width: 768px) and (orientation: portrait) {
+  .top-logo-up {
+    transform: translate(-2px, -45px);
+  }
+}
+      .copyright-strip {
+        background: #111111;
+        color: rgba(255, 255, 255, 0.72);
+      }
+
+      .facebook-icon {
+        width: 1.25rem;
+        height: 1.25rem;
+        filter: brightness(0) invert(1);
       }
     </style>
   </head>
 
   <body class="bg-[#D0842F] text-[#1a1a1a]">
-    <!-- ===== CURTAIN OVERLAY (hidden until click) ===== -->
     <div
       id="page-overlay"
       class="fixed inset-0 z-40 pointer-events-none opacity-0 transition-opacity duration-300"
     >
       <div
         id="page-panel"
-        class="page-panel absolute inset-0 transform -translate-y-full
-               transition-transform duration-[1050ms] ease-in-out
-               flex items-center justify-center"
+        class="page-panel absolute inset-0 transform -translate-y-full transition-transform duration-[1050ms] ease-in-out flex items-center justify-center"
       >
-        <!-- curtain logo instead of text -->
         <div id="page-logo" class="text-white">
           <img
             src="images/logowhite.svg"
@@ -152,30 +313,22 @@
 
     <div id="top"></div>
 
-    <!-- HEADER -->
     <header
       id="site-header"
       class="fixed top-0 left-0 w-full z-20 flex items-start justify-between px-4 sm:px-10 pt-0 pb-0 text-white"
     >
-      <!-- LEFT buttons DOWN -->
       <div class="top-buttons-down flex items-center gap-2 sm:gap-4 text-sm sm:text-base md:text-xl tracking-wide">
-        
-
         <a href="#top" class="hover:opacity-80">EN</a>
-
         <span class="hidden sm:inline">|</span>
-
         <a href="ge.html" class="hover:opacity-80">GE</a>
       </div>
 
-      <!-- TOP logo UP -->
       <a
         href="#top"
         id="logo-link"
         class="opacity-80 hover:opacity-80"
         aria-label="Reserve"
       >
-        <!-- white version (default on hero) -->
         <img
           src="images/logowhite.svg"
           alt="Reserve Restaurant logo"
@@ -183,7 +336,6 @@
           draggable="false"
         />
 
-        <!-- black version (shows when header-dark) -->
         <img
           src="images/logoblack.svg"
           alt="Reserve Restaurant logo"
@@ -192,7 +344,6 @@
         />
       </a>
 
-      <!-- RIGHT buttons DOWN -->
       <nav class="top-buttons-down flex items-center gap-8 text-base md:text-lg">
         <a href="reservation.html" data-transition class="hover:opacity-80">
           Reservations
@@ -203,7 +354,6 @@
       </nav>
     </header>
 
-    <!-- hero + video -->
     <section
       id="hero"
       class="relative min-h-screen w-full flex items-center justify-center overflow-hidden text-white bg-black"
@@ -224,12 +374,10 @@
       <div class="hero-overlay absolute inset-0"></div>
 
       <div class="relative z-10 flex flex-col items-center justify-center text-center px-4">
-        <!-- ✅ SEO: single H1 for the page -->
         <h1 class="sr-only">
           Reserve Restaurant in Tbilisi – Seasonal Tasting Menus & Casual Fine Dining
         </h1>
 
-        <!-- middle logo DOWN -->
         <img
           src="images/logowhite2.svg"
           alt="Reserve Restaurant wordmark"
@@ -239,10 +387,11 @@
 
         <div class="hero-center-shift">
           <a
-          href="https://www.google.com/maps/place/Reserve+Restaurant/@41.6969819,44.7983471,17.5z/data=!4m6!3m5!1s0x40446df0e1b70b71:0xc1f3c739a80e9df4!8m2!3d41.6962256!4d44.7970109!16s%2Fg%2F11sv1yg5r8?entry=ttu&g_ep=EgoyMDI2MDEyMS4wIKXMDSoASAFQAw%3D%3D"
-        class="address-font text-sm md:text-base tracking-[0.25em] mb-8 underline-offset-4 hover:underline cursor-pointer">
+            href="https://www.google.com/maps/place/Reserve+Restaurant/@41.6969819,44.7983471,17.5z/data=!4m6!3m5!1s0x40446df0e1b70b71:0xc1f3c739a80e9df4!8m2!3d41.6962256!4d44.7970109!16s%2Fg%2F11sv1yg5r8?entry=ttu&g_ep=EgoyMDI2MDEyMS4wIKXMDSoASAFQAw%3D%3D"
+            class="address-font text-sm md:text-base tracking-[0.25em] mb-8 underline-offset-4 hover:underline cursor-pointer"
+          >
             3 9 APRILI ST, TBILISI
-        </a>
+          </a>
 
           <div class="herobutton-center-shift">
             <div class="flex items-center gap-12 text-base md:text-lg">
@@ -263,9 +412,7 @@
       <button
         id="video-toggle"
         type="button"
-        class="z-10 absolute bottom-6 left-6 flex items-center justify-center
-               rounded-full w-12 h-12 border border-white/70 bg-black/40
-               backdrop-blur-sm text-base hover:bg-black/70 transition"
+        class="z-10 absolute bottom-6 left-6 flex items-center justify-center rounded-full w-12 h-12 border border-white/70 bg-black/40 backdrop-blur-sm text-base hover:bg-black/70 transition"
         aria-label="Pause or play the background video"
       >
         ❚❚
@@ -273,134 +420,116 @@
     </section>
 
     <!-- ABOUT -->
-    <section
-      id="about-section"
-      class="text-[#1a1a1a]"
-      style="
-        background-image: url('images/background4.jpg');
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-      "
-      aria-label="About Reserve"
-    >
-      <div class="min-h-[100vh] px-6 sm:px-10 md:px-16 py-20 md:py-28">
-        <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-[0.9fr_1.1fr] gap-12 lg:gap-14">
-          <div class="lg:min-h-[90vh] flex items-center">
-            <div class="max-w-lg lg:max-w-xl space-y-8 md:space-y-10 reveal">
+    <section id="about-section" class="about-section-bg" aria-label="About Reserve">
+      <div class="grid grid-cols-1 lg:grid-cols-2 split-grid">
+        <div class="split-copy">
+          <div class="split-copy-inner reveal space-y-8">
+            <h2 class="text-3xl sm:text-4xl md:text-5xl">About</h2>
 
-              
-              <!-- ✅ SEO: H2 -->
-              <h2 class="text-3xl sm:text-4xl md:text-5xl tracking-[0.12em] text-[#111111]"
-    style='font-family: "Helvetica Neue", "Segoe UI", Arial, sans-serif; font-weight: 500;'>
-  About
-</h2>
+            <p class="text-sm sm:text-base md:text-lg leading-7 md:leading-8">
+              Reserve is a casual fine dining restaurant in Tbilisi. Seasonal menus are created by chef
+              Tomi Rissanen, who began his career in Finland and has worked across Western and Eastern
+              Europe, the Middle East, and Asia, where he previously led his own restaurant.
+            </p>
 
+            <p class="text-sm sm:text-base md:text-lg leading-7 md:leading-8">
+              His cooking is based on classical French technique, with a Scandinavian approach and
+              restrained Asian influences. The kitchen works with produce from our own farm, an
+              in-house bakery, and a breakfast menu.
+            </p>
 
-
-
-              <p class="text-sm sm:text-base md:text-lg text-[#3a3a3a] leading-7 md:leading-8">
-                Reserve is a casual fine dining restaurant in Tbilisi.
-                Seasonal menus are created by chef Tomi Rissanen, who began his career in Finland and has worked across Western and Eastern Europe, the Middle East, and Asia, where he previously led his own restaurant. His cooking is based on classical French technique, with a Scandinavian approach and restrained Asian influences.
-                The kitchen works with produce from our own farm, an in-house bakery, and a breakfast menu.
-                The restaurant is located in the historic center of the city, in a small park named after Oliver Wardrop, behind the Parliament of Georgia.
-                Reserve operates in a discreet seven-table format.
-              </p>
-            </div>
+            <p class="text-sm sm:text-base md:text-lg leading-7 md:leading-8">
+              The restaurant is located in the historic center of the city, in a small park named after
+              Oliver Wardrop, behind the Parliament of Georgia. Reserve operates in a discreet
+              seven-table format.
+            </p>
           </div>
+        </div>
 
-          <div class="lg:min-h-[90vh] flex items-center">
-            <div class="w-full reveal">
-              <div
-                class="rounded-[1.75rem] shadow-2xl bg-[#f0f0f0] border border-black/5
-                       w-full h-[46vh] sm:h-[50vh] lg:h-[65vh]
-                       mx-auto lg:ml-12"
-              >
-                <div class="w-full h-full p-6 md:p-8">
-                  <div class="w-full h-full rounded-[1.25rem] overflow-hidden bg-[#eaeaea]">
-                    <img
-                      src="images/image1.jpg"
-                      alt="Chef Tomi Rissanen creating a seasonal fine dining menu at Reserve in Tbilisi"
-                      class="w-full h-full object-contain"
-                      draggable="false"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
+        <div class="split-media reveal">
+          <img
+            src="images/image1.jpg"
+            alt="Chef Tomi Rissanen creating a seasonal fine dining menu at Reserve in Tbilisi"
+            draggable="false"
+          />
         </div>
       </div>
     </section>
 
-    <!-- ===== THIRD SECTION (RESERVATION + HOURS) ===== -->
-    <section
-      id="reservation-hours"
-      class="text-[#111]"
-      style="
-        background-image: url('images/background3.jpg');
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-      "
-      aria-label="Reservations and opening hours"
-    >
-      <div class="min-h-[100vh] px-6 md:px-16 py-24 md:py-32">
-        <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-14 items-start mt-32">
-          <div class="space-y-6 reveal">
-            <!-- ✅ SEO: H2 -->
-            <h2 class="text-3xl sm:text-4xl md:text-5xl tracking-[0.12em] text-[#111111]"
-    style='font-family: "Helvetica Neue", "Segoe UI", Arial, sans-serif; font-weight: 500;'>
-  Reservations
-</h2>
+    <!-- RESERVATIONS -->
+    <section id="reservations-section" class="reservations-section-bg" aria-label="Reservations information">
+      <div class="grid grid-cols-1 lg:grid-cols-2 split-grid">
+        <div class="split-media reveal lg:order-1 order-2">
+          <img
+            src="images/image2.png"
+            alt="Elegant Reserve Restaurant interior and table setting"
+            draggable="false"
+          />
+        </div>
 
+        <div class="split-copy lg:order-2 order-1">
+          <div class="split-copy-inner reveal space-y-8">
+            <h2 class="text-3xl sm:text-4xl md:text-5xl">Reservations</h2>
 
-            <div class="text-base md:text-lg leading-relaxed text-[#222] space-y-4 max-w-xl">
+            <div class="space-y-4 text-sm sm:text-base md:text-lg leading-7 md:leading-8">
               <p>Reservations are recommended due to the limited number of tables.</p>
               <p>Bookings are available online.</p>
               <p>Tasting menus are designed per person.</p>
               <p>
                 Please inform us in advance of any dietary restrictions. While we do our best to
-                accommodate our guests, the increasing range of allergies and dietary requirements
-                means that not all ingredient substitutions can be guaranteed.
+                accommodate our guests, the increasing range of allergies and dietary requirements means
+                that not all ingredient substitutions can be guaranteed.
               </p>
               <p>
-                The maximum number of guests seated at one table is ten. This option must be
-                requested and confirmed in advance. Larger tables are not possible due to the size
-                and format of the restaurant.
+                The maximum number of guests seated at one table is ten. This option must be requested
+                and confirmed in advance. Larger tables are not possible due to the size and format of
+                the restaurant.
               </p>
               <p>Prices listed on the menu are inclusive of all taxes and service charges.</p>
               <p>For cancellations, changes, or delays, we ask that you notify the restaurant in advance.</p>
               <p>Château Leuville wines are offered at a 30% reduction for off-premise purchase.</p>
               <p>All other selections from our wine cellar are available at a 10% reduction.</p>
-              <p>Dogs are permitted provided they weigh up to 5 kg and are kept in a carrier or in the owner’s arms at all times.</p>
+              <p>
+                Dogs are permitted provided they weigh up to 5 kg and are kept in a carrier or in the
+                owner’s arms at all times.
+              </p>
             </div>
           </div>
+        </div>
+      </div>
+    </section>
 
-          <div class="space-y-10 reveal lg:pl-10">
-            <div class="space-y-4">
-              <!-- ✅ SEO: H2 -->
-                <h2 class="text-3xl sm:text-4xl md:text-5xl tracking-[0.12em] text-[#111111]"
-                style='font-family: "Helvetica Neue", "Segoe UI", Arial, sans-serif; font-weight: 500;'>
-              Hours
-            </h2>
+    <!-- HOURS -->
+    <section id="hours-section" class="hours-section-bg" aria-label="Opening hours">
+      <div class="grid grid-cols-1 lg:grid-cols-2 split-grid">
+        <div class="split-copy">
+          <div class="split-copy-inner reveal space-y-8">
+            <h2 class="text-3xl sm:text-4xl md:text-5xl">Hours</h2>
 
-
-              <div class="space-y-2 text-base md:text-lg text-[#222]">
-                <p class="font-semibold text-[#111]">Kitchen hours</p>
+            <div class="space-y-4 text-sm sm:text-base md:text-lg leading-7 md:leading-8">
+              <div>
+                <p class="font-semibold text-[#111] mb-2">Kitchen hours</p>
                 <p>09:00–14:00 — Breakfast</p>
                 <p>14:00–22:00 — À la carte and tasting menus</p>
                 <p class="text-[#555]">(Monday, Tuesday, Wednesday, Thursday, Sunday)</p>
                 <p>14:00–23:00 — À la carte and tasting menus</p>
                 <p class="text-[#555]">(Friday, Saturday)</p>
+              </div>
 
-                <p class="pt-4 font-semibold text-[#111]">Restaurant hours</p>
+              <div class="pt-4">
+                <p class="font-semibold text-[#111] mb-2">Restaurant hours</p>
                 <p>The restaurant is open daily until 00:00</p>
               </div>
             </div>
           </div>
+        </div>
 
+        <div class="split-media reveal">
+          <img
+            src="images/image3.png"
+            alt="Reserve Restaurant dining atmosphere during service"
+            draggable="false"
+          />
         </div>
       </div>
     </section>
@@ -409,7 +538,6 @@
     <section class="bg-[#D0842F] py-24 md:py-32 px-6 md:px-16" aria-label="Instagram gallery">
       <div class="max-w-full mx-auto grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
         <div class="space-y-5 reveal">
-          <!-- ✅ SEO: H2 -->
           <h2 class="text-5xl md:text-6xl font-semibold leading-tight text-[#111111]">
             Follow Us On<br />Instagram
           </h2>
@@ -464,52 +592,67 @@
       </div>
     </section>
 
+    <!-- COPYRIGHT STRIP -->
+    <section class="copyright-strip py-4 px-6 md:px-16">
+      <div class="max-w-7xl mx-auto text-center text-sm tracking-wide">
+        © <span id="copyright-year"></span> Reserve Restaurant. All rights reserved.
+      </div>
+    </section>
+
     <!-- FOOTER SOCIAL -->
     <footer class="bg-black py-10">
-  <div class="max-w-7xl mx-auto px-6 md:px-16 flex items-center justify-center gap-5">
-    
-    <a
-      href="https://api.whatsapp.com/send/?phone=%2B995595313344&text=&type=phone_number&app_absent=0"
-      target="_blank"
-      aria-label="WhatsApp"
-      class="social-btn inline-flex items-center justify-center w-10 h-10 rounded-full border border-white/20 hover:border-white/40"
-    >
-      <img
-        src="images/Digital_Glyph_White.svg"
-        alt="WhatsApp icon"
-        class="w-5 h-5"
-        draggable="false"
-      />
-    </a>
+      <div class="max-w-7xl mx-auto px-6 md:px-16 flex items-center justify-center gap-5 flex-wrap">
+        <a
+          href="https://api.whatsapp.com/send/?phone=%2B995595313344&text=&type=phone_number&app_absent=0"
+          target="_blank"
+          aria-label="WhatsApp"
+          class="social-btn inline-flex items-center justify-center w-10 h-10 rounded-full border border-white/20 hover:border-white/40"
+        >
+          <img
+            src="images/Digital_Glyph_White.svg"
+            alt="WhatsApp icon"
+            class="w-5 h-5"
+            draggable="false"
+          />
+        </a>
 
-    <a
-      href="https://www.instagram.com/reserve.tbilisi/"
-      target="_blank"
-      aria-label="Instagram"
-      class="social-btn inline-flex items-center justify-center w-10 h-10 rounded-full border border-white/20 hover:border-white/40"
-    >
-      <img
-        src="images/Instagram_Glyph_White.svg"
-        alt="Instagram icon"
-        class="w-5 h-5"
-        draggable="false"
-      />
-    </a>
+        <a
+          href="https://www.instagram.com/reserve.tbilisi/"
+          target="_blank"
+          aria-label="Instagram"
+          class="social-btn inline-flex items-center justify-center w-10 h-10 rounded-full border border-white/20 hover:border-white/40"
+        >
+          <img
+            src="images/Instagram_Glyph_White.svg"
+            alt="Instagram icon"
+            class="w-5 h-5"
+            draggable="false"
+          />
+        </a>
 
-    <a
-      href="mailto:info@reservetbilisi.ge"
-      class="text-white hover:underline underline-offset-4 transition"
-    >
-      info@reservetbilisi.ge
-    </a>
+        <a
+          href="https://www.facebook.com/share/17eqKC45hE/?mibextid=wwXIfr"
+          aria-label="Facebook"
+          class="social-btn inline-flex items-center justify-center w-10 h-10 rounded-full border border-white/20 hover:border-white/40"
+        >
+          <img
+            src="images/facebook-svgrepo-com.svg"
+            alt="Facebook icon"
+            class="facebook-icon"
+            draggable="false"
+          />
+        </a>
 
-  </div>
-</footer>
-
-
+        <a
+          href="mailto:info@reservetbilisi.ge"
+          class="text-white hover:underline underline-offset-4 transition"
+        >
+          info@reservetbilisi.ge
+        </a>
+      </div>
+    </footer>
 
     <script>
-      // curtain transition
       const overlay = document.getElementById("page-overlay");
       const panel = document.getElementById("page-panel");
       const logo = document.getElementById("page-logo");
@@ -535,14 +678,12 @@
         });
       });
 
-      // logo click -> top
       const logoLink = document.getElementById("logo-link");
       logoLink.addEventListener("click", (e) => {
         e.preventDefault();
         window.scrollTo({ top: 0, behavior: "smooth" });
       });
 
-      // video toggle
       const video = document.getElementById("hero-video");
       const toggleBtn = document.getElementById("video-toggle");
       let isPaused = false;
@@ -558,7 +699,6 @@
         isPaused = !isPaused;
       });
 
-      // reveal on scroll (about + instagram)
       const revealEls = Array.from(document.querySelectorAll(".reveal"));
       const io = new IntersectionObserver(
         (entries) => {
@@ -573,7 +713,6 @@
       );
       revealEls.forEach((el) => io.observe(el));
 
-      // header turns dark after hero
       const header = document.getElementById("site-header");
       const hero = document.getElementById("hero");
 
@@ -587,6 +726,8 @@
         { threshold: 0.2, rootMargin: "200px 0px 0px 0px" }
       );
       heroIO.observe(hero);
+
+      document.getElementById("copyright-year").textContent = new Date().getFullYear();
     </script>
   </body>
 </html>
