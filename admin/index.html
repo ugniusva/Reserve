@@ -582,6 +582,25 @@ function formatAdminUiDate(dateStr) {
   });
 }
 
+
+function normalizeCustomIsoDate(value) {
+  const raw = String(value || "").trim();
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    return raw;
+  }
+
+  const parsed = new Date(raw);
+  if (Number.isNaN(parsed.getTime())) {
+    return "";
+  }
+
+  const year = parsed.getFullYear();
+  const month = String(parsed.getMonth() + 1).padStart(2, "0");
+  const day = String(parsed.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 function setCustomStatus(type, message) {
   customReservationStatus.classList.remove("hidden");
   customReservationStatus.textContent = message;
@@ -1007,6 +1026,13 @@ customRequestsInput.addEventListener("input", updateCustomCreateButton);
 btnCustomCreate.addEventListener("click", async () => {
   if (btnCustomCreate.disabled) return;
 
+  const normalizedDate = normalizeCustomIsoDate(customReservationState.date);
+
+  if (!normalizedDate) {
+    setCustomStatus("error", "Invalid date.");
+    return;
+  }
+
   customReservationState.creating = true;
   updateCustomCreateButton();
   clearCustomStatus();
@@ -1023,7 +1049,7 @@ btnCustomCreate.addEventListener("click", async () => {
         phone: customPhoneInput.value.trim(),
         requests: customRequestsInput.value.trim(),
         guests: customReservationState.guests,
-        booking_date: customReservationState.date,
+        booking_date: normalizedDate,
         booking_time: customReservationState.time,
       }),
     });
@@ -1047,7 +1073,7 @@ btnCustomCreate.addEventListener("click", async () => {
     updateCustomCreateButton();
   }
 });
-    }
+}
 
     quickTodayPaid.addEventListener("click", () => {
       currentQuickFilter = "today_paid";
