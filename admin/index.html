@@ -96,6 +96,16 @@
             </button>
           </div>
 
+
+          <div class="flex items-end">
+            <button
+              id="btn-custom-reservation"
+              class="px-4 py-2 rounded-md bg-[#D0842F] text-white hover:opacity-90 transition"
+            >
+              Custom reservation
+            </button>
+          </div>
+
           <div class="flex items-end">
             <button
               id="btn-logout"
@@ -104,6 +114,9 @@
               Log out
             </button>
           </div>
+
+
+
         </div>
       </div>
 
@@ -527,6 +540,414 @@
           </tr>
         `;
       }
+      const btnCustomReservation = document.getElementById("btn-custom-reservation");
+const customReservationModal = document.getElementById("custom-reservation-modal");
+const btnCustomClose = document.getElementById("btn-custom-close");
+const customReservationStatus = document.getElementById("custom-reservation-status");
+
+const customGuestsInput = document.getElementById("custom-guests");
+const customFullNameInput = document.getElementById("custom-full-name");
+const customPhoneInput = document.getElementById("custom-phone");
+const customRequestsInput = document.getElementById("custom-requests");
+
+const customDatesWrap = document.getElementById("custom-dates-wrap");
+const customTimesWrap = document.getElementById("custom-times-wrap");
+const customSelectedDate = document.getElementById("custom-selected-date");
+const customSelectedTime = document.getElementById("custom-selected-time");
+const btnCustomCreate = document.getElementById("btn-custom-create");
+
+const customReservationState = {
+  guests: null,
+  date: "",
+  time: "",
+  dates: [],
+  times: [],
+  loadingDates: false,
+  loadingTimes: false,
+  creating: false,
+};
+
+let customGuestsTimer = null;
+
+function formatAdminUiDate(dateStr) {
+  const date = new Date(`${dateStr}T00:00:00`);
+  return date.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    weekday: "short",
+  });
+}
+
+function setCustomStatus(type, message) {
+  customReservationStatus.classList.remove("hidden");
+  customReservationStatus.textContent = message;
+
+  if (type === "error") {
+    customReservationStatus.className = "rounded-lg border px-4 py-3 text-sm mb-5 border-red-400/30 bg-red-500/10 text-red-300";
+    return;
+  }
+
+  if (type === "success") {
+    customReservationStatus.className = "rounded-lg border px-4 py-3 text-sm mb-5 border-green-400/30 bg-green-500/10 text-green-300";
+    return;
+  }
+
+  customReservationStatus.className = "rounded-lg border px-4 py-3 text-sm mb-5 border-white/20 bg-white/5 text-white/80";
+}
+
+function clearCustomStatus() {
+  customReservationStatus.classList.add("hidden");
+  customReservationStatus.textContent = "";
+}
+
+function resetCustomReservationState() {
+  customReservationState.guests = null;
+  customReservationState.date = "";
+  customReservationState.time = "";
+  customReservationState.dates = [];
+  customReservationState.times = [];
+  customReservationState.loadingDates = false;
+  customReservationState.loadingTimes = false;
+  customReservationState.creating = false;
+
+  customGuestsInput.value = "";
+  customFullNameInput.value = "";
+  customPhoneInput.value = "";
+  customRequestsInput.value = "";
+
+  customSelectedDate.textContent = "No date selected";
+  customSelectedTime.textContent = "No time selected";
+
+  clearCustomStatus();
+  renderCustomDates();
+  renderCustomTimes();
+  updateCustomCreateButton();
+}
+
+function openCustomReservationModal() {
+  resetCustomReservationState();
+  customReservationModal.classList.remove("hidden");
+  customReservationModal.classList.add("flex");
+}
+
+function closeCustomReservationModal() {
+  customReservationModal.classList.add("hidden");
+  customReservationModal.classList.remove("flex");
+}
+
+function updateCustomCreateButton() {
+  const ready =
+    Number.isInteger(customReservationState.guests) &&
+    customReservationState.guests >= 1 &&
+    customReservationState.guests <= 22 &&
+    customReservationState.date &&
+    customReservationState.time &&
+    customFullNameInput.value.trim() &&
+    !customReservationState.creating;
+
+  btnCustomCreate.disabled = !ready;
+}
+
+function renderCustomDates() {
+  if (!Number.isInteger(customReservationState.guests)) {
+    customDatesWrap.innerHTML = `
+      <div class="text-white/50 text-sm">
+        Enter the guest count first.
+      </div>
+    `;
+    return;
+  }
+
+  if (customReservationState.loadingDates) {
+    customDatesWrap.innerHTML = `
+      <div class="text-white/60 text-sm">
+        Loading available dates...
+      </div>
+    `;
+    return;
+  }
+
+  if (!customReservationState.dates.length) {
+    customDatesWrap.innerHTML = `
+      <div class="text-white/50 text-sm">
+        No dates available for this guest count.
+      </div>
+    `;
+    return;
+  }
+
+  customDatesWrap.innerHTML = `
+    <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2">
+      ${customReservationState.dates.map((item) => {
+        const selected = customReservationState.date === item.date;
+        const disabled = !item.available;
+
+        return `
+          <button
+            type="button"
+            class="custom-date-btn px-3 py-3 rounded-lg border text-sm text-left transition
+              ${disabled
+                ? "bg-white/5 border-white/10 text-white/25 cursor-not-allowed"
+                : selected
+                  ? "bg-[#D0842F] border-[#D0842F] text-white"
+                  : "bg-white/10 border-white/10 text-white hover:bg-white/15"}"
+            data-date="${escapeHtml(item.date)}"
+            ${disabled ? "disabled" : ""}
+          >
+            ${escapeHtml(formatAdminUiDate(item.date))}
+          </button>
+        `;
+      }).join("")}
+    </div>
+  `;
+
+  document.querySelectorAll(".custom-date-btn").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const date = button.dataset.date || "";
+      customReservationState.date = date;
+      customReservationState.time = "";
+      customSelectedDate.textContent = formatAdminUiDate(date);
+      customSelectedTime.textContent = "No time selected";
+      renderCustomDates();
+      renderCustomTimes();
+      updateCustomCreateButton();
+      await loadCustomTimesForDate(date);
+    });
+  });
+}
+
+function renderCustomTimes() {
+  if (!customReservationState.date) {
+    customTimesWrap.innerHTML = `
+      <div class="text-white/50 text-sm">
+        Pick a date first.
+      </div>
+    `;
+    return;
+  }
+
+  if (customReservationState.loadingTimes) {
+    customTimesWrap.innerHTML = `
+      <div class="text-white/60 text-sm">
+        Loading available times...
+      </div>
+    `;
+    return;
+  }
+
+  if (!customReservationState.times.length) {
+    customTimesWrap.innerHTML = `
+      <div class="text-white/50 text-sm">
+        No times available for the selected date.
+      </div>
+    `;
+    return;
+  }
+
+  customTimesWrap.innerHTML = `
+    <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2">
+      ${customReservationState.times.map((item) => {
+        const selected = customReservationState.time === item.time;
+        const disabled = !item.available;
+        const secondary =
+          !item.available && item.reason === "min_advance"
+            ? "Too soon"
+            : !item.available
+              ? "Full"
+              : "Available";
+
+        return `
+          <button
+            type="button"
+            class="custom-time-btn px-3 py-3 rounded-lg border text-left transition
+              ${disabled
+                ? "bg-white/5 border-white/10 text-white/25 cursor-not-allowed"
+                : selected
+                  ? "bg-[#D0842F] border-[#D0842F] text-white"
+                  : "bg-white/10 border-white/10 text-white hover:bg-white/15"}"
+            data-time="${escapeHtml(item.time)}"
+            ${disabled ? "disabled" : ""}
+          >
+            <div class="font-medium">${escapeHtml(item.time)}</div>
+            <div class="text-xs mt-1 ${disabled ? "text-white/25" : "text-white/60"}">${escapeHtml(secondary)}</div>
+          </button>
+        `;
+      }).join("")}
+    </div>
+  `;
+
+  document.querySelectorAll(".custom-time-btn").forEach((button) => {
+    button.addEventListener("click", () => {
+      const time = button.dataset.time || "";
+      customReservationState.time = time;
+      customSelectedTime.textContent = time;
+      renderCustomTimes();
+      updateCustomCreateButton();
+    });
+  });
+}
+
+async function loadCustomDates() {
+  if (!Number.isInteger(customReservationState.guests) || customReservationState.guests < 1 || customReservationState.guests > 22) {
+    customReservationState.dates = [];
+    customReservationState.times = [];
+    customReservationState.date = "";
+    customReservationState.time = "";
+    customSelectedDate.textContent = "No date selected";
+    customSelectedTime.textContent = "No time selected";
+    renderCustomDates();
+    renderCustomTimes();
+    updateCustomCreateButton();
+    return;
+  }
+
+  customReservationState.loadingDates = true;
+  customReservationState.dates = [];
+  customReservationState.times = [];
+  customReservationState.date = "";
+  customReservationState.time = "";
+  customSelectedDate.textContent = "No date selected";
+  customSelectedTime.textContent = "No time selected";
+  clearCustomStatus();
+  renderCustomDates();
+  renderCustomTimes();
+  updateCustomCreateButton();
+
+  try {
+    const response = await fetch(
+      `/api/admin/custom-reservation-availability?guests=${encodeURIComponent(customReservationState.guests)}`,
+      {
+        credentials: "same-origin",
+      }
+    );
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok || !data.ok) {
+      throw new Error(data.error || "Failed to load dates.");
+    }
+
+    customReservationState.dates = Array.isArray(data.dates) ? data.dates : [];
+  } catch (error) {
+    customReservationState.dates = [];
+    setCustomStatus("error", String(error?.message || error));
+  } finally {
+    customReservationState.loadingDates = false;
+    renderCustomDates();
+    renderCustomTimes();
+    updateCustomCreateButton();
+  }
+}
+
+async function loadCustomTimesForDate(date) {
+  if (!date) return;
+
+  customReservationState.loadingTimes = true;
+  customReservationState.times = [];
+  clearCustomStatus();
+  renderCustomTimes();
+  updateCustomCreateButton();
+
+  try {
+    const response = await fetch(
+      `/api/admin/custom-reservation-availability?guests=${encodeURIComponent(customReservationState.guests)}&date=${encodeURIComponent(date)}`,
+      {
+        credentials: "same-origin",
+      }
+    );
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok || !data.ok) {
+      throw new Error(data.error || "Failed to load times.");
+    }
+
+    customReservationState.times = Array.isArray(data.slots) ? data.slots : [];
+  } catch (error) {
+    customReservationState.times = [];
+    setCustomStatus("error", String(error?.message || error));
+  } finally {
+    customReservationState.loadingTimes = false;
+    renderCustomTimes();
+    updateCustomCreateButton();
+  }
+}
+
+btnCustomReservation.addEventListener("click", openCustomReservationModal);
+btnCustomClose.addEventListener("click", closeCustomReservationModal);
+
+customReservationModal.addEventListener("click", (event) => {
+  if (event.target === customReservationModal) {
+    closeCustomReservationModal();
+  }
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !customReservationModal.classList.contains("hidden")) {
+    closeCustomReservationModal();
+  }
+});
+
+customGuestsInput.addEventListener("input", () => {
+  clearTimeout(customGuestsTimer);
+
+  const value = Number(customGuestsInput.value);
+  customReservationState.guests = Number.isInteger(value) ? value : null;
+
+  updateCustomCreateButton();
+
+  customGuestsTimer = setTimeout(() => {
+    loadCustomDates();
+  }, 250);
+});
+
+customFullNameInput.addEventListener("input", updateCustomCreateButton);
+customPhoneInput.addEventListener("input", updateCustomCreateButton);
+customRequestsInput.addEventListener("input", updateCustomCreateButton);
+
+btnCustomCreate.addEventListener("click", async () => {
+  if (btnCustomCreate.disabled) return;
+
+  customReservationState.creating = true;
+  updateCustomCreateButton();
+  clearCustomStatus();
+
+  try {
+    const response = await fetch("/api/admin/custom-reservation-create", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        full_name: customFullNameInput.value.trim(),
+        phone: customPhoneInput.value.trim(),
+        requests: customRequestsInput.value.trim(),
+        guests: customReservationState.guests,
+        booking_date: customReservationState.date,
+        booking_time: customReservationState.time,
+      }),
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok || !data.ok) {
+      throw new Error(data.error || "Failed to create reservation.");
+    }
+
+    setCustomStatus("success", "Custom reservation created.");
+    await loadReservations();
+
+    setTimeout(() => {
+      closeCustomReservationModal();
+    }, 500);
+  } catch (error) {
+    setCustomStatus("error", String(error?.message || error));
+  } finally {
+    customReservationState.creating = false;
+    updateCustomCreateButton();
+  }
+});
     }
 
     quickTodayPaid.addEventListener("click", () => {
@@ -573,5 +994,109 @@
 
     loadReservations();
   </script>
+
+
+<div
+  id="custom-reservation-modal"
+  class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 p-4"
+>
+  <div class="w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-2xl border border-white/10 bg-[#0f0f0f] p-5 md:p-6">
+    <div class="flex items-start justify-between gap-4 mb-5">
+      <div>
+        <p class="text-white/60 text-xs uppercase tracking-[0.2em]">Reserve</p>
+        <h2 class="text-2xl md:text-3xl font-semibold mt-2">Create custom reservation</h2>
+        <p class="text-white/60 mt-2">
+          Enter the guest count first. Unavailable dates and times will be greyed out automatically.
+        </p>
+      </div>
+
+      <button
+        id="btn-custom-close"
+        class="px-3 py-2 rounded-md bg-white/10 text-white hover:bg-white/20 transition"
+        type="button"
+      >
+        Close
+      </button>
+    </div>
+
+    <div id="custom-reservation-status" class="hidden rounded-lg border px-4 py-3 text-sm mb-5"></div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-[320px_1fr] gap-6">
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm text-white/70 mb-2">Number of guests</label>
+          <input
+            id="custom-guests"
+            type="number"
+            min="1"
+            max="22"
+            step="1"
+            class="w-full px-3 py-2 rounded-md bg-white text-black"
+            placeholder="1 to 22"
+          />
+          <p class="text-white/45 text-xs mt-2">Up to 22 guests. Same 2-hour minimum and 3-hour block rules apply.</p>
+        </div>
+
+        <div>
+          <label class="block text-sm text-white/70 mb-2">Guest name</label>
+          <input
+            id="custom-full-name"
+            type="text"
+            class="w-full px-3 py-2 rounded-md bg-white text-black"
+            placeholder="Full name"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm text-white/70 mb-2">Phone</label>
+          <input
+            id="custom-phone"
+            type="text"
+            class="w-full px-3 py-2 rounded-md bg-white text-black"
+            placeholder="Optional"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm text-white/70 mb-2">Notes</label>
+          <textarea
+            id="custom-requests"
+            rows="4"
+            class="w-full px-3 py-2 rounded-md bg-white text-black"
+            placeholder="Optional notes"
+          ></textarea>
+        </div>
+
+        <button
+          id="btn-custom-create"
+          type="button"
+          class="w-full px-4 py-3 rounded-md bg-[#D0842F] text-white hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled
+        >
+          Create reservation
+        </button>
+      </div>
+
+      <div class="space-y-6">
+        <section class="rounded-xl border border-white/10 bg-white/5 p-4">
+          <div class="flex items-center justify-between gap-3 mb-4">
+            <h3 class="text-lg font-semibold">1. Pick an available date</h3>
+            <span id="custom-selected-date" class="text-sm text-white/60">No date selected</span>
+          </div>
+          <div id="custom-dates-wrap" class="min-h-[96px]"></div>
+        </section>
+
+        <section class="rounded-xl border border-white/10 bg-white/5 p-4">
+          <div class="flex items-center justify-between gap-3 mb-4">
+            <h3 class="text-lg font-semibold">2. Pick an available time</h3>
+            <span id="custom-selected-time" class="text-sm text-white/60">No time selected</span>
+          </div>
+          <div id="custom-times-wrap" class="min-h-[96px]"></div>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
