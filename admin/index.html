@@ -554,6 +554,9 @@ const customDatesWrap = document.getElementById("custom-dates-wrap");
 const customTimesWrap = document.getElementById("custom-times-wrap");
 const customSelectedDate = document.getElementById("custom-selected-date");
 const customSelectedTime = document.getElementById("custom-selected-time");
+const customCalendarTitle = document.getElementById("custom-calendar-title");
+const customCalendarPrev = document.getElementById("custom-calendar-prev");
+const customCalendarNext = document.getElementById("custom-calendar-next");
 const btnCustomCreate = document.getElementById("btn-custom-create");
 
 const customReservationState = {
@@ -568,6 +571,7 @@ const customReservationState = {
 };
 
 let customGuestsTimer = null;
+let customCalendarCursor = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
 
 function formatAdminUiDate(dateStr) {
   const date = new Date(`${dateStr}T00:00:00`);
@@ -604,6 +608,7 @@ function resetCustomReservationState() {
   customReservationState.guests = null;
   customReservationState.date = "";
   customReservationState.time = "";
+  customCalendarCursor = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
   customReservationState.dates = [];
   customReservationState.times = [];
   customReservationState.loadingDates = false;
@@ -647,9 +652,32 @@ function updateCustomCreateButton() {
 
   btnCustomCreate.disabled = !ready;
 }
+function startOfMonth(date) {
+  return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+function parseLocalDate(dateStr) {
+  const [year, month, day] = String(dateStr).split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
+function formatIsoDateLocal(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+const customMonthNames = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"
+];
 
 function renderCustomDates() {
   if (!Number.isInteger(customReservationState.guests)) {
+    customCalendarTitle.textContent = "";
+    customCalendarPrev.disabled = true;
+    customCalendarNext.disabled = true;
     customDatesWrap.innerHTML = `
       <div class="text-white/50 text-sm">
         Enter the guest count first.
@@ -659,6 +687,9 @@ function renderCustomDates() {
   }
 
   if (customReservationState.loadingDates) {
+    customCalendarTitle.textContent = "";
+    customCalendarPrev.disabled = true;
+    customCalendarNext.disabled = true;
     customDatesWrap.innerHTML = `
       <div class="text-white/60 text-sm">
         Loading available dates...
@@ -668,6 +699,9 @@ function renderCustomDates() {
   }
 
   if (!customReservationState.dates.length) {
+    customCalendarTitle.textContent = "";
+    customCalendarPrev.disabled = true;
+    customCalendarNext.disabled = true;
     customDatesWrap.innerHTML = `
       <div class="text-white/50 text-sm">
         No dates available for this guest count.
@@ -676,28 +710,65 @@ function renderCustomDates() {
     return;
   }
 
-  customDatesWrap.innerHTML = `
-    <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2">
-      ${customReservationState.dates.map((item) => {
-        const selected = customReservationState.date === item.date;
-        const disabled = !item.available;
+  const datesMap = new Map(customReservationState.dates.map((item) => [item.date, item]));
+  const firstAvailableDate = parseLocalDate(customReservationState.dates[0].date);
+  const lastAvailableDate = parseLocalDate(customReservationState.dates[customReservationState.dates.length - 1].date);
 
-        return `
-          <button
-            type="button"
-            class="custom-date-btn px-3 py-3 rounded-lg border text-sm text-left transition
-              ${disabled
-                ? "bg-white/5 border-white/10 text-white/25 cursor-not-allowed"
-                : selected
-                  ? "bg-[#D0842F] border-[#D0842F] text-white"
-                  : "bg-white/10 border-white/10 text-white hover:bg-white/15"}"
-            data-date="${escapeHtml(item.date)}"
-            ${disabled ? "disabled" : ""}
-          >
-            ${escapeHtml(formatAdminUiDate(item.date))}
-          </button>
-        `;
-      }).join("")}
+  const minMonth = startOfMonth(firstAvailableDate);
+  const maxMonth = startOfMonth(lastAvailableDate);
+
+  const currentMonth = customCalendarCursor.getMonth();
+  const currentYear = customCalendarCursor.getFullYear();
+
+  customCalendarTitle.textContent = `${customMonthNames[currentMonth]} ${currentYear}`;
+
+  customCalendarPrev.disabled =
+    customCalendarCursor.getFullYear() === minMonth.getFullYear() &&
+    customCalendarCursor.getMonth() === minMonth.getMonth();
+
+  customCalendarNext.disabled =
+    customCalendarCursor.getFullYear() === maxMonth.getFullYear() &&
+    customCalendarCursor.getMonth() === maxMonth.getMonth();
+
+  const firstDay = new Date(currentYear, currentMonth, 1);
+  const lastDay = new Date(currentYear, currentMonth + 1, 0);
+
+  let firstWeekday = firstDay.getDay();
+  if (firstWeekday === 0) firstWeekday = 7;
+
+  const cells = [];
+
+  for (let i = 1; i < firstWeekday; i += 1) {
+    cells.push(`<div></div>`);
+  }
+
+  for (let day = 1; day <= lastDay.getDate(); day += 1) {
+    const dateObj = new Date(currentYear, currentMonth, day);
+    const iso = formatIsoDateLocal(dateObj);
+    const item = datesMap.get(iso);
+    const selected = customReservationState.date === iso;
+    const disabled = !item || !item.available;
+
+    cells.push(`
+      <button
+        type="button"
+        class="custom-date-btn min-h-[46px] rounded-lg border text-sm transition
+          ${disabled
+            ? "bg-white/5 border-white/10 text-white/25 cursor-not-allowed"
+            : selected
+              ? "bg-[#D0842F] border-[#D0842F] text-white"
+              : "bg-white/10 border-white/10 text-white hover:bg-white/15"}"
+        data-date="${escapeHtml(iso)}"
+        ${disabled ? "disabled" : ""}
+      >
+        ${day}
+      </button>
+    `);
+  }
+
+  customDatesWrap.innerHTML = `
+    <div class="grid grid-cols-7 gap-2">
+      ${cells.join("")}
     </div>
   `;
 
@@ -715,6 +786,29 @@ function renderCustomDates() {
     });
   });
 }
+
+
+
+customCalendarPrev.addEventListener("click", () => {
+  customCalendarCursor = new Date(
+    customCalendarCursor.getFullYear(),
+    customCalendarCursor.getMonth() - 1,
+    1
+  );
+  renderCustomDates();
+});
+
+customCalendarNext.addEventListener("click", () => {
+  customCalendarCursor = new Date(
+    customCalendarCursor.getFullYear(),
+    customCalendarCursor.getMonth() + 1,
+    1
+  );
+  renderCustomDates();
+});
+
+
+
 
 function renderCustomTimes() {
   if (!customReservationState.date) {
@@ -828,6 +922,11 @@ async function loadCustomDates() {
     }
 
     customReservationState.dates = Array.isArray(data.dates) ? data.dates : [];
+
+if (customReservationState.dates.length) {
+  const firstDate = parseLocalDate(customReservationState.dates[0].date);
+  customCalendarCursor = new Date(firstDate.getFullYear(), firstDate.getMonth(), 1);
+}
   } catch (error) {
     customReservationState.dates = [];
     setCustomStatus("error", String(error?.message || error));
@@ -1079,12 +1178,43 @@ btnCustomCreate.addEventListener("click", async () => {
 
       <div class="space-y-6">
         <section class="rounded-xl border border-white/10 bg-white/5 p-4">
-          <div class="flex items-center justify-between gap-3 mb-4">
-            <h3 class="text-lg font-semibold">1. Pick an available date</h3>
-            <span id="custom-selected-date" class="text-sm text-white/60">No date selected</span>
-          </div>
-          <div id="custom-dates-wrap" class="min-h-[96px]"></div>
-        </section>
+  <div class="flex items-center justify-between gap-3 mb-4">
+    <h3 class="text-lg font-semibold">1. Pick an available date</h3>
+    <span id="custom-selected-date" class="text-sm text-white/60">No date selected</span>
+  </div>
+
+  <div class="flex items-center justify-between gap-3 mb-4">
+    <button
+      id="custom-calendar-prev"
+      type="button"
+      class="w-10 h-10 rounded-lg bg-white/10 text-white hover:bg-white/15 transition disabled:opacity-30 disabled:cursor-not-allowed"
+    >
+      &#8249;
+    </button>
+
+    <div id="custom-calendar-title" class="text-sm font-medium text-white tracking-[0.12em] uppercase text-center"></div>
+
+    <button
+      id="custom-calendar-next"
+      type="button"
+      class="w-10 h-10 rounded-lg bg-white/10 text-white hover:bg-white/15 transition disabled:opacity-30 disabled:cursor-not-allowed"
+    >
+      &#8250;
+    </button>
+  </div>
+
+  <div class="grid grid-cols-7 gap-2 mb-2 text-xs text-white/45 text-center">
+    <div>Mon</div>
+    <div>Tue</div>
+    <div>Wed</div>
+    <div>Thu</div>
+    <div>Fri</div>
+    <div>Sat</div>
+    <div>Sun</div>
+  </div>
+
+  <div id="custom-dates-wrap" class="min-h-[280px]"></div>
+</section>
 
         <section class="rounded-xl border border-white/10 bg-white/5 p-4">
           <div class="flex items-center justify-between gap-3 mb-4">
