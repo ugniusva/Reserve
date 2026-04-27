@@ -1,3 +1,13 @@
+
+import { Resend } from "resend";
+
+function json(data, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -217,16 +227,13 @@ async function updateReservationFromCallback(DB, payload, rawBody) {
 
 export async function onRequestPost(context) {
   try {
-    const { DB } = context.env;
+    const { DB, RESEND_API_KEY } = context.env;
 
     const signature = context.request.headers.get("Callback-Signature");
     const rawBody = await context.request.text();
 
     if (!rawBody) {
-      return json({
-        ok: false,
-        error: "Empty callback body.",
-      }, 400);
+      return json({ ok: false, error: "Empty callback body." }, 400);
     }
 
     let signatureValid = false;
@@ -239,10 +246,7 @@ export async function onRequestPost(context) {
       }
 
       if (!signatureValid) {
-        return json({
-          ok: false,
-          error: "Invalid callback signature.",
-        }, 401);
+        return json({ ok: false, error: "Invalid callback signature." }, 401);
       }
     }
 
@@ -258,7 +262,189 @@ export async function onRequestPost(context) {
       }, 400);
     }
 
+    const body = payload?.body || {};
+    const orderId = body.order_id || null;
+    const externalOrderId = body.external_order_id || null;
+    const orderStatusKey = body?.order_status?.key || null;
+
+    let reservationBefore = null;
+
+    if (externalOrderId) {
+      reservationBefore = await DB.prepare(`
+        SELECT *
+        FROM reservations
+        WHERE id = ?
+        LIMIT 1
+      `).bind(externalOrderId).first();
+    }
+
+    if (!reservationBefore && orderId) {
+      reservationBefore = await DB.prepare(`
+        SELECT *
+        FROM reservations
+        WHERE payment_order_id = ?
+        LIMIT 1
+      `).bind(orderId).first();
+    }
+
     const updateResult = await updateReservationFromCallback(DB, payload, rawBody);
+
+    let emailSent = false;
+    let emailError = null;
+
+    const shouldSendEmail =
+      orderStatusKey === "completed" &&
+      reservationBefore &&
+      reservationBefore.email &&
+      reservationBefore.payment_status !== "completed" &&
+      reservationBefore.status !== "confirmed";
+
+    if (shouldSendEmail) {
+      try {
+        const escapeHtml = (value) =>
+          String(value ?? "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+
+        const formatNiceDate = (dateStr) => {
+          const date = new Date(`${dateStr}T00:00:00`);
+          if (Number.isNaN(date.getTime())) return dateStr;
+
+          return date.toLocaleDateString("en-GB", {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          });
+        };
+
+        const firstName = escapeHtml(reservationBefore.first_name || "Guest");
+        const bookingDate = escapeHtml(formatNiceDate(reservationBefore.booking_date));
+        const bookingTime = escapeHtml(reservationBefore.booking_time);
+        const guests = Number(reservationBefore.guests) || 0;
+        const guestText = guests === 1 ? "1 guest" : `${guests} guests`;
+        const depositAmount = Number(reservationBefore.deposit_amount) || 0;
+        const requests = reservationBefore.requests
+          ? escapeHtml(reservationBefore.requests)
+          : "None provided";
+
+        const emailResponse = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${RESEND_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            from: "Reserve Restaurant <info@reservetbilisi.ge>",
+            to: reservationBefore.email,
+            subject: "Your reservation at Reserve is confirmed",
+            html: `
+              <div style="background:#f4f4f4; padding:32px 16px; font-family:Arial, sans-serif; color:#1a1a1a;">
+                <div style="max-width:520px; margin:0 auto; background:#ffffff; padding:28px 24px; text-align:center;">
+
+                  <img
+                    src="https://reservetbilisi.ge/images/logoblack.svg"
+                    alt="Reserve Restaurant"
+                    style="width:220px; max-width:80%; margin:0 auto 28px; display:block;"
+                  />
+
+                  <p style="margin:0 0 14px; font-size:18px; color:#777;">
+                    Hello ${firstName},
+                  </p>
+
+                  <h1 style="margin:0 0 18px; font-size:22px; color:#1a1a1a;">
+                    Your reservation is confirmed
+                  </h1>
+
+                  <p style="margin:0 0 18px; font-size:16px; line-height:1.6; color:#555;">
+                    Thank you for your reservation. Your table at Reserve has been confirmed.
+                  </p>
+
+                  <div style="margin:26px auto; padding:20px; border-top:1px solid #ddd; border-bottom:1px solid #ddd;">
+                    <p style="margin:0 0 10px; font-size:17px; font-weight:bold;">
+                      ${bookingDate}
+                    </p>
+
+                    <p style="margin:0 0 10px; font-size:17px; font-weight:bold;">
+                      ${escapeHtml(guestText)} · ${bookingTime}
+                    </p>
+
+                    <p style="margin:0; font-size:15px; color:#777;">
+                      Deposit paid: ${depositAmount} GEL
+                    </p>
+                  </div>
+
+                  <div style="margin:28px 0;">
+                    <h2 style="margin:0 0 12px; font-size:16px;">
+                      Special requests
+                    </h2>
+
+                    <p style="margin:0; font-size:15px; line-height:1.6; color:#666;">
+                      ${requests}
+                    </p>
+                  </div>
+
+                  <div style="margin:34px 0;">
+                    <h2 style="margin:0 0 12px; font-size:16px;">
+                      Changes or cancellations
+                    </h2>
+
+                    <p style="margin:0 0 14px; font-size:15px; line-height:1.6; color:#666;">
+                      For any changes, delays, or cancellations, please contact us in advance by phone or WhatsApp.
+                    </p>
+
+                    <a
+                      href="https://api.whatsapp.com/send/?phone=%2B995595313344&text=&type=phone_number&app_absent=0"
+                      style="color:#d0842f; font-size:16px; font-weight:bold; text-decoration:none;"
+                    >
+                      +995 595 31 33 44
+                    </a>
+                  </div>
+
+                  <div style="margin:34px 0 10px;">
+                    <h2 style="margin:0 0 12px; font-size:16px;">
+                      Contact
+                    </h2>
+
+                    <p style="margin:0 0 6px; font-size:15px; color:#666;">
+                      3 9 Aprili St, Tbilisi
+                    </p>
+
+                    <a
+                      href="mailto:info@reservetbilisi.ge"
+                      style="color:#d0842f; font-size:15px; text-decoration:none;"
+                    >
+                      info@reservetbilisi.ge
+                    </a>
+                  </div>
+
+                  <p style="margin:34px 0 0; font-size:15px; line-height:1.6; color:#777;">
+                    We look forward to welcoming you.
+                  </p>
+
+                  <p style="margin:20px 0 0; font-size:14px; color:#999;">
+                    Reserve Restaurant
+                  </p>
+
+                </div>
+              </div>
+            `,
+          }),
+        });
+
+        if (!emailResponse.ok) {
+          const emailText = await emailResponse.text();
+          throw new Error(emailText);
+        }
+
+        emailSent = true;
+      } catch (err) {
+        emailError = String(err?.message || err);
+      }
+    }
 
     return json({
       ok: true,
@@ -270,6 +456,8 @@ export async function onRequestPost(context) {
       orderStatus: updateResult.orderStatusKey,
       mappedStatus: updateResult.mappedStatus,
       mappedPaymentStatus: updateResult.mappedPaymentStatus,
+      emailSent,
+      emailError,
     }, 200);
   } catch (error) {
     return json({
