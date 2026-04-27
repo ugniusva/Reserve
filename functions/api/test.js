@@ -34,7 +34,7 @@ export async function onRequestGet(context) {
               />
 
               <p style="margin:0 0 14px; font-size:18px; color:#777;">
-                Hello Ugnius,
+                Hello twin,
               </p>
 
               <h1 style="margin:0 0 18px; font-size:22px; color:#1a1a1a;">
