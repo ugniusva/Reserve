@@ -21,7 +21,7 @@ export async function onRequestGet(context) {
       },
       body: JSON.stringify({
         from: "Reserve Restaurant <info@reservetbilisi.ge>",
-        to: "ugnius.valainis@gmail.com",
+        to: "andreit2311@gmail.com",
         subject: "TEST – Reservation confirmation preview",
         html: `
           <div style="background:#f4f4f4; padding:32px 16px; font-family:Arial, sans-serif; color:#1a1a1a;">
