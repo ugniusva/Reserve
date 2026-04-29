@@ -56,6 +56,7 @@ export async function onRequestPost(context) {
 
     const fullName = (body.full_name || "").trim();
     const phone = (body.phone || "").trim();
+    const tableNumber = (body.table_number || "").trim();
     const requests = (body.requests || "").trim();
     const bookingDate = (body.booking_date || "").trim();
     const bookingTime = (body.booking_time || "").trim();
@@ -90,7 +91,7 @@ export async function onRequestPost(context) {
         error: reasonToMessage(availability.reason),
       }, 409);
     }
-    const tableNumber = (body.table_number || "").trim();
+
     const { firstName, lastName } = splitName(fullName);
     const id = crypto.randomUUID();
     const createdAt = new Date().toISOString();
@@ -126,7 +127,6 @@ export async function onRequestPost(context) {
       lastName,
       "manual@reserve.local",
       phone || "—",
-      tableNumber || null,
       bookingDate,
       bookingTime,
       guests,
@@ -139,6 +139,7 @@ export async function onRequestPost(context) {
       null,
       null,
       null,
+      tableNumber || null,
       null,
       null,
       createdAt,
