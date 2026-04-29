@@ -186,6 +186,7 @@
               <th class="px-4 py-3">Guest</th>
               <th class="px-4 py-3">Phone</th>
               <th class="px-4 py-3">Guests</th>
+              <th class="px-4 py-3">Table</th>
               <th class="px-4 py-3">Deposit</th>
               <th class="px-4 py-3">Status</th>
               <th class="px-4 py-3">Requests</th>
@@ -194,7 +195,7 @@
           </thead>
           <tbody id="reservations-body" class="divide-y divide-white/10">
             <tr>
-              <td colspan="9" class="px-4 py-6 text-center text-white/50">
+              <td colspan="10" class="px-4 py-6 text-center text-white/50">
                 Loading...
               </td>
             </tr>
@@ -281,7 +282,7 @@
       if (!reservations.length) {
         bodyEl.innerHTML = `
           <tr>
-            <td colspan="9" class="px-4 py-6 text-center text-white/50">
+            <td colspan="10" class="px-4 py-6 text-center text-white/50">
               No reservations found.
             </td>
           </tr>
@@ -300,7 +301,8 @@
             </td>
             <td class="px-4 py-4 whitespace-nowrap">${escapeHtml(r.phone)}</td>
             <td class="px-4 py-4 whitespace-nowrap">${escapeHtml(r.guests)}</td>
-            <td class="px-4 py-4 whitespace-nowrap">${escapeHtml(r.deposit_amount)} ${escapeHtml(r.currency)}</td>
+<td class="px-4 py-4 whitespace-nowrap font-medium">${escapeHtml(r.table_number || "—")}</td>
+<td class="px-4 py-4 whitespace-nowrap">${escapeHtml(r.deposit_amount)} ${escapeHtml(r.currency)}</td>
             <td class="px-4 py-4 whitespace-nowrap">${statusBadge(r.status)}</td>
             <td class="px-4 py-4 text-white/70">${escapeHtml(r.requests || "—")}</td>
             <td class="px-4 py-4 whitespace-nowrap">
@@ -445,6 +447,8 @@
             alert("Guest count must be a whole number above 0.");
             return;
           }
+          const tableNumber = prompt("Table number:", reservation.table_number || "");
+if (tableNumber === null) return;
 
           const statusInput = prompt(
             "Enter status:\npending_payment, confirmed, payment_failed, cancelled, completed, no_show",
@@ -460,13 +464,14 @@
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              id,
-              first_name: first_name.trim(),
-              last_name: last_name.trim(),
-              phone: phone.trim(),
-              guests,
-              status,
-            }),
+            id,
+            first_name: first_name.trim(),
+            last_name: last_name.trim(),
+            phone: phone.trim(),
+            guests,
+            table_number: tableNumber.trim(),
+            status,
+}),
           });
 
           const data = await response.json();
@@ -512,7 +517,7 @@
     async function loadReservations() {
       bodyEl.innerHTML = `
         <tr>
-          <td colspan="9" class="px-4 py-6 text-center text-white/50">
+          <td colspan="10" class="px-4 py-6 text-center text-white/50">
             Loading...
           </td>
         </tr>
@@ -534,7 +539,7 @@
       } catch (error) {
         bodyEl.innerHTML = `
           <tr>
-            <td colspan="9" class="px-4 py-6 text-center text-red-300">
+            <td colspan="10" class="px-4 py-6 text-center text-red-300">
               Failed to load reservations.
             </td>
           </tr>

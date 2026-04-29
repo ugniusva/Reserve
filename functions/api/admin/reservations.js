@@ -37,6 +37,7 @@ export async function onRequestGet(context) {
         deposit_amount,
         currency,
         status,
+        table_number,
         created_at,
         updated_at,
         paid_at

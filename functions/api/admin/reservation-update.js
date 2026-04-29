@@ -27,6 +27,7 @@ export async function onRequestPost(context) {
     const lastName = String(body.last_name || "").trim();
     const phone = String(body.phone || "").trim();
     const guests = Number(body.guests);
+    const tableNumber = String(body.table_number || "").trim(); // <-- NEW
     const status = String(body.status || "").trim();
 
     const allowedStatuses = [
@@ -67,6 +68,7 @@ export async function onRequestPost(context) {
         last_name = ?,
         phone = ?,
         guests = ?,
+        table_number = ?,  -- NEW
         status = ?,
         updated_at = ?
       WHERE id = ?
@@ -75,6 +77,7 @@ export async function onRequestPost(context) {
       lastName,
       phone,
       guests,
+      tableNumber || null, // <-- NEW (null if empty)
       status,
       updatedAt,
       id

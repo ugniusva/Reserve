@@ -90,7 +90,7 @@ export async function onRequestPost(context) {
         error: reasonToMessage(availability.reason),
       }, 409);
     }
-
+    const tableNumber = (body.table_number || "").trim();
     const { firstName, lastName } = splitName(fullName);
     const id = crypto.randomUUID();
     const createdAt = new Date().toISOString();
@@ -114,17 +114,19 @@ export async function onRequestPost(context) {
         payment_ref,
         payment_order_id,
         paid_at,
+        table_number,
         callback_received_at,
         callback_payload,
         created_at,
         updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       id,
       firstName,
       lastName,
       "manual@reserve.local",
       phone || "—",
+      tableNumber || null,
       bookingDate,
       bookingTime,
       guests,
