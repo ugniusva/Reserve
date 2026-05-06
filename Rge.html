@@ -103,9 +103,18 @@
       }
 
       #logo-link {
-        position: relative;
-        display: inline-block;
-      }
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  /* Image is ~188px tall, shifted up 45px — clip bottom dead zone */
+  padding-bottom: 0;
+  height: calc(188px - 45px); /* = 143px of actual visible area below baseline */
+}
+@media (min-width: 768px) {
+  #logo-link {
+    height: calc(222px - 122px); /* = 177px */
+  }
+}
 
       #logo-link img {
         display: block;
