@@ -49,6 +49,14 @@
     .today-row {
       background: rgba(208, 132, 47, 0.08);
     }
+
+    .checked-in-row {
+      background: rgba(34, 197, 94, 0.14);
+    }
+
+    .checked-in-row:hover {
+      background: rgba(34, 197, 94, 0.2);
+    }
   </style>
 </head>
 <body class="min-h-screen px-4 py-8 md:px-8">
@@ -181,8 +189,10 @@
         <table class="min-w-full text-sm">
           <thead class="bg-white/10 text-left text-white/70">
             <tr>
-              <th class="px-4 py-3">Date</th>
+              <th class="px-4 py-3">Paid/created</th>
+              <th class="px-4 py-3">Reservation date</th>
               <th class="px-4 py-3">Time</th>
+              <th class="px-4 py-3">Check-in</th>
               <th class="px-4 py-3">Guest</th>
               <th class="px-4 py-3">Phone</th>
               <th class="px-4 py-3">Guests</th>
@@ -195,7 +205,7 @@
           </thead>
           <tbody id="reservations-body" class="divide-y divide-white/10">
             <tr>
-              <td colspan="10" class="px-4 py-6 text-center text-white/50">
+              <td colspan="12" class="px-4 py-6 text-center text-white/50">
                 Loading...
               </td>
             </tr>
@@ -278,11 +288,34 @@
       `;
     }
 
+    function getPaidCreatedTimestamp(reservation) {
+      return reservation.paid_at || reservation.callback_received_at || reservation.created_at || "";
+    }
+
+    function getPaidCreatedSource(reservation) {
+      if (reservation.paid_at) return "Paid";
+      if (reservation.callback_received_at) return "Callback";
+      if (reservation.created_at) return "Created";
+      return "";
+    }
+
+    function formatDateOnly(value) {
+      const raw = String(value || "").trim();
+      if (!raw) return "&mdash;";
+
+      const isoDate = raw.match(/^\d{4}-\d{2}-\d{2}/);
+      return isoDate ? isoDate[0] : escapeHtml(raw);
+    }
+
+    function isCheckedIn(reservation) {
+      return Number(reservation.checked_in) === 1 || reservation.checked_in === true;
+    }
+
     function renderRows(reservations) {
       if (!reservations.length) {
         bodyEl.innerHTML = `
           <tr>
-            <td colspan="10" class="px-4 py-6 text-center text-white/50">
+            <td colspan="12" class="px-4 py-6 text-center text-white/50">
               No reservations found.
             </td>
           </tr>
@@ -292,10 +325,29 @@
 
       bodyEl.innerHTML = reservations.map(r => {
         const isToday = r.booking_date === todayIso;
+        const checkedIn = isCheckedIn(r);
+        const paidCreatedAt = getPaidCreatedTimestamp(r);
+        const paidCreatedSource = getPaidCreatedSource(r);
+        const rowClass = checkedIn ? "checked-in-row" : isToday ? "today-row" : "";
         return `
-          <tr class="hover:bg-white/5 align-top ${isToday ? "today-row" : ""}">
+          <tr class="hover:bg-white/5 align-top ${rowClass}">
+            <td class="px-4 py-4 whitespace-nowrap">
+              <div>${formatDateOnly(paidCreatedAt)}</div>
+              <div class="text-xs text-white/45 mt-1">${escapeHtml(paidCreatedSource)}</div>
+            </td>
             <td class="px-4 py-4 whitespace-nowrap">${escapeHtml(r.booking_date)}</td>
             <td class="px-4 py-4 whitespace-nowrap font-medium">${escapeHtml(r.booking_time)}</td>
+            <td class="px-4 py-4 whitespace-nowrap">
+              <button
+                class="checkin-btn px-3 py-1 rounded-md border text-xs transition ${checkedIn ? "bg-green-500/20 border-green-400/30 text-green-200 hover:bg-green-500/30" : "bg-white/10 border-white/10 text-white/80 hover:bg-white/20"}"
+                data-id="${escapeHtml(r.id)}"
+                data-checked="${checkedIn ? "1" : "0"}"
+                aria-pressed="${checkedIn ? "true" : "false"}"
+              >
+                ${checkedIn ? "Checked in" : "Check in"}
+              </button>
+              ${checkedIn && r.checked_in_at ? `<div class="text-xs text-white/45 mt-2">${formatDateOnly(r.checked_in_at)}</div>` : ""}
+            </td>
             <td class="px-4 py-4">
               <div class="font-medium">${escapeHtml(r.first_name)} ${escapeHtml(r.last_name)}</div>
             </td>
@@ -424,6 +476,51 @@
     }
 
     function attachRowActions(reservations) {
+      document.querySelectorAll(".checkin-btn").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const id = btn.dataset.id;
+          const currentlyCheckedIn = btn.dataset.checked === "1";
+
+          btn.disabled = true;
+
+          try {
+            const response = await fetch("/api/admin/reservation-checkin", {
+              method: "POST",
+              credentials: "same-origin",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                id,
+                checked_in: !currentlyCheckedIn,
+              }),
+            });
+
+            const data = await response.json().catch(() => ({}));
+
+            if (!response.ok || !data.ok) {
+              throw new Error(data.error || "Failed to update check-in status.");
+            }
+
+            const updated = data.reservation || {};
+            allReservations = allReservations.map((reservation) => {
+              if (reservation.id !== id) return reservation;
+
+              return {
+                ...reservation,
+                checked_in: updated.checked_in,
+                checked_in_at: updated.checked_in_at,
+              };
+            });
+
+            applyView();
+          } catch (error) {
+            alert(String(error?.message || error));
+            btn.disabled = false;
+          }
+        });
+      });
+
       document.querySelectorAll(".edit-btn").forEach((btn) => {
         btn.addEventListener("click", async () => {
           const id = btn.dataset.id;
@@ -439,16 +536,34 @@
           const phone = prompt("Phone number:", reservation.phone);
           if (phone === null) return;
 
+          const bookingDate = prompt("Reservation date (YYYY-MM-DD):", reservation.booking_date || "");
+          if (bookingDate === null) return;
+
+          const normalizedBookingDate = bookingDate.trim();
+          if (!/^\d{4}-\d{2}-\d{2}$/.test(normalizedBookingDate)) {
+            alert("Reservation date must use YYYY-MM-DD format.");
+            return;
+          }
+
+          const bookingTime = prompt("Reservation time (HH:MM):", reservation.booking_time || "");
+          if (bookingTime === null) return;
+
+          const normalizedBookingTime = bookingTime.trim();
+          if (!/^([01]\d|2[0-3]):(00|15|30|45)$/.test(normalizedBookingTime)) {
+            alert("Reservation time must use HH:MM format with 15-minute increments.");
+            return;
+          }
+
           const guestsInput = prompt("Enter guest count:", reservation.guests);
           if (guestsInput === null) return;
 
           const guests = Number(guestsInput);
-          if (!Number.isInteger(guests) || guests < 1) {
-            alert("Guest count must be a whole number above 0.");
+          if (!Number.isInteger(guests) || guests < 1 || guests > 22) {
+            alert("Guest count must be a whole number from 1 to 22.");
             return;
           }
           const tableNumber = prompt("Table number:", reservation.table_number || "");
-if (tableNumber === null) return;
+          if (tableNumber === null) return;
 
           const statusInput = prompt(
             "Enter status:\npending_payment, confirmed, payment_failed, cancelled, completed, no_show",
@@ -460,18 +575,21 @@ if (tableNumber === null) return;
 
           const response = await fetch("/api/admin/reservation-update", {
             method: "POST",
+            credentials: "same-origin",
             headers: {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-            id,
-            first_name: first_name.trim(),
-            last_name: last_name.trim(),
-            phone: phone.trim(),
-            guests,
-            table_number: tableNumber.trim(),
-            status,
-}),
+              id,
+              first_name: first_name.trim(),
+              last_name: last_name.trim(),
+              phone: phone.trim(),
+              booking_date: normalizedBookingDate,
+              booking_time: normalizedBookingTime,
+              guests,
+              table_number: tableNumber.trim(),
+              status,
+            }),
           });
 
           const data = await response.json();
@@ -517,7 +635,7 @@ if (tableNumber === null) return;
     async function loadReservations() {
       bodyEl.innerHTML = `
         <tr>
-          <td colspan="10" class="px-4 py-6 text-center text-white/50">
+          <td colspan="12" class="px-4 py-6 text-center text-white/50">
             Loading...
           </td>
         </tr>
@@ -539,7 +657,7 @@ if (tableNumber === null) return;
       } catch (error) {
         bodyEl.innerHTML = `
           <tr>
-            <td colspan="10" class="px-4 py-6 text-center text-red-300">
+            <td colspan="12" class="px-4 py-6 text-center text-red-300">
               Failed to load reservations.
             </td>
           </tr>

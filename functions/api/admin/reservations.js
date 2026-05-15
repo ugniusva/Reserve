@@ -37,10 +37,14 @@ export async function onRequestGet(context) {
         deposit_amount,
         currency,
         status,
+        payment_status,
         table_number,
+        checked_in,
+        checked_in_at,
         created_at,
         updated_at,
-        paid_at
+        paid_at,
+        callback_received_at
       FROM reservations
     `;
 
