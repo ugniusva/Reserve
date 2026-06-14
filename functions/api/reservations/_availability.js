@@ -1,4 +1,4 @@
-export const OPEN_TIME = "09:00";
+export const OPEN_TIME = "12:00";
 export const CLOSE_TIME = "21:30";
 export const SLOT_INTERVAL_MINUTES = 15;
 export const MIN_ADVANCE_HOURS = 2;
