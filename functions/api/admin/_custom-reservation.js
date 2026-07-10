@@ -91,7 +91,10 @@ function buildAllocationOptions(guests) {
   }
 
   if (guests <= 2) {
-    result.push({ twos: 1, fours: 0, seats: 2, waste: 2 - guests });
+    result.push(
+      { twos: 1, fours: 0, seats: 2, waste: 2 - guests },
+      { twos: 0, fours: 1, seats: 4, waste: 4 - guests }
+    );
     optionCache.set(guests, result);
     return result;
   }

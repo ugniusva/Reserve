@@ -10,6 +10,8 @@ export const TWO_SEAT_TABLES = 5;
 export const FOUR_SEAT_TABLES = 3;
 export const MAX_GUESTS_PER_RESERVATION = 6;
 
+const allocationOptionsCache = new Map();
+
 export function isValidDate(dateStr) {
   return /^\d{4}-\d{2}-\d{2}$/.test(dateStr);
 }
@@ -59,22 +61,117 @@ export function bookingOverlaps(startA, endA, startB, endB) {
   return startA < endB && endA > startB;
 }
 
-export function tablesNeeded(guests) {
+function isLargeGroupCount(guests) {
+  return guests >= 5 && guests <= 6;
+}
+
+function buildAllocationOptions(guests) {
   const count = Number(guests);
 
-  if (count >= 1 && count <= 2) {
-    return { two: 1, four: 0, largeGroup: 0 };
+  if (allocationOptionsCache.has(count)) {
+    return allocationOptionsCache.get(count);
   }
 
-  if (count >= 3 && count <= 4) {
-    return { two: 0, four: 1, largeGroup: 0 };
+  const options = [];
+
+  if (!Number.isInteger(count) || count < 1 || count > MAX_CAPACITY) {
+    allocationOptionsCache.set(count, options);
+    return options;
   }
 
-  if (count >= 5 && count <= 6) {
-    return { two: 1, four: 1, largeGroup: 1 };
+  if (count <= 2) {
+    options.push(
+      { two: 1, four: 0, seats: 2, waste: 2 - count },
+      { two: 0, four: 1, seats: 4, waste: 4 - count }
+    );
+    allocationOptionsCache.set(count, options);
+    return options;
   }
 
-  throw new Error("Unsupported guest count.");
+  if (count <= 4) {
+    options.push({ two: 0, four: 1, seats: 4, waste: 4 - count });
+    allocationOptionsCache.set(count, options);
+    return options;
+  }
+
+  if (count <= 6) {
+    options.push({ two: 1, four: 1, seats: 6, waste: 6 - count });
+    allocationOptionsCache.set(count, options);
+    return options;
+  }
+
+  const seen = new Set();
+
+  for (let four = 0; four <= FOUR_SEAT_TABLES; four += 1) {
+    for (let two = 0; two <= TWO_SEAT_TABLES; two += 1) {
+      if (two === 0 && four === 0) continue;
+
+      const seats = (two * 2) + (four * 4);
+      if (seats < count) continue;
+
+      const key = `${two}:${four}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+
+      options.push({
+        two,
+        four,
+        seats,
+        waste: seats - count,
+      });
+    }
+  }
+
+  options.sort((a, b) => {
+    if (a.waste !== b.waste) return a.waste - b.waste;
+
+    const aTables = a.two + a.four;
+    const bTables = b.two + b.four;
+    if (aTables !== bTables) return aTables - bTables;
+
+    return b.four - a.four;
+  });
+
+  allocationOptionsCache.set(count, options);
+  return options;
+}
+
+function canAssignGuestCounts(guestCounts) {
+  const counts = guestCounts
+    .map(Number)
+    .filter((value) => Number.isInteger(value) && value >= 1 && value <= MAX_CAPACITY)
+    .sort((a, b) => b - a);
+
+  if (counts.length !== guestCounts.length) {
+    return false;
+  }
+
+  const memo = new Map();
+
+  function backtrack(index, twosLeft, foursLeft) {
+    if (index >= counts.length) return true;
+
+    const memoKey = `${index}|${twosLeft}|${foursLeft}`;
+    if (memo.has(memoKey)) return memo.get(memoKey);
+
+    const options = buildAllocationOptions(counts[index]);
+
+    for (const option of options) {
+      if (option.two > twosLeft || option.four > foursLeft) {
+        continue;
+      }
+
+      if (backtrack(index + 1, twosLeft - option.two, foursLeft - option.four)) {
+        memo.set(memoKey, true);
+        return true;
+      }
+    }
+
+    memo.set(memoKey, false);
+    return false;
+  }
+
+  return backtrack(0, TWO_SEAT_TABLES, FOUR_SEAT_TABLES);
 }
 
 export function canFitReservation({
@@ -110,12 +207,7 @@ export function canFitReservation({
   }
 
   const slotEnd = addHours(slotStart, BOOKING_DURATION_HOURS);
-  const requestedUsage = tablesNeeded(count);
-
-  let usedGuests = 0;
-  let usedTwo = 0;
-  let usedFour = 0;
-  let usedLargeGroups = 0;
+  const overlappingGuestCounts = [];
 
   for (const reservation of reservations) {
     if (excludeReservationId && reservation.id === excludeReservationId) {
@@ -133,28 +225,27 @@ export function canFitReservation({
       continue;
     }
 
-    const existingUsage = tablesNeeded(Number(reservation.guests));
+    const existingGuests = Number(reservation.guests);
+    if (!Number.isInteger(existingGuests) || existingGuests < 1 || existingGuests > MAX_CAPACITY) {
+      continue;
+    }
 
-    usedGuests += Number(reservation.guests);
-    usedTwo += existingUsage.two;
-    usedFour += existingUsage.four;
-    usedLargeGroups += existingUsage.largeGroup;
+    overlappingGuestCounts.push(existingGuests);
   }
 
-  if (usedGuests + count > MAX_CAPACITY) {
+  const guestCounts = [...overlappingGuestCounts, count];
+  const totalGuests = guestCounts.reduce((sum, value) => sum + value, 0);
+
+  if (totalGuests > MAX_CAPACITY) {
     return { available: false, reason: "capacity" };
   }
 
-  if (usedTwo + requestedUsage.two > TWO_SEAT_TABLES) {
-    return { available: false, reason: "two_tables_full" };
-  }
-
-  if (usedFour + requestedUsage.four > FOUR_SEAT_TABLES) {
-    return { available: false, reason: "four_tables_full" };
-  }
-
-  if (usedLargeGroups + requestedUsage.largeGroup > 1) {
+  if (guestCounts.filter(isLargeGroupCount).length > 1) {
     return { available: false, reason: "large_group_limit" };
+  }
+
+  if (!canAssignGuestCounts(guestCounts)) {
+    return { available: false, reason: "capacity" };
   }
 
   return {
