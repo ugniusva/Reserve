@@ -2,7 +2,7 @@ export const OPEN_TIME = "12:00";
 export const CLOSE_TIME = "21:30";
 export const SLOT_INTERVAL_MINUTES = 15;
 export const MIN_ADVANCE_HOURS = 1;
-export const BOOKING_DURATION_HOURS = 3;
+export const BOOKING_DURATION_HOURS = 2;
 export const RESTAURANT_TIMEZONE_OFFSET = "+04:00";
 
 export const MAX_CAPACITY = 22;

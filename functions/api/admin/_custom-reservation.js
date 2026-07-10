@@ -11,7 +11,7 @@ export const TWO_SEAT_TABLES = 5;
 export const FOUR_SEAT_TABLES = 3;
 export const SLOT_INTERVAL_MINUTES = 15;
 export const MIN_ADVANCE_MS = 60 * 60 * 1000;
-export const STAY_MS = 3 * 60 * 60 * 1000;
+export const STAY_MS = 2 * 60 * 60 * 1000;
 
 const optionCache = new Map();
 

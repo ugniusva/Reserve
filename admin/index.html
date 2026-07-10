@@ -57,6 +57,47 @@
     .checked-in-row:hover {
       background: rgba(34, 197, 94, 0.2);
     }
+
+    .admin-table {
+      table-layout: fixed;
+      width: 100%;
+    }
+
+    .admin-table th,
+    .admin-table td {
+      padding: 0.7rem 0.55rem;
+      vertical-align: top;
+    }
+
+    .admin-table th {
+      font-size: 0.72rem;
+      line-height: 1.2;
+    }
+
+    .admin-table td {
+      font-size: 0.82rem;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+
+    .admin-muted {
+      color: rgba(255, 255, 255, 0.48);
+      font-size: 0.72rem;
+      margin-top: 0.2rem;
+    }
+
+    .admin-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+
+    .admin-actions button,
+    .checkin-btn {
+      padding: 0.28rem 0.5rem;
+      font-size: 0.72rem;
+      line-height: 1.2;
+    }
   </style>
 </head>
 <body class="min-h-screen px-4 py-8 md:px-8">
@@ -185,18 +226,26 @@
         <span id="table-caption">Showing today’s paid reservations, sorted by time.</span>
       </div>
 
-      <div class="overflow-x-auto">
-        <table class="min-w-full text-sm">
+      <div>
+        <table class="admin-table text-sm">
+          <colgroup>
+            <col style="width: 10%" />
+            <col style="width: 11%" />
+            <col style="width: 10%" />
+            <col style="width: 17%" />
+            <col style="width: 8%" />
+            <col style="width: 9%" />
+            <col style="width: 11%" />
+            <col style="width: 14%" />
+            <col style="width: 10%" />
+          </colgroup>
           <thead class="bg-white/10 text-left text-white/70">
             <tr>
               <th class="px-4 py-3">Paid/created</th>
-              <th class="px-4 py-3">Reservation date</th>
-              <th class="px-4 py-3">Time</th>
+              <th class="px-4 py-3">Reservation</th>
               <th class="px-4 py-3">Check-in</th>
               <th class="px-4 py-3">Guest</th>
-              <th class="px-4 py-3">Phone</th>
-              <th class="px-4 py-3">Guests</th>
-              <th class="px-4 py-3">Table</th>
+              <th class="px-4 py-3">Party</th>
               <th class="px-4 py-3">Deposit</th>
               <th class="px-4 py-3">Status</th>
               <th class="px-4 py-3">Requests</th>
@@ -205,7 +254,7 @@
           </thead>
           <tbody id="reservations-body" class="divide-y divide-white/10">
             <tr>
-              <td colspan="12" class="px-4 py-6 text-center text-white/50">
+              <td colspan="9" class="px-4 py-6 text-center text-white/50">
                 Loading...
               </td>
             </tr>
@@ -315,7 +364,7 @@
       if (!reservations.length) {
         bodyEl.innerHTML = `
           <tr>
-            <td colspan="12" class="px-4 py-6 text-center text-white/50">
+            <td colspan="9" class="px-4 py-6 text-center text-white/50">
               No reservations found.
             </td>
           </tr>
@@ -331,13 +380,15 @@
         const rowClass = checkedIn ? "checked-in-row" : isToday ? "today-row" : "";
         return `
           <tr class="hover:bg-white/5 align-top ${rowClass}">
-            <td class="px-4 py-4 whitespace-nowrap">
+            <td>
               <div>${formatDateOnly(paidCreatedAt)}</div>
-              <div class="text-xs text-white/45 mt-1">${escapeHtml(paidCreatedSource)}</div>
+              <div class="admin-muted">${escapeHtml(paidCreatedSource)}</div>
             </td>
-            <td class="px-4 py-4 whitespace-nowrap">${escapeHtml(r.booking_date)}</td>
-            <td class="px-4 py-4 whitespace-nowrap font-medium">${escapeHtml(r.booking_time)}</td>
-            <td class="px-4 py-4 whitespace-nowrap">
+            <td>
+              <div>${escapeHtml(r.booking_date)}</div>
+              <div class="admin-muted">${escapeHtml(r.booking_time)}</div>
+            </td>
+            <td>
               <button
                 class="checkin-btn px-3 py-1 rounded-md border text-xs transition ${checkedIn ? "bg-green-500/20 border-green-400/30 text-green-200 hover:bg-green-500/30" : "bg-white/10 border-white/10 text-white/80 hover:bg-white/20"}"
                 data-id="${escapeHtml(r.id)}"
@@ -346,19 +397,21 @@
               >
                 ${checkedIn ? "Checked in" : "Check in"}
               </button>
-              ${checkedIn && r.checked_in_at ? `<div class="text-xs text-white/45 mt-2">${formatDateOnly(r.checked_in_at)}</div>` : ""}
+              ${checkedIn && r.checked_in_at ? `<div class="admin-muted">${formatDateOnly(r.checked_in_at)}</div>` : ""}
             </td>
-            <td class="px-4 py-4">
+            <td>
               <div class="font-medium">${escapeHtml(r.first_name)} ${escapeHtml(r.last_name)}</div>
+              <div class="admin-muted">${escapeHtml(r.phone || "-")}</div>
             </td>
-            <td class="px-4 py-4 whitespace-nowrap">${escapeHtml(r.phone)}</td>
-            <td class="px-4 py-4 whitespace-nowrap">${escapeHtml(r.guests)}</td>
-<td class="px-4 py-4 whitespace-nowrap font-medium">${escapeHtml(r.table_number || "—")}</td>
-<td class="px-4 py-4 whitespace-nowrap">${escapeHtml(r.deposit_amount)} ${escapeHtml(r.currency)}</td>
-            <td class="px-4 py-4 whitespace-nowrap">${statusBadge(r.status)}</td>
-            <td class="px-4 py-4 text-white/70">${escapeHtml(r.requests || "—")}</td>
-            <td class="px-4 py-4 whitespace-nowrap">
-              <div class="flex gap-2">
+            <td>
+              <div>${escapeHtml(r.guests)}</div>
+              <div class="admin-muted">Table ${escapeHtml(r.table_number || "-")}</div>
+            </td>
+            <td>${escapeHtml(r.deposit_amount)} ${escapeHtml(r.currency)}</td>
+            <td>${statusBadge(r.status)}</td>
+            <td class="text-white/70">${escapeHtml(r.requests || "-")}</td>
+            <td>
+              <div class="admin-actions">
                 <button
                   class="edit-btn px-3 py-1 rounded-md bg-white/10 hover:bg-white/20 transition"
                   data-id="${escapeHtml(r.id)}"
@@ -635,7 +688,7 @@
     async function loadReservations() {
       bodyEl.innerHTML = `
         <tr>
-          <td colspan="12" class="px-4 py-6 text-center text-white/50">
+          <td colspan="9" class="px-4 py-6 text-center text-white/50">
             Loading...
           </td>
         </tr>
@@ -657,7 +710,7 @@
       } catch (error) {
         bodyEl.innerHTML = `
           <tr>
-            <td colspan="12" class="px-4 py-6 text-center text-red-300">
+            <td colspan="9" class="px-4 py-6 text-center text-red-300">
               Failed to load reservations.
             </td>
           </tr>
@@ -1282,7 +1335,7 @@ btnCustomCreate.addEventListener("click", async () => {
             class="w-full px-3 py-2 rounded-md bg-white text-black"
             placeholder="1 to 22"
           />
-          <p class="text-white/45 text-xs mt-2">Up to 22 guests. Same 1-hour minimum and 3-hour block rules apply.</p>
+          <p class="text-white/45 text-xs mt-2">Up to 22 guests. Same 1-hour minimum and 2-hour block rules apply.</p>
         </div>
 
         <div>

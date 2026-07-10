@@ -34,7 +34,7 @@ function reasonToMessage(reason) {
     case "min_advance":
       return "Reservations must be made at least 1 hour in advance.";
     case "large_group_limit":
-      return "A 5–6 guest group is already booked in that 3-hour block.";
+      return "A 5–6 guest group is already booked in that 2-hour block.";
     case "capacity":
       return "No table combination is available for that time.";
     case "invalid_date":
