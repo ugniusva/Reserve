@@ -10,7 +10,7 @@ export const CUSTOM_MAX_GUESTS = 22;
 export const TWO_SEAT_TABLES = 5;
 export const FOUR_SEAT_TABLES = 3;
 export const SLOT_INTERVAL_MINUTES = 15;
-export const MIN_ADVANCE_MS = 2 * 60 * 60 * 1000;
+export const MIN_ADVANCE_MS = 60 * 60 * 1000;
 export const STAY_MS = 3 * 60 * 60 * 1000;
 
 const optionCache = new Map();
@@ -205,7 +205,10 @@ export function canFitCustomReservation({
     return { available: false, reason: "invalid_datetime" };
   }
 
-  if ((selectedDateTime.getTime() - now.getTime()) < MIN_ADVANCE_MS) {
+  const currentMinute = new Date(now.getTime());
+  currentMinute.setSeconds(0, 0);
+
+  if ((selectedDateTime.getTime() - currentMinute.getTime()) < MIN_ADVANCE_MS) {
     return { available: false, reason: "min_advance" };
   }
 

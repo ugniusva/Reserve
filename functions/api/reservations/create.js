@@ -21,7 +21,7 @@ function json(data, status = 200) {
 function availabilityReasonToMessage(reason) {
   switch (reason) {
     case "min_advance":
-      return "Reservations must be made at least 2 hours in advance.";
+      return "Reservations must be made at least 1 hour in advance.";
     case "capacity":
     case "two_tables_full":
     case "four_tables_full":

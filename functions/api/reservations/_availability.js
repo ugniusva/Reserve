@@ -1,7 +1,7 @@
 export const OPEN_TIME = "12:00";
 export const CLOSE_TIME = "21:30";
 export const SLOT_INTERVAL_MINUTES = 15;
-export const MIN_ADVANCE_HOURS = 2;
+export const MIN_ADVANCE_HOURS = 1;
 export const BOOKING_DURATION_HOURS = 3;
 export const RESTAURANT_TIMEZONE_OFFSET = "+04:00";
 
@@ -35,6 +35,12 @@ export function formatMinutesToTime(totalMinutes) {
 
 export function addHours(date, hours) {
   return new Date(date.getTime() + hours * 60 * 60 * 1000);
+}
+
+function getMinAllowedStart(now) {
+  const currentMinute = new Date(now.getTime());
+  currentMinute.setSeconds(0, 0);
+  return addHours(currentMinute, MIN_ADVANCE_HOURS);
 }
 
 export function buildTimeSlots() {
@@ -98,7 +104,7 @@ export function canFitReservation({
     return { available: false, reason: "invalid_datetime" };
   }
 
-  const minAllowedStart = new Date(now.getTime() + MIN_ADVANCE_HOURS * 60 * 60 * 1000);
+  const minAllowedStart = getMinAllowedStart(now);
   if (slotStart.getTime() < minAllowedStart.getTime()) {
     return { available: false, reason: "min_advance" };
   }

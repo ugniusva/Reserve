@@ -32,7 +32,7 @@ function hasOwn(object, key) {
 function availabilityReasonToMessage(reason) {
   switch (reason) {
     case "min_advance":
-      return "Reservations must be made at least 2 hours in advance.";
+      return "Reservations must be made at least 1 hour in advance.";
     case "large_group_limit":
       return "A large group is already booked in that 3-hour block.";
     case "capacity":
