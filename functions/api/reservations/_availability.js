@@ -3,6 +3,7 @@ export const CLOSE_TIME = "21:30";
 export const SLOT_INTERVAL_MINUTES = 15;
 export const MIN_ADVANCE_HOURS = 2;
 export const BOOKING_DURATION_HOURS = 3;
+export const RESTAURANT_TIMEZONE_OFFSET = "+04:00";
 
 export const MAX_CAPACITY = 22;
 export const TWO_SEAT_TABLES = 5;
@@ -18,7 +19,7 @@ export function isValidTimeSlotFormat(timeStr) {
 }
 
 export function parseDateTime(dateStr, timeStr) {
-  return new Date(`${dateStr}T${timeStr}:00`);
+  return new Date(`${dateStr}T${timeStr}:00${RESTAURANT_TIMEZONE_OFFSET}`);
 }
 
 export function parseTimeToMinutes(timeStr) {

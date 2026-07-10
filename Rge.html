@@ -1527,14 +1527,9 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
         if (DISABLED_TIME_SLOTS.includes(timeStr)) return true;
         if (!dateStr) return false;
 
-        const selectedDateTime = new Date(`${dateStr}T${timeStr}:00`);
-        if (selectedDateTime.getTime() < Date.now()) return true;
-
-        if (state.date === dateStr && state.availability.size > 0) {
+        if (state.date === dateStr && state.guests) {
           const slotInfo = state.availability.get(timeStr);
-          if (slotInfo) {
-            return !slotInfo.available;
-          }
+          return slotInfo ? !slotInfo.available : true;
         }
 
         return false;
