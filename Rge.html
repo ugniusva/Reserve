@@ -674,6 +674,134 @@
         line-height: 1.45;
       }
 
+      .terms-consent {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.8rem;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.06);
+        padding: 1rem;
+        transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+      }
+
+      .has-error .terms-consent {
+        border-color: rgba(208, 132, 47, 0.82);
+        background: rgba(208, 132, 47, 0.1);
+        box-shadow: 0 0 0 4px rgba(208, 132, 47, 0.14);
+      }
+
+      .terms-checkbox {
+        width: 1.15rem;
+        height: 1.15rem;
+        flex: 0 0 1.15rem;
+        margin-top: 0.16rem;
+        accent-color: var(--accent);
+        cursor: pointer;
+      }
+
+      .terms-copy {
+        color: rgba(255, 255, 255, 0.92);
+        font-size: 0.9rem;
+        line-height: 1.5;
+      }
+
+      .terms-link {
+        color: #f2c28e;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+
+      .terms-link:hover {
+        color: #ffe0bd;
+      }
+
+      .policy-notice {
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        display: grid;
+        place-items: center;
+        padding: 1rem;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 180ms ease;
+      }
+
+      .policy-notice.hidden {
+        display: none;
+      }
+
+      .policy-notice.is-visible {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .policy-notice-backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.58);
+        backdrop-filter: blur(4px);
+      }
+
+      .policy-notice-card {
+        position: relative;
+        width: min(100%, 390px);
+        overflow: hidden;
+        border: 1px solid rgba(208, 132, 47, 0.42);
+        border-radius: 18px;
+        background: #171411;
+        color: white;
+        padding: 1.25rem;
+        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.5);
+        transform: translateY(10px);
+        transition: transform 180ms ease;
+      }
+
+      .policy-notice.is-visible .policy-notice-card {
+        transform: translateY(0);
+      }
+
+      .policy-notice-card::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto;
+        height: 3px;
+        background: var(--accent);
+      }
+
+      .policy-notice-kicker {
+        color: #efb06a;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.18em;
+      }
+
+      .policy-notice-title {
+        margin-top: 0.45rem;
+        font-family: "GlacialBold", Arial, sans-serif;
+        font-size: 1.35rem;
+      }
+
+      .policy-notice-copy {
+        margin-top: 0.65rem;
+        color: rgba(255, 255, 255, 0.82);
+        font-size: 0.92rem;
+        line-height: 1.55;
+      }
+
+      .policy-notice-action {
+        width: 100%;
+        margin-top: 1rem;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .policy-notice,
+        .policy-notice-card {
+          transition: none;
+        }
+      }
+
       .summary-card {
         border-radius: 18px;
         border: 1px solid rgba(255, 255, 255, 0.12);
@@ -786,7 +914,7 @@
           </h1>
 
           <p class="reservation-copy text-[#2f2f2f]">
-            Reservations are available by request. A deposit of 50 GEL per guest is required to secure your table.
+            Reservations are available by request. A non-refundable deposit of 50 GEL per guest is required to secure your table.
           </p>
         </div>
 
@@ -951,7 +1079,7 @@
               </div>
 
               <div id="large-group-note" class="hint-box hidden">
-                A non-refundable deposit of 50 GEL per person is required for all reservations. The deposit will be applied towards your final bill.
+                A non-refundable deposit of 50 GEL per person is required for all reservations and will be applied towards your final bill.
               </div>
 
               <div class="flex justify-between gap-3 pt-2">
@@ -1015,6 +1143,28 @@
                 </div>
               </div>
 
+              <div id="field-terms" class="field-wrap space-y-3">
+                <div class="hint-box">
+                  <strong class="block text-white mb-1">Deposit policy</strong>
+                  The 50 GEL per guest deposit is non-refundable and will be applied towards your final bill.
+                </div>
+
+                <div class="terms-consent">
+                  <input
+                    id="input-terms"
+                    class="terms-checkbox"
+                    type="checkbox"
+                    required
+                    aria-describedby="error-terms"
+                  />
+                  <div class="terms-copy">
+                    <label for="input-terms" class="cursor-pointer">I have read and agree to the</label>
+                    <a href="#" class="terms-link" data-terms-placeholder>Terms of Service</a>.
+                  </div>
+                </div>
+                <p id="error-terms" class="field-error-text hidden"></p>
+              </div>
+
               <p class="subtle-copy">
                 Reservations are confirmed only after our team processes the request and the deposit step is completed.
               </p>
@@ -1028,6 +1178,29 @@
         </div>
       </div>
     </main>
+
+    <div
+      id="deposit-policy-notice"
+      class="policy-notice hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-hidden="true"
+      aria-labelledby="deposit-policy-title"
+    >
+      <div class="policy-notice-backdrop" data-policy-close></div>
+      <div class="policy-notice-card">
+        <p class="policy-notice-kicker">Before you continue</p>
+        <h2 id="deposit-policy-title" class="policy-notice-title">Deposit and terms</h2>
+        <p class="policy-notice-copy">
+          Your 50 GEL per guest deposit is non-refundable. Please review and accept the
+          <a href="#" class="terms-link" data-terms-placeholder>Terms of Service</a>
+          on the final step before continuing to payment.
+        </p>
+        <button id="deposit-policy-close" type="button" class="button-primary policy-notice-action">
+          I understand
+        </button>
+      </div>
+    </div>
 
     <footer class="bg-black py-10">
       <div class="max-w-7xl mx-auto px-6 md:px-16 flex items-center justify-center gap-5">
@@ -1358,6 +1531,11 @@
       const inputCountryCode = document.getElementById("input-country-code");
       const inputPhone = document.getElementById("input-phone");
       const inputRequests = document.getElementById("input-requests");
+      const inputTerms = document.getElementById("input-terms");
+
+      const depositPolicyNotice = document.getElementById("deposit-policy-notice");
+      const depositPolicyClose = document.getElementById("deposit-policy-close");
+      const depositPolicyBackdrop = document.querySelector("[data-policy-close]");
 
       const triggerDate = document.getElementById("trigger-date");
       const triggerTime = document.getElementById("trigger-time");
@@ -1411,7 +1589,35 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
       };
 
       let openPanelName = null;
+      let depositPolicyNoticeShown = false;
+      let depositPolicyCloseTimer = null;
       let calendarCursor = new Date(todayStart.getFullYear(), todayStart.getMonth(), 1);
+
+      function openDepositPolicyNotice() {
+        if (depositPolicyCloseTimer) {
+          clearTimeout(depositPolicyCloseTimer);
+          depositPolicyCloseTimer = null;
+        }
+
+        depositPolicyNotice.classList.remove("hidden");
+        depositPolicyNotice.setAttribute("aria-hidden", "false");
+
+        requestAnimationFrame(() => {
+          depositPolicyNotice.classList.add("is-visible");
+          depositPolicyClose.focus();
+        });
+      }
+
+      function closeDepositPolicyNotice() {
+        depositPolicyNotice.classList.remove("is-visible");
+        depositPolicyNotice.setAttribute("aria-hidden", "true");
+
+        depositPolicyCloseTimer = setTimeout(() => {
+          depositPolicyNotice.classList.add("hidden");
+          depositPolicyCloseTimer = null;
+          inputTerms.focus();
+        }, 180);
+      }
 
       function showStep(step) {
         currentStep = step;
@@ -1428,6 +1634,11 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
 
         if (step === 3) {
           updateSummary();
+
+          if (!depositPolicyNoticeShown) {
+            depositPolicyNoticeShown = true;
+            openDepositPolicyNotice();
+          }
         }
       }
 
@@ -1574,7 +1785,7 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
       }
 
       function clearAllErrors() {
-        ["name", "surname", "email", "phone", "date", "time", "guests", "requests"].forEach(clearFieldError);
+        ["name", "surname", "email", "phone", "date", "time", "guests", "requests", "terms"].forEach(clearFieldError);
       }
 
       function showBanner(type, message) {
@@ -1973,7 +2184,7 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
       function updateLargeGroupNote() {
         largeGroupNote.classList.remove("hidden");
         largeGroupNote.innerHTML =
-          "A non-refundable deposit of 50 GEL per person is required for all reservations. The deposit will be applied towards your final bill.";
+          "A non-refundable deposit of 50 GEL per person is required for all reservations and will be applied towards your final bill.";
       }
 
       function validateStep1() {
@@ -2105,6 +2316,17 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
         return validateLargeGroupRules();
       }
 
+      function validateTermsAgreement() {
+        clearFieldError("terms");
+
+        if (!inputTerms.checked) {
+          setFieldError("terms", "Please accept the Terms of Service before continuing.");
+          return false;
+        }
+
+        return true;
+      }
+
       function validateEntireForm() {
         clearBanner();
         const step1Ok = validateStep1();
@@ -2121,6 +2343,16 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
           showStep(2);
           showBanner("error", "Please complete the reservation details correctly.");
           scrollFormIntoView();
+          return false;
+        }
+
+        if (!validateTermsAgreement()) {
+          showStep(3);
+          showBanner("error", "Please accept the Terms of Service before continuing to the deposit.");
+          document.getElementById("field-terms")?.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
           return false;
         }
 
@@ -2192,6 +2424,29 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
       });
 
       btnBack3.addEventListener("click", () => showStep(2));
+
+      inputTerms.addEventListener("change", () => {
+        if (inputTerms.checked) {
+          clearFieldError("terms");
+          clearBanner();
+        }
+      });
+
+      document.querySelectorAll("[data-terms-placeholder]").forEach((link) => {
+        link.addEventListener("click", (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+        });
+      });
+
+      depositPolicyClose.addEventListener("click", closeDepositPolicyNotice);
+      depositPolicyBackdrop.addEventListener("click", closeDepositPolicyNotice);
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && depositPolicyNotice.classList.contains("is-visible")) {
+          closeDepositPolicyNotice();
+        }
+      });
 
       btnSubmit.addEventListener("click", async () => {
   console.log("submit clicked");
