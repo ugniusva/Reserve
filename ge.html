@@ -6,7 +6,7 @@
  
     <meta
       name="description"
-      content="რეზერვი არის დისკრეტული, მაღალი კლასის რესტორანი თბილისში, შეფ ტომი რისანენის ხელმძღვანელობით. სეზონური სადეგუსტაციო მენიუები, საუზმე და გულდასმით შერჩეული ღვინის მარანი — მათ შორის Château Leuville — შვიდ მაგიდიან სივრცეში."
+      content="რეზერვი არის დისკრეტული, მაღალი კლასის რესტორანი თბილისში. სეზონური სადეგუსტაციო მენიუები, საუზმე და გულდასმით შერჩეული ღვინის მარანი — მათ შორის Château Leuville — შვიდ მაგიდიან სივრცეში."
     />
  
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -208,6 +208,94 @@
       .split-copy-inner {
         width: 100%;
         max-width: 38rem;
+      }
+
+      #about-section .split-grid {
+        min-height: 100svh;
+      }
+
+      #about-section .split-copy {
+        padding: 7rem 1.5rem;
+      }
+
+      #about-section .split-copy-inner {
+        max-width: 44rem;
+        text-align: center;
+        overflow-wrap: break-word;
+      }
+
+      #about-section h2 {
+        margin: 0;
+        font-size: 2rem;
+        line-height: 1.25;
+        letter-spacing: 0;
+        text-wrap: balance;
+      }
+
+      #about-section h2::after {
+        content: "";
+        display: block;
+        width: 3rem;
+        height: 2px;
+        margin: 1.5rem auto 2rem;
+        background: #d0842f;
+      }
+
+      #about-section .about-intro {
+        max-width: 34rem;
+        margin: 0 auto;
+        color: #171717;
+        font-size: 1.2rem;
+        line-height: 1.6;
+        text-wrap: balance;
+      }
+
+      #about-section .about-details {
+        max-width: 35rem;
+        margin: 1.5rem auto 0;
+        color: #383838;
+        font-size: 1rem;
+        line-height: 1.85;
+        text-wrap: pretty;
+      }
+
+      #about-section .about-location {
+        max-width: 34rem;
+        margin: 2rem auto 0;
+        padding-top: 1.5rem;
+        border-top: 1px solid rgba(208, 132, 47, 0.28);
+        color: #555;
+        font-size: 0.95rem;
+        line-height: 1.8;
+        text-wrap: pretty;
+      }
+
+      @media (min-width: 768px) {
+        #about-section .split-copy {
+          padding: 8rem 3rem;
+        }
+
+        #about-section h2 {
+          font-size: 2.75rem;
+        }
+
+        #about-section h2::after {
+          margin-bottom: 2.5rem;
+        }
+
+        #about-section .about-intro {
+          font-size: 1.5rem;
+        }
+
+        #about-section .about-details {
+          font-size: 1.0625rem;
+        }
+
+        #about-section .about-location {
+          margin-top: 2.5rem;
+          padding-top: 2rem;
+          font-size: 1rem;
+        }
       }
  
       .split-copy h2 {
@@ -421,38 +509,25 @@
  
     <!-- ABOUT -->
     <section id="about-section" class="about-section-bg" aria-label="ჩვენ შესახებ">
-      <div class="grid grid-cols-1 lg:grid-cols-2 split-grid">
+      <div class="grid grid-cols-1 split-grid">
         <div class="split-copy">
-          <div class="split-copy-inner reveal space-y-8">
-            <h2 class="text-3xl sm:text-4xl md:text-5xl">ჩვენ შესახებ</h2>
+          <div class="split-copy-inner reveal">
+            <h2>ჩვენ შესახებ</h2>
  
-            <p class="text-sm sm:text-base md:text-lg leading-7 md:leading-8">
-              რეზერვი არის მაღალი კლასის, დახვეწილი რესტორანი თბილისში. სეზონურ მენიუებს ქმნის
-              შეფ-მზარეული ტომი რისანენი, რომელმაც კარიერა ფინეთში დაიწყო და მუშაობდა დასავლეთ თუ
-              აღმოსავლეთ ევროპის ქვეყნებში, ახლო აღმოსავლეთსა და აზიაში, სადაც ადრე საკუთარ
-              რესტორანს ხელმძღვანელობდა.
+            <p class="about-intro">
+              რეზერვი არის მაღალი კლასის, დახვეწილი რესტორანი თბილისში, სეზონური მენიუებით.
             </p>
  
-            <p class="text-sm sm:text-base md:text-lg leading-7 md:leading-8">
-              მისი კულინარიული ხელწერა ეფუძნება კლასიკურ ფრანგულ ტექნიკას, სკანდინავიური
-              მიდგომითა და ზომიერი აზიური გავლენით. სამზარეულო იყენებს ჩვენივე ფერმის პროდუქტებს,
-              აქვს შიდა საცხობი და საუზმის მენიუ.
+            <p class="about-details">
+              სამზარეულო იყენებს ჩვენივე ფერმის პროდუქტებს, აქვს შიდა საცხობი და საუზმის მენიუ.
             </p>
  
-            <p class="text-sm sm:text-base md:text-lg leading-7 md:leading-8">
+            <p class="about-location">
               რესტორანი მდებარეობს ქალაქის ისტორიულ ცენტრში, ოლივერ უორდროპის სახელობის პატარა
               სკვერში, საქართველოს პარლამენტის უკან. რეზერვი მუშაობს დისკრეტულ, შვიდმაგიდიან
               ფორმატში.
             </p>
           </div>
-        </div>
- 
-        <div class="split-media reveal">
-          <img
-            src="images/image1.jpg"
-            alt="შეფ ტომი რისანენი სეზონური მენიუს მომზადებისას Reserve რესტორანში, თბილისი"
-            draggable="false"
-          />
         </div>
       </div>
     </section>
@@ -733,4 +808,3 @@
     </script>
   </body>
 </html>
- 

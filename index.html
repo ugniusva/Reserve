@@ -6,7 +6,7 @@
 
     <meta
       name="description"
-      content="Reserve is a discreet casual fine dining restaurant in Tbilisi, led by chef Tomi Rissanen. Discover seasonal tasting menus, breakfast, and a carefully curated wine cellar—including Château Leuville—served in an intimate seven-table setting."
+      content="Reserve is a discreet casual fine dining restaurant in Tbilisi. Discover seasonal tasting menus, breakfast, and a carefully curated wine cellar—including Château Leuville—served in an intimate seven-table setting."
     />
 
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -208,6 +208,94 @@
       .split-copy-inner {
         width: 100%;
         max-width: 38rem;
+      }
+
+      #about-section .split-grid {
+        min-height: 100svh;
+      }
+
+      #about-section .split-copy {
+        padding: 7rem 1.5rem;
+      }
+
+      #about-section .split-copy-inner {
+        max-width: 44rem;
+        text-align: center;
+        overflow-wrap: break-word;
+      }
+
+      #about-section h2 {
+        margin: 0;
+        font-size: 2rem;
+        line-height: 1.25;
+        letter-spacing: 0;
+        text-wrap: balance;
+      }
+
+      #about-section h2::after {
+        content: "";
+        display: block;
+        width: 3rem;
+        height: 2px;
+        margin: 1.5rem auto 2rem;
+        background: #d0842f;
+      }
+
+      #about-section .about-intro {
+        max-width: 34rem;
+        margin: 0 auto;
+        color: #171717;
+        font-size: 1.2rem;
+        line-height: 1.6;
+        text-wrap: balance;
+      }
+
+      #about-section .about-details {
+        max-width: 35rem;
+        margin: 1.5rem auto 0;
+        color: #383838;
+        font-size: 1rem;
+        line-height: 1.85;
+        text-wrap: pretty;
+      }
+
+      #about-section .about-location {
+        max-width: 34rem;
+        margin: 2rem auto 0;
+        padding-top: 1.5rem;
+        border-top: 1px solid rgba(208, 132, 47, 0.28);
+        color: #555;
+        font-size: 0.95rem;
+        line-height: 1.8;
+        text-wrap: pretty;
+      }
+
+      @media (min-width: 768px) {
+        #about-section .split-copy {
+          padding: 8rem 3rem;
+        }
+
+        #about-section h2 {
+          font-size: 2.75rem;
+        }
+
+        #about-section h2::after {
+          margin-bottom: 2.5rem;
+        }
+
+        #about-section .about-intro {
+          font-size: 1.5rem;
+        }
+
+        #about-section .about-details {
+          font-size: 1.0625rem;
+        }
+
+        #about-section .about-location {
+          margin-top: 2.5rem;
+          padding-top: 2rem;
+          font-size: 1rem;
+        }
       }
 
       .split-copy h2 {
@@ -421,37 +509,25 @@
 
     <!-- ABOUT -->
     <section id="about-section" class="about-section-bg" aria-label="About Reserve">
-      <div class="grid grid-cols-1 lg:grid-cols-2 split-grid">
+      <div class="grid grid-cols-1 split-grid">
         <div class="split-copy">
-          <div class="split-copy-inner reveal space-y-8">
-            <h2 class="text-3xl sm:text-4xl md:text-5xl">About</h2>
+          <div class="split-copy-inner reveal">
+            <h2>About</h2>
 
-            <p class="text-sm sm:text-base md:text-lg leading-7 md:leading-8">
-              Reserve is a casual fine dining restaurant in Tbilisi. Seasonal menus are created by chef
-              Tomi Rissanen, who began his career in Finland and has worked across Western and Eastern
-              Europe, the Middle East, and Asia, where he previously led his own restaurant.
+            <p class="about-intro">
+              Reserve is a casual fine dining restaurant in Tbilisi with seasonal menus.
             </p>
 
-            <p class="text-sm sm:text-base md:text-lg leading-7 md:leading-8">
-              His cooking is based on classical French technique, with a Scandinavian approach and
-              restrained Asian influences. The kitchen works with produce from our own farm, an
-              in-house bakery, and a breakfast menu.
+            <p class="about-details">
+              Our kitchen uses produce from our own farm. We also have an in-house bakery and a breakfast menu.
             </p>
 
-            <p class="text-sm sm:text-base md:text-lg leading-7 md:leading-8">
+            <p class="about-location">
               The restaurant is located in the historic center of the city, in a small park named after
               Oliver Wardrop, behind the Parliament of Georgia. Reserve operates in a discreet
               seven-table format.
             </p>
           </div>
-        </div>
-
-        <div class="split-media reveal">
-          <img
-            src="images/image1.jpg"
-            alt="Chef Tomi Rissanen creating a seasonal fine dining menu at Reserve in Tbilisi"
-            draggable="false"
-          />
         </div>
       </div>
     </section>
