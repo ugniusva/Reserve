@@ -1660,7 +1660,9 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
 
       function formatDateShort(dateStr) {
         if (!dateStr) return "";
-        return dateStr.slice(2);
+        const [year, month, day] = dateStr.split("-");
+        if (!year || !month || !day) return dateStr;
+        return `${day}-${month}-${year}`;
       }
 
       function parseDateString(dateStr) {
