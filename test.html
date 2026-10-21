@@ -6,7 +6,7 @@
   <meta name="robots" content="noindex, nofollow" />
   <meta name="theme-color" content="#151614" />
   <meta name="description" content="Seasonal tasting menus, produce from our farm, and just seven tables in the historic heart of Tbilisi. Reserve Restaurant, 3 9 Aprili Street." />
-  <title>Reserve | A seasonal table in Tbilisi</title>
+  <title>Reserve</title>
   <link rel="icon" type="image/svg+xml" href="images/R.svg" />
   <link rel="preload" href="fonts/Lato-Regular.ttf" as="font" type="font/ttf" crossorigin />
   <link rel="preload" href="fonts/Lato-Light.ttf" as="font" type="font/ttf" crossorigin />
@@ -357,7 +357,7 @@
     <nav class="language-nav" aria-label="Language">
       <a href="#top" lang="en" aria-current="page" aria-label="English">EN</a>
       <span class="language-divider" aria-hidden="true"></span>
-      <a href="ge.html" lang="ka" aria-label="Georgian">GE</a>
+      <a href="testge.html" lang="ka" aria-label="Georgian">GE</a>
     </nav>
     <a class="header-brand" href="#top" aria-label="Reserve Restaurant, back to top">
       <img class="brand-light" src="images/logowhite.svg" alt="Reserve Restaurant" width="3840" height="2160" />
@@ -509,7 +509,7 @@
         });
         motionPreference.addEventListener('change', event => { if (event.matches) finish(); });
       });
-      if (location.pathname.split('/').pop() === 'test.html') {
+      if (location.pathname.split('/').filter(Boolean).pop()?.replace(/\.html$/, '') === 'test') {
         document.querySelectorAll('a[data-transition][href="reservation.html"]').forEach(link => { link.href = 'testreservations.html'; });
       }
       const gallery = document.querySelector('.instagram-grid');

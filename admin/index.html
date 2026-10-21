@@ -1,1434 +1,881 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Reserve Admin</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="same-origin">
+  <title>Reservations | Reserve Staff</title>
+  <script>
+    try { document.documentElement.dataset.theme = localStorage.getItem('reserve.staff.theme') === 'light' ? 'light' : 'dark'; } catch {}
+  </script>
   <style>
-    body {
-      background: #0a0a0a;
-      color: white;
+    @font-face{font-family:Lato;src:url('/fonts/Lato-Regular.ttf') format('truetype');font-weight:400;font-display:swap}
+    @font-face{font-family:Lato;src:url('/fonts/Lato-Bold.ttf') format('truetype');font-weight:700;font-display:swap}
+    :root{color-scheme:light;--ink:#242624;--muted:#646963;--line:#dfe3dd;--paper:#fff;--back:#f4f5f2;--gold:#a96017;--gold-light:#faf0e2;--green:#246644;--green-light:#eaf4ed;--red:#a52f32;--red-light:#fff0ef;--blue:#355e81}
+    *{box-sizing:border-box;letter-spacing:0}
+    [hidden]{display:none!important}
+    body{margin:0;background:var(--back);color:var(--ink);font:400 15px/1.45 Lato,Arial,sans-serif}
+    button,input,select,textarea{font:inherit;color:inherit}
+    button,a,input,select,textarea{-webkit-tap-highlight-color:transparent}
+    button{cursor:pointer}
+    button:disabled{cursor:not-allowed;opacity:.55}
+    button,a,input,select,textarea,summary{outline-offset:3px}
+    :focus-visible{outline:3px solid #b87326}
+    button{border:1px solid var(--line);border-radius:5px;min-height:42px;background:var(--paper);padding:9px 14px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:background .15s,border-color .15s}
+    button:hover:not(:disabled){background:#f0f2ee;border-color:#b8beb5}
+    .primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+    .primary:hover:not(:disabled){background:#40453d;border-color:#40453d}
+    .gold{background:#d0842f;color:#20180f;border-color:#d0842f}
+    .gold:hover:not(:disabled){background:#dfa050;border-color:#dfa050}
+    .danger{background:var(--red);border-color:var(--red);color:white}
+    .danger:hover:not(:disabled){background:#842326;border-color:#842326}
+    .icon-button{width:42px;padding:9px;flex-shrink:0}
+    .icon{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+    a{color:inherit;text-decoration-color:#c0c5bd;text-underline-offset:3px}
+    a:hover{color:var(--gold)}
+    h1,h2,h3,p{margin:0}
+    h1{font-size:25px;line-height:1.2}
+    h2{font-size:22px;line-height:1.25}
+    .muted{color:var(--muted)}
+    .small{font-size:13px}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    .shell{max-width:1540px;margin:auto;padding:0 32px}
+    .topbar{background:var(--paper);border-bottom:1px solid var(--line)}
+    .topbar .shell{min-height:82px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+    .identity{display:flex;align-items:center;gap:20px;min-width:0}
+    .brand{width:103px;height:48px;overflow:hidden;display:flex;align-items:center;justify-content:center;border-right:1px solid var(--line);padding-right:18px;flex-shrink:0}
+    .brand img{width:155px;max-width:none;height:auto}
+    .heading-sub{font-size:12px;color:var(--muted);margin-top:3px}
+    .header-actions{display:flex;gap:8px}
+    .quiet{background:transparent;border-color:transparent;color:var(--muted)}
+    main.shell{padding-top:24px;padding-bottom:50px}
+    .daybar{display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap}
+    .segments{display:flex;gap:3px;padding:3px;border:1px solid var(--line);border-radius:6px;background:#e9ece5}
+    .segments button{background:transparent;border-color:transparent;min-height:38px;padding:7px 17px;color:#555e51;font-size:14px}
+    .segments button[aria-pressed="true"]{background:white;border-color:#d0d5ca;color:var(--ink);box-shadow:0 1px 2px #2028200b}
+    .date-nav{display:flex;gap:5px;align-items:center}
+    .date-nav input{min-height:42px;width:165px;border:1px solid var(--line);border-radius:5px;background:#fff;padding:7px 10px}
+    .overview{display:flex;align-items:center;justify-content:space-between;gap:24px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:16px 0;margin-top:20px}
+    .day-title{flex-shrink:0}
+    .day-title h2{font-size:18px;margin-bottom:3px}
+    .day-title>span{font-size:12px}
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+    .stat{display:flex;align-items:center;gap:8px}
+    .stat strong{font-size:24px;line-height:1.2;font-variant-numeric:tabular-nums}
+    .stat span{font-size:12px;color:var(--muted);max-width:80px}
+    .stat.attention strong{color:var(--gold)}
+    .filters{display:grid;grid-template-columns:minmax(200px,1fr) 172px 155px 148px;gap:12px;padding:20px 0}
+    label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}
+    input,select,textarea{width:100%;border:1px solid #cdd2c8;border-radius:5px;background:white;min-height:43px;padding:9px 11px}
+    textarea{resize:vertical;min-height:88px}
+    input:disabled,select:disabled{background:#f0f2ed;color:var(--muted)}
+    .search{position:relative}
+    .search>.icon{position:absolute;left:12px;top:36px;color:var(--muted)}
+    .search input{padding-left:39px;padding-right:36px}
+    .search button{position:absolute;right:3px;top:27px;min-height:36px;width:34px;padding:6px;border:0;background:transparent}
+    .list-meta{display:flex;gap:12px;align-items:center;justify-content:space-between;margin:0 0 10px;font-size:13px;color:var(--muted)}
+    .list-meta button{padding:2px 0;min-height:28px;border:0;background:none;font-size:13px;text-decoration:underline;text-underline-offset:3px}
+    .list-tools{display:flex;gap:16px;align-items:center;flex-shrink:0}
+    #toggle-filters{display:none}
+    .table-wrap{background:white;border:1px solid var(--line);border-radius:6px;overflow:clip}
+    table{width:100%;table-layout:fixed;border-collapse:collapse}
+    th{background:#edf0e9;text-align:left;font-size:12px;color:#525b4d;padding:13px 14px;font-weight:700}
+    td{padding:16px 14px;vertical-align:top;border-top:1px solid var(--line);overflow-wrap:anywhere}
+    col.time-col{width:112px}col.guests-col{width:72px}col.table-col{width:98px}col.deposit-col{width:130px}col.arrival-col{width:142px}col.edit-col{width:68px}
+    .time{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.2}
+    .row-date{font-size:12px;margin-top:5px;color:var(--muted)}
+    .guest-name{font-size:16px;font-weight:700;line-height:1.35}
+    .guest-phone{display:inline-block;font-size:13px;margin-top:3px;color:var(--muted)}
+    .guest-line{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .badge{font-size:11px;font-weight:700;border-radius:4px;padding:2px 6px;display:inline-flex;align-items:center;gap:4px;max-width:100%;overflow-wrap:anywhere;background:#f0f1ee;color:#62675f}
+    .badge.confirmed{background:var(--green-light);color:var(--green)}
+    .badge.pending_payment{background:#fff3d8;color:#8a5800}
+    .badge.payment_failed,.badge.no_show{background:#fff0ef;color:var(--red)}
+    .badge.completed{background:#eaf0f7;color:var(--blue)}
+    .notes{margin-top:8px;font-size:13px;border-left:2px solid #d0842f;padding-left:8px;color:#52574f;white-space:pre-wrap}
+    .guest-count{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
+    .table-button{min-height:38px;min-width:58px;max-width:100%;overflow-wrap:anywhere;padding:7px 9px;font-size:14px}
+    .table-button.unassigned{color:var(--gold);background:var(--gold-light);border-color:#ecd5b7;font-size:12px}
+    .deposit{font-weight:700;font-size:14px;font-variant-numeric:tabular-nums}
+    .payment-label{display:block;font-size:12px;color:var(--muted);margin-top:4px}
+    .payment-label.paid{color:var(--green)}
+    .checkin{width:116px;min-height:42px;font-size:13px;padding:8px}
+    .checkin[aria-pressed="true"]{background:var(--green-light);color:var(--green);border-color:#a8c7b1}
+    .checkin-time{font-size:12px;color:var(--green);margin-top:5px}
+    tr.checked td{background:#f2f8f1}
+    tr.checked td:first-child{box-shadow:inset 3px 0 var(--green)}
+    tr.inactive .time,tr.inactive .guest-name{color:#73796e}
+    .empty{padding:64px 24px;text-align:center}
+    .empty>.icon{width:32px;height:32px;color:#8b9482;margin-bottom:12px}
+    .empty h3{font-size:17px;margin-bottom:5px}
+    .empty button{margin-top:18px}
+    .banner{padding:12px 15px;background:var(--red-light);color:#8c282b;border:1px solid #e9bdba;border-radius:5px;margin-bottom:16px;font-size:14px}
+    .banner button{min-height:28px;padding:2px 8px;margin-left:8px;background:transparent;border-color:currentColor;font-size:13px}
+    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);max-width:calc(100% - 32px);width:max-content;display:flex;gap:16px;align-items:center;padding:12px 14px 12px 18px;background:#263c2b;color:white;border-radius:6px;box-shadow:0 6px 25px #0002;z-index:20;font-size:14px}
+    .toast button{background:transparent;border:0;color:white;min-height:30px;width:30px;padding:5px}
+    .auth-screen{min-height:100vh;min-height:100dvh;display:grid;place-items:center;padding:32px 20px;border-top:5px solid #d0842f}
+    .auth-box{width:100%;max-width:370px}
+    .auth-logo{width:190px;height:80px;object-fit:contain;margin-bottom:24px}
+    .auth-box h1{font-size:27px;margin-bottom:6px}
+    .auth-box form{margin-top:28px}
+    .auth-box .primary{width:100%;margin-top:18px}
+    .auth-foot{font-size:12px;color:var(--muted);margin-top:24px}
+    dialog{padding:0;border:1px solid #d5dace;border-radius:8px;color:var(--ink);background:#fff;width:600px;max-width:calc(100% - 32px);max-height:calc(100vh - 40px);max-height:calc(100dvh - 40px);box-shadow:0 24px 90px #18201440;overflow:auto}
+    dialog[open]{display:flex;flex-direction:column;overflow:hidden}
+    dialog>form{display:flex;flex-direction:column;min-height:0;max-height:inherit;width:100%}
+    dialog::backdrop{background:#17201480;backdrop-filter:blur(2px)}
+    dialog.narrow{width:410px}
+    .dialog-head{padding:22px 24px 18px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-shrink:0}
+    .dialog-head h2{font-size:21px}
+    .dialog-head .small{margin-top:4px}
+    .dialog-body{padding:22px 24px;overflow-y:auto;min-height:0}
+    .dialog-actions{padding:16px 24px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:9px;background:#f8f9f6;flex-shrink:0}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:17px}
+    .full{grid-column:1/-1}
+    fieldset{border:0;padding:0;margin:0;min-width:0}
+    .field-note{font-size:12px;color:var(--muted);margin-top:5px}
+    .date-trigger{width:100%;justify-content:space-between;min-height:43px;padding:9px 11px;font-weight:400;text-align:left}
+    .date-calendar{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:12px 0}
+    .calendar-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+    .calendar-heading strong{font-size:15px}
+    .calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+    .calendar-weekday{text-align:center;font-size:11px;color:var(--muted);padding:4px 0}
+    .calendar-day{width:100%;min-width:0;min-height:38px;padding:5px;border-color:transparent;font-size:14px;font-variant-numeric:tabular-nums}
+    .calendar-day:disabled{opacity:.3;background:transparent}
+    .calendar-day[aria-pressed="true"]{background:#d0842f!important;border-color:#d0842f!important;color:#20180f!important}
+    .form-error{background:var(--red-light);color:var(--red);padding:11px 13px;border-radius:4px;margin-bottom:18px;font-size:14px}
+    .record-details{border-top:1px solid var(--line);margin-top:24px;padding-top:17px}
+    summary{cursor:pointer;font-size:13px;font-weight:700;color:var(--muted)}
+    dl{margin:15px 0 0;display:grid;grid-template-columns:130px 1fr;gap:9px;font-size:13px}
+    dt{color:var(--muted)}dd{margin:0;overflow-wrap:anywhere}
+    .delete-record{font-size:13px;color:var(--red);border-color:#e6bdbc;margin-top:20px}
+    .static-notes{white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;margin-top:20px;border-left:2px solid #d0842f;padding-left:12px}
+    .manual-note{background:var(--gold-light);padding:10px 12px;border-radius:4px;font-size:13px;color:#7a4915;margin-bottom:20px}
+    .deletion-name{font-weight:700;margin:18px 0 6px;font-size:17px}
+    @media(min-width:1500px){.shell{padding-left:44px;padding-right:44px}td{padding-top:18px;padding-bottom:18px}}
+    @media(max-width:1100px){.shell{padding-left:20px;padding-right:20px}col.time-col{width:95px}col.guests-col{width:60px}col.table-col{width:86px}col.deposit-col{width:105px}col.arrival-col{width:130px}col.edit-col{width:59px}td,th{padding-left:10px;padding-right:10px}.filters{grid-template-columns:minmax(170px,1fr) 156px 145px 130px}.stat{gap:7px}.stat span{max-width:100px}}
+    @media(max-width:1000px){.overview{gap:20px}.stats{gap:16px}.stat{display:block}.stat span{display:block;margin-top:3px;font-size:11px}.stat strong{font-size:22px}}
+    @media(max-width:800px){.brand{display:none}.topbar .shell{min-height:76px}.header-actions .logout-label{display:none}.header-actions #logout{width:42px;padding:9px}.filters{grid-template-columns:1fr 1fr 1fr;gap:10px}.search{grid-column:1/-1}.stats{gap:12px}col.time-col{width:80px}col.deposit-col{width:85px}col.table-col{width:72px}col.arrival-col{width:119px}col.guests-col{width:50px}col.edit-col{width:54px}.checkin{width:102px;font-size:12px}.time{font-size:18px}.guest-name{font-size:15px}.deposit{font-size:12px}}
+    @media(max-width:700px){.shell{padding-left:16px;padding-right:16px}h1{font-size:21px}.heading-sub{font-size:11px}.header-actions{gap:4px}.header-actions .primary{padding:9px 11px;font-size:13px}.daybar{gap:12px}.segments{width:100%}.segments button{flex:1;padding:7px 8px}.date-nav{width:100%}.date-nav input{flex:1;min-width:0}.day-title{margin-top:20px;gap:5px}.day-title h2{font-size:19px;width:100%}.stats{grid-template-columns:repeat(4,1fr);gap:10px;padding:15px 0}.stat span{font-size:11px}.filters{grid-template-columns:1fr 1fr;padding:16px 0}.filters>.sort-field{grid-column:1/-1}.sort-field select{min-height:38px;font-size:13px}.table-wrap{border:0;background:none;overflow:visible}table,tbody{display:block}colgroup,thead{display:none}tr{display:grid;grid-template-columns:76px minmax(0,1fr) 46px;gap:0;background:white;border:1px solid var(--line);border-radius:6px;margin-bottom:10px;overflow:hidden}td{border:0;padding:14px 12px;min-width:0}td:nth-child(1){grid-column:1;grid-row:1}td:nth-child(2){grid-column:2;grid-row:1;padding-left:0;padding-right:4px}td:nth-child(3){grid-column:1;grid-row:2;padding-top:6px;font-size:13px}td:nth-child(3)::before{content:'Guests';display:block;font-size:11px;color:var(--muted);margin-bottom:3px}td:nth-child(4){grid-column:2;grid-row:2;display:flex;align-items:center;padding-top:6px;padding-left:0;gap:9px}td:nth-child(4)::before{content:'Table';font-size:12px;color:var(--muted)}td:nth-child(5){grid-column:1/3;grid-row:3;padding-top:9px;padding-bottom:10px;border-top:1px solid var(--line);display:flex;gap:7px;align-items:center}.payment-label{margin:0}td:nth-child(6){grid-column:1/-1;grid-row:4;border-top:1px solid var(--line);padding:10px 12px;display:flex;gap:10px;align-items:center}.checkin{width:auto;min-width:132px;font-size:13px}.checkin-time{margin-top:0}td:nth-child(7){grid-column:3;grid-row:1/3;padding:10px 7px 10px 0}td:nth-child(7) button{width:34px;min-height:38px;padding:8px}.guest-name{font-size:16px}.time{font-size:19px}.row-date{font-size:11px}.guest-phone{font-size:12px}.badge{font-size:10px}.notes{font-size:12px}.guest-count{font-size:17px}.deposit{font-size:13px}tr.checked{border-color:#b5cbb3;box-shadow:inset 3px 0 var(--green)}tr.checked td:first-child{box-shadow:none}.list-meta{align-items:flex-start}.list-meta span{max-width:72%}dialog{max-width:calc(100% - 20px);max-height:calc(100dvh - 24px)}.dialog-head{padding:18px}.dialog-body{padding:20px 18px}.dialog-actions{padding:13px 18px}.form-grid{gap:15px}.toast{bottom:16px}.empty{padding:44px 16px}}
+    @media(max-width:370px){.header-actions .primary span{max-width:76px;line-height:1.15}.header-actions .primary{gap:5px}.heading-sub{display:none}.stats{grid-template-columns:1fr 1fr;row-gap:14px}.stat{display:flex;align-items:center}.stat span{margin:0;max-width:85px}.form-grid{grid-template-columns:1fr}.full{grid-column:auto}}
+    @media(max-width:700px){.overview{display:block;margin-top:16px;padding:12px 0}.day-title{margin:0 0 12px}.day-title h2{font-size:17px}.stats{padding:0;border:0;gap:12px}.stat{display:block}.stat strong{font-size:22px}.stat span{max-width:none;font-size:11px}.filters{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.filters>.sort-field{grid-column:auto}.filters label{font-size:12px}.filters select,.sort-field select{font-size:12px;min-height:42px;padding:8px 5px}.stats{grid-template-columns:repeat(4,minmax(0,1fr))}}
+    @media(max-width:700px){main.shell{padding-top:16px}.day-title>span{display:none}.filters{grid-template-columns:repeat(2,minmax(0,1fr));padding:14px 0 10px}.filters>div:not(.search){display:none}.filters.expanded>div:not(.search){display:block}#status-field{grid-column:1/-1}.filters select,.sort-field select{font-size:16px;padding:8px}.filters input,dialog input,dialog select,dialog textarea{font-size:16px}#toggle-filters{display:inline-flex;text-decoration:none;font-weight:700;color:var(--gold);gap:6px}.list-meta{align-items:center}.list-meta>span{max-width:none}.list-meta button{min-height:38px}.list-tools{gap:12px}.list-tools .icon{width:15px;height:15px}td:nth-child(5){grid-column:1/-1}}
+    @media(max-width:800px){.checkin{gap:5px;padding:7px 5px}.checkin .icon{width:16px;height:16px}}
+    @media(max-width:370px){.topbar .shell{gap:8px}.topbar h1{font-size:19px}}
+    .header-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+    .undo-button{gap:6px;position:relative}
+    .undo-button:disabled{opacity:1;color:var(--muted)}
+    .beta{display:inline-block;padding:2px 5px;border:1px solid #d8aa61;border-radius:8px;color:#885516;background:#fcf0d6;font-size:9px;font-weight:700;line-height:1.2}
+    .undo-count{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+    .theme-button{white-space:nowrap;font-size:13px}
+    .auth-theme{position:absolute;right:20px;top:20px}
+    #undo-dialog .dialog-body>p+p{margin-top:12px}
+    [data-theme="dark"]{color-scheme:dark;--ink:#edf0e8;--muted:#a5ad9f;--line:#3c4337;--paper:#22271f;--back:#171b15;--gold:#efb163;--gold-light:#3b3020;--green:#a0d7b2;--green-light:#253d2d;--red:#f2aaa6;--red-light:#3d2425;--blue:#b2cee6}
+    [data-theme="dark"] .primary{background:#d0842f;border-color:#d0842f;color:#1f170e}
+    [data-theme="dark"] .primary:hover:not(:disabled){background:#dfa050;border-color:#dfa050}
+    [data-theme="dark"] button:hover:not(:disabled){background:#363e30;border-color:#6b785f}
+    [data-theme="dark"] .brand img,[data-theme="dark"] .auth-logo{filter:invert(1)}
+    [data-theme="dark"] input,[data-theme="dark"] select,[data-theme="dark"] textarea{background:#252b20;border-color:#57614e}
+    [data-theme="dark"] input:disabled,[data-theme="dark"] select:disabled{background:#1c2119;color:var(--muted)}
+    [data-theme="dark"] .segments{background:#20261c}
+    [data-theme="dark"] .segments button{color:#b9c2b1}
+    [data-theme="dark"] .segments button[aria-pressed="true"]{background:#3d4734;border-color:#677956;color:#fff;box-shadow:none}
+    [data-theme="dark"] .date-nav input{background:#252b20;border-color:#57614e}
+    [data-theme="dark"] .table-wrap,[data-theme="dark"] dialog,[data-theme="dark"] tr{background:var(--paper)}
+    [data-theme="dark"] th{background:#2c3426;color:#c7d0bd}
+    [data-theme="dark"] .badge{background:#373e31;color:#c3c9bc}
+    [data-theme="dark"] .badge.confirmed{background:var(--green-light);color:var(--green)}
+    [data-theme="dark"] .badge.pending_payment{background:#45351b;color:#f2ca7a}
+    [data-theme="dark"] .badge.payment_failed,[data-theme="dark"] .badge.no_show{background:var(--red-light);color:var(--red)}
+    [data-theme="dark"] .badge.completed{background:#263949;color:var(--blue)}
+    [data-theme="dark"] tr.checked td{background:#243421}
+    [data-theme="dark"] .notes{color:#d2d6ca}
+    [data-theme="dark"] .table-button.unassigned{border-color:#76542c}
+    [data-theme="dark"] .checkin[aria-pressed="true"]{border-color:#598366}
+    [data-theme="dark"] tr.inactive .time,[data-theme="dark"] tr.inactive .guest-name{color:#adb4a5}
+    [data-theme="dark"] .dialog-actions{background:#1d2319}
+    [data-theme="dark"] .manual-note{color:#f3c17c}
+    [data-theme="dark"] .danger{background:#9b3436;border-color:#b94d4f;color:white}
+    [data-theme="dark"] .banner{background:var(--red-light);color:#f2b6b1;border-color:#87504a}
+    [data-theme="dark"] .beta{background:#49371a;color:#f8d296;border-color:#9d7639}
+    @media(max-width:800px){.topbar .shell{padding-top:14px;padding-bottom:14px;align-items:flex-start}.header-tools{max-width:70%;gap:7px}.header-actions{flex-wrap:wrap;justify-content:flex-end}.theme-button{padding:8px 10px}.undo-button{padding:8px 10px}.header-tools .icon{width:16px;height:16px}}
+    @media(max-width:480px){
+      .topbar .shell{position:relative;flex-wrap:wrap;gap:10px;align-items:center}
+      .identity{width:100%;flex:none;padding-right:145px;position:relative}
+      .heading-sub{display:block}
+      .header-tools{display:flex;max-width:none;width:100%;gap:8px}
+      .header-actions{display:flex;flex:0 0 42px}
+      .header-actions .primary{position:absolute;right:16px;top:14px;font-size:12px;padding:9px 10px}
+      .header-actions .primary span{max-width:none}
+      .header-tools>.theme-button{flex:1 1 100px;font-size:12px;gap:5px}
+      .header-tools>.undo-button{flex:1 1 112px;font-size:12px}
+      .topbar h1{font-size:22px}
+      .beta{font-size:9px}.undo-count{display:none}
     }
-
-    .filter-chip {
-      border: 1px solid rgba(255,255,255,0.1);
-      background: rgba(255,255,255,0.06);
-      color: rgba(255,255,255,0.88);
-      transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
-    }
-
-    .filter-chip:hover {
-      background: rgba(255,255,255,0.12);
-      transform: translateY(-1px);
-    }
-
-    .filter-chip.active {
-      background: #D0842F;
-      border-color: #D0842F;
-      color: white;
-    }
-
-    .sort-chip {
-      border: 1px solid rgba(255,255,255,0.1);
-      background: rgba(255,255,255,0.06);
-      color: rgba(255,255,255,0.88);
-      transition: background 180ms ease, border-color 180ms ease;
-    }
-
-    .sort-chip:hover {
-      background: rgba(255,255,255,0.12);
-    }
-
-    .sort-chip.active {
-      background: rgba(208, 132, 47, 0.16);
-      border-color: rgba(208, 132, 47, 0.5);
-      color: #ffd8aa;
-    }
-
-    .today-row {
-      background: rgba(208, 132, 47, 0.08);
-    }
-
-    .checked-in-row {
-      background: rgba(34, 197, 94, 0.14);
-    }
-
-    .checked-in-row:hover {
-      background: rgba(34, 197, 94, 0.2);
-    }
-
-    .admin-table {
-      table-layout: fixed;
-      width: 100%;
-    }
-
-    .admin-table th,
-    .admin-table td {
-      padding: 0.7rem 0.55rem;
-      vertical-align: top;
-    }
-
-    .admin-table th {
-      font-size: 0.72rem;
-      line-height: 1.2;
-    }
-
-    .admin-table td {
-      font-size: 0.82rem;
-      line-height: 1.35;
-      overflow-wrap: anywhere;
-    }
-
-    .admin-muted {
-      color: rgba(255, 255, 255, 0.48);
-      font-size: 0.72rem;
-      margin-top: 0.2rem;
-    }
-
-    .admin-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.35rem;
-    }
-
-    .admin-actions button,
-    .checkin-btn {
-      padding: 0.28rem 0.5rem;
-      font-size: 0.72rem;
-      line-height: 1.2;
-    }
+    @media(max-width:370px){.topbar h1{font-size:20px}}
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;scroll-behavior:auto!important}}
   </style>
 </head>
-<body class="min-h-screen px-4 py-8 md:px-8">
-  <div class="max-w-7xl mx-auto space-y-6">
-    <div class="flex flex-col gap-5">
-      <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-        <div>
-          <p class="text-white/60 text-sm uppercase tracking-[0.2em]">Reserve</p>
-          <h1 class="text-3xl md:text-4xl font-semibold">Reservations Admin</h1>
-          <p class="text-white/60 mt-2">Simple dashboard for staff</p>
-        </div>
+<body>
+  <!-- Lucide icons; license: images/test/LUCIDE-LICENSE.txt. -->
+  <svg xmlns="http://www.w3.org/2000/svg" class="sr-only" aria-hidden="true"><defs>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="m18 6-12 12M6 6l12 12"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m20 6-11 11-5-5"/></symbol>
+    <symbol id="i-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+    <symbol id="i-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15.4-6.4L21 8M21 3v5h-5M21 12a9 9 0 0 1-15.4 6.4L3 16M8 16H3v5"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24"><path d="m16 3 5 5M4 20l4-1L21 6a2.1 2.1 0 0 0-3-3L5 16l-1 4Z"/></symbol>
+    <symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M19 6l-1 14H6L5 6M9 6V3h6v3M10 10v7M14 10v7"/></symbol>
+    <symbol id="i-filter" viewBox="0 0 24 24"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></symbol>
+    <symbol id="i-undo" viewBox="0 0 24 24"><path d="m9 14-5-5 5-5M4 9h10a6 6 0 0 1 0 12h-2"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.985 12.486A9 9 0 1 1 11.51 3.01c.407-.022.62.463.404.808a6.25 6.25 0 0 0 8.268 8.268c.345-.216.83-.003.803.4"/></symbol>
+  </defs></svg>
 
-        <div class="flex flex-col sm:flex-row gap-3">
-          <div>
-            <label class="block text-sm text-white/70 mb-1">Date</label>
-            <input
-              id="filter-date"
-              type="date"
-              class="px-3 py-2 rounded-md bg-white text-black"
-            />
-          </div>
-
-          <div>
-            <label class="block text-sm text-white/70 mb-1">Status</label>
-            <select
-              id="filter-status"
-              class="px-3 py-2 rounded-md bg-white text-black"
-            >
-              <option value="">All</option>
-              <option value="pending_payment">Pending payment</option>
-              <option value="confirmed">Confirmed</option>
-              <option value="payment_failed">Payment failed</option>
-              <option value="cancelled">Cancelled</option>
-              <option value="completed">Completed</option>
-              <option value="no_show">No show</option>
-            </select>
-          </div>
-
-          <div class="flex items-end">
-            <button
-              id="btn-refresh"
-              class="px-4 py-2 rounded-md bg-[#D0842F] text-white hover:opacity-90 transition"
-            >
-              Refresh
-            </button>
-          </div>
-
-
-          <div class="flex items-end">
-            <button
-              id="btn-custom-reservation"
-              class="px-4 py-2 rounded-md bg-[#D0842F] text-white hover:opacity-90 transition"
-            >
-              Custom reservation
-            </button>
-          </div>
-
-          <div class="flex items-end">
-            <button
-              id="btn-logout"
-              class="px-4 py-2 rounded-md bg-white/10 text-white hover:bg-white/20 transition"
-            >
-              Log out
-            </button>
-          </div>
-
-
-
-        </div>
-      </div>
-
-      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <div>
-          <p class="text-sm text-white/60 mb-2">Quick filters</p>
-          <div class="flex flex-wrap gap-2">
-            <button id="quick-today-paid" class="filter-chip active px-4 py-2 rounded-full text-sm">
-              Today paid
-            </button>
-            <button id="quick-today-all" class="filter-chip px-4 py-2 rounded-full text-sm">
-              Today all
-            </button>
-            <button id="quick-upcoming-paid" class="filter-chip px-4 py-2 rounded-full text-sm">
-              Upcoming paid
-            </button>
-            <button id="quick-all" class="filter-chip px-4 py-2 rounded-full text-sm">
-              All
-            </button>
-          </div>
-        </div>
-
-        <div>
-          <p class="text-sm text-white/60 mb-2">Sort order</p>
-          <div class="flex flex-wrap gap-2">
-            <button id="sort-asc" class="sort-chip active px-4 py-2 rounded-full text-sm">
-              Earliest first
-            </button>
-            <button id="sort-desc" class="sort-chip px-4 py-2 rounded-full text-sm">
-              Latest first
-            </button>
-          </div>
-        </div>
-      </div>
+  <section class="auth-screen" id="auth-screen" aria-labelledby="auth-title">
+    <button class="theme-button auth-theme" type="button" data-theme-toggle><svg class="icon" aria-hidden="true"><use href="#i-sun"/></svg><span>Light mode</span></button>
+    <div class="auth-box">
+      <img class="auth-logo" src="/images/logoblack2.svg" alt="Reserve" width="190" height="80">
+      <h1 id="auth-title">Staff sign in</h1>
+      <p class="muted">Reservations desk</p>
+      <p class="auth-foot" id="session-status" role="status">Checking your session...</p>
+      <form id="login-form" hidden>
+        <div class="form-error" id="login-error" role="alert" hidden></div>
+        <label for="password">Admin password</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required>
+        <button class="primary" id="login-button" type="submit">Sign in</button>
+      </form>
+      <noscript><p>JavaScript is required to open the reservations desk.</p></noscript>
     </div>
+  </section>
 
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <div class="rounded-xl bg-white/5 border border-white/10 p-4">
-        <p class="text-white/60 text-sm">Visible reservations</p>
-        <p id="stat-total" class="text-3xl font-semibold mt-2">0</p>
+  <div id="app" hidden>
+    <header class="topbar">
+      <div class="shell">
+        <div class="identity">
+          <div class="brand"><img src="/images/logoblack2.svg" alt="Reserve" width="155" height="76"></div>
+          <div><h1>Reservations</h1><p class="heading-sub">Staff desk &middot; Tbilisi, GMT+4</p></div>
+        </div>
+        <div class="header-tools"><button class="theme-button" type="button" data-theme-toggle><svg class="icon" aria-hidden="true"><use href="#i-sun"/></svg><span>Light mode</span></button>
+        <button class="undo-button" id="undo" title="Undo the last admin change" disabled><svg class="icon" aria-hidden="true"><use href="#i-undo"/></svg>Undo <span class="beta">BETA</span><span class="undo-count" id="undo-count"></span></button>
+        <div class="header-actions">
+          <button class="primary" id="new-reservation"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg><span>Add reservation</span></button>
+          <button class="quiet" id="logout" title="Sign out"><svg class="icon" aria-hidden="true"><use href="#i-logout"/></svg><span class="logout-label">Sign out</span></button>
+        </div>
+        </div>
       </div>
-      <div class="rounded-xl bg-white/5 border border-white/10 p-4">
-        <p class="text-white/60 text-sm">Today paid</p>
-        <p id="stat-today-paid" class="text-3xl font-semibold mt-2">0</p>
+    </header>
+    <main class="shell">
+      <div class="banner" id="page-error" role="alert" hidden><span></span> <button id="retry">Try again</button></div>
+      <div class="daybar">
+        <nav class="segments" aria-label="Reservation dates">
+          <button data-view="today" aria-pressed="true">Today</button>
+          <button data-view="tomorrow" aria-pressed="false">Tomorrow</button>
+          <button data-view="upcoming" aria-pressed="false">Upcoming</button>
+          <button data-view="all" aria-pressed="false">All</button>
+        </nav>
+        <div class="date-nav">
+          <button class="icon-button" id="previous-day" title="Previous day" aria-label="Previous day"><svg class="icon" aria-hidden="true"><use href="#i-left"/></svg></button>
+          <label class="sr-only" for="view-date">Reservation date</label><input type="date" id="view-date">
+          <button class="icon-button" id="next-day" title="Next day" aria-label="Next day"><svg class="icon" aria-hidden="true"><use href="#i-right"/></svg></button>
+          <button class="icon-button" id="refresh" title="Refresh reservations and clear Undo history" aria-label="Refresh reservations and clear Undo history"><svg class="icon" aria-hidden="true"><use href="#i-refresh"/></svg></button>
+        </div>
       </div>
-      <div class="rounded-xl bg-white/5 border border-white/10 p-4">
-        <p class="text-white/60 text-sm">Pending payment</p>
-        <p id="stat-pending" class="text-3xl font-semibold mt-2">0</p>
+      <div class="overview"><div class="day-title"><h2 id="view-title"></h2><span class="small muted" id="updated-at"></span></div>
+      <section class="stats" aria-label="Current view totals">
+        <div class="stat"><strong id="count-bookings">0</strong><span>Reservations</span></div>
+        <div class="stat" title="Guests in confirmed and completed bookings"><strong id="count-guests">0</strong><span>Expected guests</span></div>
+        <div class="stat"><strong id="count-arrived">0</strong><span>Checked in</span></div>
+        <div class="stat attention"><strong id="count-unassigned">0</strong><span>Need a table</span></div>
+      </section>
       </div>
-      <div class="rounded-xl bg-white/5 border border-white/10 p-4">
-        <p class="text-white/60 text-sm">Confirmed / completed</p>
-        <p id="stat-confirmed" class="text-3xl font-semibold mt-2">0</p>
+      <div class="filters">
+        <div class="search"><label for="search">Find a reservation</label><svg class="icon" aria-hidden="true"><use href="#i-search"/></svg><input id="search" type="search" placeholder="Name, phone, table or notes" autocomplete="off"><button id="clear-search" title="Clear search" aria-label="Clear search" hidden><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button></div>
+        <div id="status-field"><label for="status-filter">Booking status</label><select id="status-filter"><option value="">All statuses</option><option value="active">Confirmed / completed</option><option value="confirmed">Confirmed</option><option value="pending_payment">Pending payment</option><option value="payment_failed">Payment failed</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option><option value="no_show">No show</option></select></div>
+        <div id="arrival-field"><label for="arrival-filter">Arrival</label><select id="arrival-filter"><option value="">All arrivals</option><option value="waiting">Not checked in</option><option value="arrived">Checked in</option><option value="unassigned">Need a table</option></select></div>
+        <div class="sort-field" id="sort-field"><label for="sort">Time order</label><select id="sort"><option value="asc">Earliest first</option><option value="desc">Latest first</option></select></div>
       </div>
-    </div>
-
-    <div class="rounded-2xl border border-white/10 bg-white/5 overflow-hidden">
-      <div class="px-4 py-3 border-b border-white/10 text-sm text-white/60">
-        <span id="table-caption">Showing today’s paid reservations, sorted by time.</span>
-      </div>
-
-      <div>
-        <table class="admin-table text-sm">
-          <colgroup>
-            <col style="width: 10%" />
-            <col style="width: 11%" />
-            <col style="width: 10%" />
-            <col style="width: 17%" />
-            <col style="width: 8%" />
-            <col style="width: 9%" />
-            <col style="width: 11%" />
-            <col style="width: 14%" />
-            <col style="width: 10%" />
-          </colgroup>
-          <thead class="bg-white/10 text-left text-white/70">
-            <tr>
-              <th class="px-4 py-3">Paid/created</th>
-              <th class="px-4 py-3">Reservation</th>
-              <th class="px-4 py-3">Check-in</th>
-              <th class="px-4 py-3">Guest</th>
-              <th class="px-4 py-3">Party</th>
-              <th class="px-4 py-3">Deposit</th>
-              <th class="px-4 py-3">Status</th>
-              <th class="px-4 py-3">Requests</th>
-              <th class="px-4 py-3">Actions</th>
-            </tr>
-          </thead>
-          <tbody id="reservations-body" class="divide-y divide-white/10">
-            <tr>
-              <td colspan="9" class="px-4 py-6 text-center text-white/50">
-                Loading...
-              </td>
-            </tr>
-          </tbody>
+      <div class="list-meta"><span id="list-caption" aria-live="polite"></span><div class="list-tools"><button id="reset-filters" hidden>Clear</button><button id="toggle-filters" aria-expanded="false" aria-controls="status-field arrival-field sort-field"><svg class="icon" aria-hidden="true"><use href="#i-filter"/></svg><span id="filters-label">Filters</span></button></div></div>
+      <div class="table-wrap" id="list-region" aria-busy="false">
+        <table aria-label="Reservations"><colgroup><col class="time-col"><col><col class="guests-col"><col class="table-col"><col class="deposit-col"><col class="arrival-col"><col class="edit-col"></colgroup>
+          <thead><tr><th scope="col">Time / date</th><th scope="col">Guest / requests</th><th scope="col">Guests</th><th scope="col">Table</th><th scope="col">Deposit</th><th scope="col">Arrival</th><th scope="col"><span class="sr-only">Edit</span></th></tr></thead>
+          <tbody id="rows"></tbody>
         </table>
+        <div class="empty" id="empty" hidden><svg class="icon" aria-hidden="true"><use href="#i-calendar"/></svg><h3 id="empty-title">No reservations</h3><p class="muted small" id="empty-text"></p><button id="empty-reset" hidden>Clear filters</button></div>
       </div>
-    </div>
+    </main>
   </div>
+
+  <dialog id="edit-dialog" aria-labelledby="edit-title">
+    <form id="edit-form">
+      <div class="dialog-head"><div><h2 id="edit-title">Edit reservation</h2><p class="small muted" id="edit-subtitle"></p></div><button type="button" class="icon-button quiet" data-close title="Close" aria-label="Close"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button></div>
+      <div class="dialog-body">
+        <div id="edit-error" class="form-error" role="alert" hidden></div>
+        <fieldset id="edit-fields"><div class="form-grid">
+          <div><label for="edit-first">First name</label><input id="edit-first" name="first_name" required autocomplete="off"></div>
+          <div><label for="edit-last">Last name</label><input id="edit-last" name="last_name" required autocomplete="off"></div>
+          <div class="full"><label for="edit-phone">Phone</label><input id="edit-phone" name="phone" type="tel" required autocomplete="off"></div>
+          <div><label for="edit-date">Reservation date</label><input id="edit-date" name="booking_date" type="date" required></div>
+          <div><label for="edit-time">Reservation time</label><select id="edit-time" name="booking_time" required></select></div>
+          <div><label for="edit-guests">Guests</label><input id="edit-guests" name="guests" type="number" min="1" max="22" step="1" required></div>
+          <div><label for="edit-table">Table</label><input id="edit-table" name="table_number" placeholder="Not assigned" autocomplete="off"></div>
+          <div class="full"><label for="edit-status">Booking status</label><select id="edit-status" name="status"><option value="confirmed">Confirmed</option><option value="completed">Completed</option><option value="pending_payment">Pending payment</option><option value="payment_failed">Payment failed</option><option value="cancelled">Cancelled</option><option value="no_show">No show</option></select></div>
+        </div></fieldset>
+        <div id="edit-notes" class="static-notes" hidden></div>
+        <details class="record-details" open><summary>Payment &amp; record details</summary><dl id="record-details"></dl><button type="button" class="delete-record" id="open-delete"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg>Delete reservation</button></details>
+      </div>
+      <div class="dialog-actions"><button type="button" data-close>Cancel</button><button class="primary" id="edit-save" type="submit">Save changes</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="table-dialog" class="narrow" aria-labelledby="table-title">
+    <form id="table-form"><div class="dialog-head"><div><h2 id="table-title">Assign table</h2><p class="small muted" id="table-guest"></p></div><button type="button" class="icon-button quiet" data-close title="Close" aria-label="Close"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button></div>
+      <div class="dialog-body"><div id="table-error" class="form-error" role="alert" hidden></div><label for="table-number">Table number</label><input id="table-number" name="table_number" placeholder="Not assigned" autocomplete="off"><p class="field-note">Leave empty to remove the assigned table.</p></div>
+      <div class="dialog-actions"><button type="button" data-close>Cancel</button><button class="primary" type="submit" id="table-save">Save table</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="create-dialog" aria-labelledby="create-title">
+    <form id="create-form"><div class="dialog-head"><div><h2 id="create-title">Add reservation</h2><p class="small muted">Manual booking</p></div><button type="button" class="icon-button quiet" data-close title="Close" aria-label="Close"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button></div>
+      <div class="dialog-body"><div id="create-error" class="form-error" role="alert" hidden></div><p class="manual-note">Confirmed on creation. No online deposit collected.</p>
+        <fieldset id="create-fields"><div class="form-grid">
+          <div class="full"><label for="create-name">Guest name</label><input id="create-name" name="full_name" required autocomplete="off"></div>
+          <div><label for="create-phone">Phone <span class="muted">(optional)</span></label><input id="create-phone" name="phone" type="tel" autocomplete="off"></div>
+          <div><label for="create-table">Table <span class="muted">(optional)</span></label><input id="create-table" name="table_number" autocomplete="off"></div>
+          <div><label for="create-guests">Guests</label><input id="create-guests" name="guests" type="number" min="1" max="22" step="1" value="2" required></div>
+          <div><label id="create-date-heading" for="create-date-trigger">Available date</label><input id="create-date" name="booking_date" type="hidden"><button id="create-date-trigger" class="date-trigger" type="button" aria-labelledby="create-date-heading create-date-label" aria-expanded="false" aria-controls="create-calendar" disabled><span id="create-date-label">Loading dates...</span><svg class="icon" aria-hidden="true"><use href="#i-calendar"/></svg></button></div>
+          <div id="create-calendar" class="date-calendar full" role="group" aria-labelledby="create-month" hidden>
+            <div class="calendar-heading"><button class="icon-button" id="create-month-prev" type="button" title="Previous month" aria-label="Previous month"><svg class="icon" aria-hidden="true"><use href="#i-left"/></svg></button><strong id="create-month" aria-live="polite"></strong><button class="icon-button" id="create-month-next" type="button" title="Next month" aria-label="Next month"><svg class="icon" aria-hidden="true"><use href="#i-right"/></svg></button></div>
+            <div class="calendar-grid" aria-hidden="true"><span class="calendar-weekday">Mon</span><span class="calendar-weekday">Tue</span><span class="calendar-weekday">Wed</span><span class="calendar-weekday">Thu</span><span class="calendar-weekday">Fri</span><span class="calendar-weekday">Sat</span><span class="calendar-weekday">Sun</span></div>
+            <div class="calendar-grid" id="create-calendar-days"></div>
+          </div>
+          <div class="full"><label for="create-time">Available time</label><select id="create-time" name="booking_time" required disabled><option value="">Choose a date first</option></select></div>
+          <div class="full"><label for="create-notes">Requests / notes <span class="muted">(optional)</span></label><textarea id="create-notes" name="requests" rows="3"></textarea></div>
+        </div></fieldset>
+      </div>
+      <div class="dialog-actions"><button type="button" data-close>Cancel</button><button class="primary" id="create-save" type="submit" disabled>Add reservation</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="delete-dialog" class="narrow" aria-labelledby="delete-title">
+    <form id="delete-form"><div class="dialog-head"><h2 id="delete-title">Delete permanently?</h2><button type="button" class="icon-button quiet" data-close title="Close" aria-label="Close"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button></div>
+      <div class="dialog-body"><div id="delete-error" class="form-error" role="alert" hidden></div><p class="muted small">This removes the reservation record. It does not issue a refund.</p><p class="deletion-name" id="delete-name"></p><p class="small muted" id="delete-booking"></p></div>
+      <div class="dialog-actions"><button type="button" data-close>Keep reservation</button><button class="danger" id="delete-save" type="submit">Delete permanently</button></div>
+    </form>
+  </dialog>
+  <dialog id="undo-dialog" class="narrow" aria-labelledby="undo-title">
+    <form id="undo-form"><div class="dialog-head"><h2 id="undo-title">Undo last change?</h2><button type="button" class="icon-button quiet" data-close title="Close" aria-label="Close"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button></div>
+      <div class="dialog-body"><div id="undo-error" class="form-error" role="alert" hidden></div><p id="undo-description"></p><p class="muted small" id="undo-note"></p></div>
+      <div class="dialog-actions"><button type="button" data-close>Keep change</button><button class="primary" id="undo-save" type="submit">Undo change</button></div>
+    </form>
+  </dialog>
+  <div class="toast" id="toast" role="status" hidden><span id="toast-message"></span><button id="dismiss-toast" title="Dismiss notification" aria-label="Dismiss notification"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button></div>
 
   <script>
-    const filterDate = document.getElementById("filter-date");
-    const filterStatus = document.getElementById("filter-status");
-    const btnRefresh = document.getElementById("btn-refresh");
-    const btnLogout = document.getElementById("btn-logout");
-    const bodyEl = document.getElementById("reservations-body");
-    const tableCaption = document.getElementById("table-caption");
-
-    const statTotal = document.getElementById("stat-total");
-    const statTodayPaid = document.getElementById("stat-today-paid");
-    const statPending = document.getElementById("stat-pending");
-    const statConfirmed = document.getElementById("stat-confirmed");
-
-    const quickTodayPaid = document.getElementById("quick-today-paid");
-    const quickTodayAll = document.getElementById("quick-today-all");
-    const quickUpcomingPaid = document.getElementById("quick-upcoming-paid");
-    const quickAll = document.getElementById("quick-all");
-
-    const sortAscBtn = document.getElementById("sort-asc");
-    const sortDescBtn = document.getElementById("sort-desc");
-
-    const todayIso = new Date().toISOString().slice(0, 10);
-
-    let allReservations = [];
-    let currentQuickFilter = "today_paid";
-    let currentSort = "asc";
-
-    function escapeHtml(value) {
-      return String(value ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+    'use strict';
+    const $ = id => document.getElementById(id);
+    const labels = {confirmed:'Confirmed',completed:'Completed',pending_payment:'Pending payment',payment_failed:'Payment failed',cancelled:'Cancelled',no_show:'No show'};
+    const state = {authenticated:false, reservations:[], view:'today', date:'', loading:false, busy:new Set(), session:0, load:0, availability:0, dates:[], slots:[], editing:null, tableId:null, deleteId:null};
+    const dialogOpeners = new Map();
+    const undoHistory = [];
+    let calendarMonth = '';
+    let toastTimer, guestsTimer;
+    const active = r => r.status === 'confirmed' || r.status === 'completed';
+    const arrived = r => Number(r.checked_in) === 1;
+    const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+    const icon = name => `<svg class="icon" aria-hidden="true"><use href="#i-${name}"/></svg>`;
+    const nameOf = r => `${r.first_name || ''} ${r.last_name || ''}`.trim();
+    const find = id => state.reservations.find(r => String(r.id) === String(id));
+    const georgiaToday = () => new Date(Date.now() + 4 * 3600000).toISOString().slice(0,10);
+    function shiftDay(day, amount) { const d = new Date(`${day}T12:00:00Z`); d.setUTCDate(d.getUTCDate()+amount); return d.toISOString().slice(0,10); }
+    function dateLabel(day, options = {}) {
+      const date = new Date(`${String(day).slice(0,10)}T12:00:00Z`);
+      return Number.isNaN(date.getTime()) ? String(day || '-') : date.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC',...options});
     }
-
-    function isPaidStatus(status) {
-      return status === "confirmed" || status === "completed";
+    function stamp(value) {
+      if (!value) return '-';
+      // D1 CURRENT_TIMESTAMP values are UTC even when they have no explicit suffix.
+      const raw = String(value).trim();
+      const normalized = /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/.test(raw) ? raw.replace(' ','T')+'Z' : raw;
+      const d = new Date(normalized);
+      return Number.isNaN(d.getTime()) ? raw : d.toLocaleString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Tbilisi',hour12:false});
     }
-
-    function getReservationDateTime(r) {
-      return new Date(`${r.booking_date}T${r.booking_time}:00`).getTime();
+    function checkinTime(value) { const formatted = stamp(value); return formatted === '-' ? '' : formatted.slice(-5); }
+    function paymentLabel(r) {
+      if (r.payment_status === 'manual') return 'Manual booking';
+      if (['completed','paid','success','succeeded'].includes(r.payment_status)) return 'Paid';
+      return {pending:'Awaiting payment',pending_payment:'Awaiting payment',failed:'Payment failed',cancelled:'Cancelled',refunded:'Refunded'}[r.payment_status] || r.payment_status || 'Not recorded';
     }
-
-    function statusBadge(status) {
-      const styles = {
-        pending_payment: "bg-yellow-500/20 text-yellow-300 border-yellow-400/30",
-        confirmed: "bg-green-500/20 text-green-300 border-green-400/30",
-        payment_failed: "bg-red-500/20 text-red-300 border-red-400/30",
-        cancelled: "bg-gray-500/20 text-gray-300 border-gray-400/30",
-        completed: "bg-blue-500/20 text-blue-300 border-blue-400/30",
-        no_show: "bg-pink-500/20 text-pink-300 border-pink-400/30",
-      };
-
-      const labels = {
-        pending_payment: "Pending payment",
-        confirmed: "Confirmed",
-        payment_failed: "Payment failed",
-        cancelled: "Cancelled",
-        completed: "Completed",
-        no_show: "No show",
-      };
-
-      const cls = styles[status] || "bg-white/10 text-white border-white/20";
-      const label = labels[status] || status;
-
-      return `
-        <span class="inline-flex px-2 py-1 rounded-full border text-xs ${cls}">
-          ${escapeHtml(label)}
-        </span>
-      `;
-    }
-
-    function getPaidCreatedTimestamp(reservation) {
-      return reservation.paid_at || reservation.callback_received_at || reservation.created_at || "";
-    }
-
-    function getPaidCreatedSource(reservation) {
-      if (reservation.paid_at) return "Paid";
-      if (reservation.callback_received_at) return "Callback";
-      if (reservation.created_at) return "Created";
-      return "";
-    }
-
-    function formatDateOnly(value) {
-      const raw = String(value || "").trim();
-      if (!raw) return "&mdash;";
-
-      const isoDate = raw.match(/^\d{4}-\d{2}-\d{2}/);
-      return isoDate ? isoDate[0] : escapeHtml(raw);
-    }
-
-    function isCheckedIn(reservation) {
-      return Number(reservation.checked_in) === 1 || reservation.checked_in === true;
-    }
-
-    function renderRows(reservations) {
-      if (!reservations.length) {
-        bodyEl.innerHTML = `
-          <tr>
-            <td colspan="9" class="px-4 py-6 text-center text-white/50">
-              No reservations found.
-            </td>
-          </tr>
-        `;
-        return;
-      }
-
-      bodyEl.innerHTML = reservations.map(r => {
-        const isToday = r.booking_date === todayIso;
-        const checkedIn = isCheckedIn(r);
-        const paidCreatedAt = getPaidCreatedTimestamp(r);
-        const paidCreatedSource = getPaidCreatedSource(r);
-        const rowClass = checkedIn ? "checked-in-row" : isToday ? "today-row" : "";
-        return `
-          <tr class="hover:bg-white/5 align-top ${rowClass}">
-            <td>
-              <div>${formatDateOnly(paidCreatedAt)}</div>
-              <div class="admin-muted">${escapeHtml(paidCreatedSource)}</div>
-            </td>
-            <td>
-              <div>${escapeHtml(r.booking_date)}</div>
-              <div class="admin-muted">${escapeHtml(r.booking_time)}</div>
-            </td>
-            <td>
-              <button
-                class="checkin-btn px-3 py-1 rounded-md border text-xs transition ${checkedIn ? "bg-green-500/20 border-green-400/30 text-green-200 hover:bg-green-500/30" : "bg-white/10 border-white/10 text-white/80 hover:bg-white/20"}"
-                data-id="${escapeHtml(r.id)}"
-                data-checked="${checkedIn ? "1" : "0"}"
-                aria-pressed="${checkedIn ? "true" : "false"}"
-              >
-                ${checkedIn ? "Checked in" : "Check in"}
-              </button>
-              ${checkedIn && r.checked_in_at ? `<div class="admin-muted">${formatDateOnly(r.checked_in_at)}</div>` : ""}
-            </td>
-            <td>
-              <div class="font-medium">${escapeHtml(r.first_name)} ${escapeHtml(r.last_name)}</div>
-              <div class="admin-muted">${escapeHtml(r.phone || "-")}</div>
-            </td>
-            <td>
-              <div>${escapeHtml(r.guests)}</div>
-              <div class="admin-muted">Table ${escapeHtml(r.table_number || "-")}</div>
-            </td>
-            <td>${escapeHtml(r.deposit_amount)} ${escapeHtml(r.currency)}</td>
-            <td>${statusBadge(r.status)}</td>
-            <td class="text-white/70">${escapeHtml(r.requests || "-")}</td>
-            <td>
-              <div class="admin-actions">
-                <button
-                  class="edit-btn px-3 py-1 rounded-md bg-white/10 hover:bg-white/20 transition"
-                  data-id="${escapeHtml(r.id)}"
-                >
-                  Edit
-                </button>
-                <button
-                  class="delete-btn px-3 py-1 rounded-md bg-red-500/20 text-red-300 hover:bg-red-500/30 transition"
-                  data-id="${escapeHtml(r.id)}"
-                >
-                  Delete
-                </button>
-              </div>
-            </td>
-          </tr>
-        `;
-      }).join("");
-    }
-
-    function updateStats(sourceReservations, visibleReservations) {
-      statTotal.textContent = visibleReservations.length;
-      statTodayPaid.textContent = sourceReservations.filter(r => r.booking_date === todayIso && isPaidStatus(r.status)).length;
-      statPending.textContent = sourceReservations.filter(r => r.status === "pending_payment").length;
-      statConfirmed.textContent = sourceReservations.filter(r => isPaidStatus(r.status)).length;
-    }
-
-    function setQuickFilterButtonState() {
-      [quickTodayPaid, quickTodayAll, quickUpcomingPaid, quickAll].forEach(btn => {
-        btn.classList.remove("active");
-      });
-
-      if (currentQuickFilter === "today_paid") quickTodayPaid.classList.add("active");
-      if (currentQuickFilter === "today_all") quickTodayAll.classList.add("active");
-      if (currentQuickFilter === "upcoming_paid") quickUpcomingPaid.classList.add("active");
-      if (currentQuickFilter === "all") quickAll.classList.add("active");
-    }
-
-    function setSortButtonState() {
-      sortAscBtn.classList.toggle("active", currentSort === "asc");
-      sortDescBtn.classList.toggle("active", currentSort === "desc");
-    }
-
-    function applyQuickFilter(reservations) {
-      if (currentQuickFilter === "today_paid") {
-        return reservations.filter(r => r.booking_date === todayIso && isPaidStatus(r.status));
-      }
-
-      if (currentQuickFilter === "today_all") {
-        return reservations.filter(r => r.booking_date === todayIso);
-      }
-
-      if (currentQuickFilter === "upcoming_paid") {
-        return reservations.filter(r => r.booking_date >= todayIso && isPaidStatus(r.status));
-      }
-
-      return reservations.slice();
-    }
-
-    function applyManualFilters(reservations) {
-      let result = reservations.slice();
-
-      if (filterDate.value) {
-        result = result.filter(r => r.booking_date === filterDate.value);
-      }
-
-      if (filterStatus.value) {
-        result = result.filter(r => r.status === filterStatus.value);
-      }
-
-      return result;
-    }
-
-    function sortReservations(reservations) {
-      const sorted = reservations.slice().sort((a, b) => {
-        const diff = getReservationDateTime(a) - getReservationDateTime(b);
-        return currentSort === "asc" ? diff : -diff;
-      });
-
-      return sorted;
-    }
-
-    function updateCaption(reservations) {
-      let base = "";
-
-      if (currentQuickFilter === "today_paid") base = "Showing today’s paid reservations";
-      else if (currentQuickFilter === "today_all") base = "Showing all of today’s reservations";
-      else if (currentQuickFilter === "upcoming_paid") base = "Showing upcoming paid reservations";
-      else base = "Showing all reservations";
-
-      if (filterDate.value) {
-        base += ` on ${filterDate.value}`;
-      }
-
-      if (filterStatus.value) {
-        base += ` with status "${filterStatus.value}"`;
-      }
-
-      base += currentSort === "asc" ? ", earliest first." : ", latest first.";
-      base += ` Total: ${reservations.length}.`;
-
-      tableCaption.textContent = base;
-    }
-
-    function applyView() {
-      const quickFiltered = applyQuickFilter(allReservations);
-      const manualFiltered = applyManualFilters(quickFiltered);
-      const sorted = sortReservations(manualFiltered);
-
-      renderRows(sorted);
-      updateStats(allReservations, sorted);
-      updateCaption(sorted);
-      attachRowActions(sorted);
-      setQuickFilterButtonState();
-      setSortButtonState();
-    }
-
-    function attachRowActions(reservations) {
-      document.querySelectorAll(".checkin-btn").forEach((btn) => {
-        btn.addEventListener("click", async () => {
-          const id = btn.dataset.id;
-          const currentlyCheckedIn = btn.dataset.checked === "1";
-
-          btn.disabled = true;
-
-          try {
-            const response = await fetch("/api/admin/reservation-checkin", {
-              method: "POST",
-              credentials: "same-origin",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                id,
-                checked_in: !currentlyCheckedIn,
-              }),
-            });
-
-            const data = await response.json().catch(() => ({}));
-
-            if (!response.ok || !data.ok) {
-              throw new Error(data.error || "Failed to update check-in status.");
-            }
-
-            const updated = data.reservation || {};
-            allReservations = allReservations.map((reservation) => {
-              if (reservation.id !== id) return reservation;
-
-              return {
-                ...reservation,
-                checked_in: updated.checked_in,
-                checked_in_at: updated.checked_in_at,
-              };
-            });
-
-            applyView();
-          } catch (error) {
-            alert(String(error?.message || error));
-            btn.disabled = false;
-          }
-        });
-      });
-
-      document.querySelectorAll(".edit-btn").forEach((btn) => {
-        btn.addEventListener("click", async () => {
-          const id = btn.dataset.id;
-          const reservation = reservations.find(r => r.id === id);
-          if (!reservation) return;
-
-          const first_name = prompt("First name:", reservation.first_name);
-          if (first_name === null) return;
-
-          const last_name = prompt("Last name:", reservation.last_name);
-          if (last_name === null) return;
-
-          const phone = prompt("Phone number:", reservation.phone);
-          if (phone === null) return;
-
-          const bookingDate = prompt("Reservation date (YYYY-MM-DD):", reservation.booking_date || "");
-          if (bookingDate === null) return;
-
-          const normalizedBookingDate = bookingDate.trim();
-          if (!/^\d{4}-\d{2}-\d{2}$/.test(normalizedBookingDate)) {
-            alert("Reservation date must use YYYY-MM-DD format.");
-            return;
-          }
-
-          const bookingTime = prompt("Reservation time (HH:MM):", reservation.booking_time || "");
-          if (bookingTime === null) return;
-
-          const normalizedBookingTime = bookingTime.trim();
-          if (!/^([01]\d|2[0-3]):(00|15|30|45)$/.test(normalizedBookingTime)) {
-            alert("Reservation time must use HH:MM format with 15-minute increments.");
-            return;
-          }
-
-          const guestsInput = prompt("Enter guest count:", reservation.guests);
-          if (guestsInput === null) return;
-
-          const guests = Number(guestsInput);
-          if (!Number.isInteger(guests) || guests < 1 || guests > 22) {
-            alert("Guest count must be a whole number from 1 to 22.");
-            return;
-          }
-          const tableNumber = prompt("Table number:", reservation.table_number || "");
-          if (tableNumber === null) return;
-
-          const statusInput = prompt(
-            "Enter status:\npending_payment, confirmed, payment_failed, cancelled, completed, no_show",
-            reservation.status
-          );
-          if (statusInput === null) return;
-
-          const status = statusInput.trim();
-
-          const response = await fetch("/api/admin/reservation-update", {
-            method: "POST",
-            credentials: "same-origin",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              id,
-              first_name: first_name.trim(),
-              last_name: last_name.trim(),
-              phone: phone.trim(),
-              booking_date: normalizedBookingDate,
-              booking_time: normalizedBookingTime,
-              guests,
-              table_number: tableNumber.trim(),
-              status,
-            }),
-          });
-
-          const data = await response.json();
-
-          if (!response.ok || !data.ok) {
-            alert(data.error || "Failed to update reservation.");
-            return;
-          }
-
-          alert("Reservation updated.");
-          loadReservations();
-        });
-      });
-
-      document.querySelectorAll(".delete-btn").forEach((btn) => {
-        btn.addEventListener("click", async () => {
-          const id = btn.dataset.id;
-
-          const confirmed = confirm("Are you sure you want to delete this reservation?");
-          if (!confirmed) return;
-
-          const response = await fetch("/api/admin/reservation-delete", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ id }),
-          });
-
-          const data = await response.json();
-
-          if (!response.ok || !data.ok) {
-            alert(data.error || "Failed to delete reservation.");
-            return;
-          }
-
-          alert("Reservation deleted.");
-          loadReservations();
-        });
+    function money(r) { const amount = Number(r.deposit_amount); return `${Number.isFinite(amount) ? amount.toLocaleString('en-GB',{maximumFractionDigits:2}) : '-'} ${r.currency || 'GEL'}`; }
+    function showError(id, message) { $(id).textContent = message; $(id).hidden = !message; }
+    function notify(message) { clearTimeout(toastTimer); $('toast-message').textContent = message; $('toast').hidden = false; toastTimer = setTimeout(() => $('toast').hidden = true,6500); }
+    function syncTheme() {
+      const dark = document.documentElement.dataset.theme === 'dark';
+      document.querySelectorAll('[data-theme-toggle]').forEach(button => {
+        button.querySelector('span').textContent = dark ? 'Light mode' : 'Night mode';
+        button.querySelector('use').setAttribute('href',dark ? '#i-sun' : '#i-moon');
+        button.setAttribute('aria-label',dark ? 'Switch to light mode' : 'Switch to night mode');
       });
     }
-
+    document.querySelectorAll('[data-theme-toggle]').forEach(button => button.addEventListener('click',() => {
+      const theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+      document.documentElement.dataset.theme = theme;
+      try { localStorage.setItem('reserve.staff.theme',theme); } catch {}
+      syncTheme();
+    }));
+    syncTheme();
+    function syncUndo() {
+      $('undo').disabled = !undoHistory.length || state.loading || state.busy.size > 0;
+      $('undo-count').textContent = undoHistory.length ? `(${undoHistory.length})` : '';
+      $('undo').title = undoHistory.length ? `Undo: ${undoHistory[undoHistory.length-1].description}` : 'No changes to undo. History clears on refresh.';
+    }
+    function rememberUndo(data, description, kind) {
+      if (data.undo) undoHistory.push({ token:data.undo, description, kind });
+      else { undoHistory.length = 0; pageError('The change was saved, but Undo is unavailable for that action.'); }
+      syncUndo();
+    }
+    function requireLogin(message = '') {
+      state.authenticated = false; state.session++; state.load++; state.availability++;
+      undoHistory.length = 0; syncUndo();
+      state.loading = false; state.view = 'today'; state.date = georgiaToday();
+      state.reservations = []; state.dates = []; state.slots = []; state.busy.clear();
+      state.editing = state.tableId = state.deleteId = null;
+      document.querySelectorAll('dialog[open]').forEach(dialog => dialog.close());
+      dialogOpeners.clear();
+      ['edit-form','table-form','create-form','delete-form','undo-form'].forEach(id => $(id).reset());
+      $('undo-description').textContent = ''; $('undo-note').textContent = '';
+      $('rows').replaceChildren(); $('record-details').replaceChildren(); $('edit-notes').textContent = '';
+      $('delete-name').textContent = ''; $('delete-booking').textContent = ''; $('table-guest').textContent = ''; $('edit-subtitle').textContent = '';
+      $('create-date').value = ''; closeCalendar(); $('create-calendar-days').replaceChildren(); $('create-time').replaceChildren(); $('toast').hidden = true; $('toast-message').textContent = '';
+      $('search').value = ''; $('status-filter').value = ''; $('arrival-filter').value = '';
+      $('sort').value = 'asc'; $('toggle-filters').setAttribute('aria-expanded','false'); document.querySelector('.filters').classList.remove('expanded');
+      ['count-bookings','count-guests','count-arrived','count-unassigned'].forEach(id => $(id).textContent = '0');
+      $('app').hidden = true; $('auth-screen').hidden = false; $('login-form').hidden = false;
+      $('session-status').textContent = message || 'Use your existing admin password.';
+      $('password').value = '';
+    }
+    async function api(path, body) {
+      const session = state.session;
+      let response;
+      try { response = await fetch(`/api/admin/${path}`,{method:body === undefined ? 'GET' : 'POST',credentials:'same-origin',cache:'no-store',headers:body === undefined ? {} : {'Content-Type':'application/json'},...(body === undefined ? {} : {body:JSON.stringify(body)})}); }
+      catch { throw new Error('Connection lost. Check your connection and refresh before trying again.'); }
+      const data = await response.json().catch(() => null);
+      if (response.status === 401 && path !== 'login') { if (session === state.session) requireLogin('Your session ended. Sign in again.'); throw new Error('Please sign in again.'); }
+      if (!response.ok || !data?.ok) throw new Error(data?.error || 'The server could not complete this request. Please try again.');
+      return data;
+    }
+    function pageError(message) { $('page-error').hidden = !message; $('page-error').querySelector('span').textContent = message; }
+    function dateFiltered() {
+      const today = georgiaToday();
+      return state.reservations.filter(r => state.view === 'all' || (state.view === 'upcoming' ? r.booking_date >= today : r.booking_date === state.date));
+    }
+    function render() {
+      if (state.view === 'today') state.date = georgiaToday();
+      if (state.view === 'tomorrow') state.date = shiftDay(georgiaToday(),1);
+      const dayRows = dateFiltered();
+      const term = $('search').value.trim().toLowerCase();
+      const phoneTerm = term.replace(/\D/g,'');
+      const status = $('status-filter').value, arrival = $('arrival-filter').value;
+      const visible = dayRows.filter(r => {
+        if (status && (status === 'active' ? !active(r) : r.status !== status)) return false;
+        if (arrival === 'waiting' && (!active(r) || arrived(r))) return false;
+        if (arrival === 'arrived' && !arrived(r)) return false;
+        if (arrival === 'unassigned' && (!active(r) || String(r.table_number || '').trim())) return false;
+        return !term || [nameOf(r),r.phone,r.table_number,r.requests,r.id].join(' ').toLowerCase().includes(term) || (phoneTerm.length >= 3 && /^[\d\s+().-]+$/.test(term) && String(r.phone).replace(/\D/g,'').includes(phoneTerm));
+      }).sort((a,b) => {
+        const aKey = `${a.booking_date} ${a.booking_time}`, bKey = `${b.booking_date} ${b.booking_time}`;
+        const order = aKey.localeCompare(bKey) || nameOf(a).localeCompare(nameOf(b));
+        return $('sort').value === 'desc' ? -order : order;
+      });
+      const expected = visible.filter(active);
+      $('count-bookings').textContent = visible.length;
+      $('count-guests').textContent = expected.reduce((n,r) => n + (Number(r.guests)||0),0);
+      $('count-arrived').textContent = visible.filter(arrived).length;
+      $('count-unassigned').textContent = expected.filter(r => !String(r.table_number || '').trim()).length;
+      const filtered = Boolean(term || status || arrival);
+      $('reset-filters').hidden = $('empty-reset').hidden = !filtered;
+      $('clear-search').hidden = !term;
+      $('list-caption').textContent = `${visible.length} ${visible.length === 1 ? 'reservation' : 'reservations'}${filtered ? ` of ${dayRows.length}` : ''}`;
+      $('filters-label').textContent = `${$('toggle-filters').getAttribute('aria-expanded') === 'true' ? 'Hide filters' : 'Filters'}${status || arrival ? ` (${Number(Boolean(status))+Number(Boolean(arrival))})` : ''}`;
+      $('view-title').textContent = state.view === 'all' ? 'All reservations' : state.view === 'upcoming' ? 'Upcoming reservations' : dateLabel(state.date,{weekday:'long'});
+      document.querySelectorAll('[data-view]').forEach(btn => btn.setAttribute('aria-pressed',String(btn.dataset.view === state.view)));
+      $('view-date').value = ['all','upcoming'].includes(state.view) ? '' : state.date;
+      $('rows').innerHTML = visible.map(r => {
+        const id = esc(r.id), guest = esc(nameOf(r)), checked = arrived(r), pending = state.busy.has(String(r.id));
+        const locked = state.loading || state.busy.size > 0;
+        const phone = String(r.phone || ''), callable = /^[+\d][\d\s().-]{4,}$/.test(phone);
+        const payment = paymentLabel(r);
+        return `<tr class="${checked ? 'checked' : !active(r) ? 'inactive' : ''}">
+          <td><div class="time">${esc(r.booking_time)}</div><div class="row-date">${esc(dateLabel(r.booking_date))}</div></td>
+          <td><div class="guest-line"><span class="guest-name">${guest}</span><span class="badge ${Object.hasOwn(labels,r.status) ? r.status : ''}">${esc(labels[r.status] || r.status)}</span></div>${callable ? `<a class="guest-phone" href="tel:${esc(phone.replace(/[^+\d]/g,''))}">${esc(phone)}</a>` : `<span class="guest-phone">${esc(phone || 'No phone')}</span>`}${r.requests ? `<p class="notes">${esc(r.requests)}</p>` : ''}</td>
+          <td><span class="guest-count">${esc(r.guests)}</span></td>
+          <td><button class="table-button ${r.table_number ? '' : 'unassigned'}" data-action="table" data-id="${id}" aria-label="${esc(r.table_number ? `Change table ${r.table_number} for ${nameOf(r)}` : `Assign table for ${nameOf(r)}`)}" ${locked ? 'disabled' : ''}>${esc(r.table_number || 'Assign')}</button></td>
+          <td><span class="deposit">${esc(money(r))}</span><span class="payment-label ${payment === 'Paid' ? 'paid' : ''}">${esc(payment)}</span></td>
+          <td><button class="checkin" data-action="checkin" data-id="${id}" aria-pressed="${checked}" aria-label="${checked ? 'Undo check-in for' : 'Check in'} ${guest}" ${locked || (!active(r) && !checked) ? 'disabled' : ''} title="${checked ? 'Click to undo check-in' : active(r) ? 'Mark as arrived' : 'Only confirmed or completed bookings can check in'}">${icon(checked ? 'check' : 'plus')}${pending ? 'Saving...' : checked ? 'Checked in' : 'Check in'}</button>${checked && r.checked_in_at ? `<div class="checkin-time">${esc(checkinTime(r.checked_in_at))}</div>` : ''}</td>
+          <td><button class="icon-button quiet" data-action="edit" data-id="${id}" title="Edit reservation" aria-label="Edit reservation for ${guest}" ${locked ? 'disabled' : ''}>${icon('edit')}</button></td>
+        </tr>`;
+      }).join('');
+      $('empty').hidden = visible.length > 0 || state.loading;
+      $('empty-title').textContent = filtered ? 'No matching reservations' : 'No reservations for this view';
+      $('empty-text').textContent = filtered ? 'No bookings match the selected filters.' : 'New reservations will appear here after a refresh.';
+      $('refresh').disabled = state.loading || state.busy.size > 0;
+      $('new-reservation').disabled = state.loading || state.busy.size > 0;
+      $('retry').disabled = state.loading || state.busy.size > 0;
+      $('list-region').setAttribute('aria-busy',String(state.loading));
+      syncUndo();
+    }
+    function setView(view, date = '') {
+      state.view = view;
+      state.date = date || (view === 'tomorrow' ? shiftDay(georgiaToday(),1) : georgiaToday());
+      render();
+    }
     async function loadReservations() {
-      bodyEl.innerHTML = `
-        <tr>
-          <td colspan="9" class="px-4 py-6 text-center text-white/50">
-            Loading...
-          </td>
-        </tr>
-      `;
-
+      if (state.busy.size) return;
+      const ticket = ++state.load, session = state.session;
+      state.loading = true;
+      if (state.authenticated) { render(); pageError(''); }
       try {
-        const response = await fetch(`/api/admin/reservations`, {
-          credentials: "same-origin",
-        });
-
-        const data = await response.json();
-
-        if (!response.ok || !data.ok) {
-          throw new Error(data.error || "Failed to load reservations.");
-        }
-
-        allReservations = Array.isArray(data.reservations) ? data.reservations.slice() : [];
-        applyView();
+        const data = await api('reservations');
+        if (ticket !== state.load || session !== state.session) return;
+        state.reservations = Array.isArray(data.reservations) ? data.reservations : [];
+        state.authenticated = true;
+        $('auth-screen').hidden = true; $('app').hidden = false;
+        $('updated-at').textContent = `Updated ${new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Tbilisi',hour12:false})}`;
+        pageError('');
       } catch (error) {
-        bodyEl.innerHTML = `
-          <tr>
-            <td colspan="9" class="px-4 py-6 text-center text-red-300">
-              Failed to load reservations.
-            </td>
-          </tr>
-        `;
+        if (ticket !== state.load || session !== state.session) return;
+        if (state.authenticated) pageError(`${error.message} Displayed reservations may be out of date.`);
+        else { requireLogin('Sign in to open reservations.'); showError('login-error',error.message); }
+      } finally {
+        if (ticket === state.load) { state.loading = false; if (state.authenticated) render(); }
       }
-      const btnCustomReservation = document.getElementById("btn-custom-reservation");
-const customReservationModal = document.getElementById("custom-reservation-modal");
-const btnCustomClose = document.getElementById("btn-custom-close");
-const customReservationStatus = document.getElementById("custom-reservation-status");
-
-const customGuestsInput = document.getElementById("custom-guests");
-const customFullNameInput = document.getElementById("custom-full-name");
-const customPhoneInput = document.getElementById("custom-phone");
-const customRequestsInput = document.getElementById("custom-requests");
-
-const customDatesWrap = document.getElementById("custom-dates-wrap");
-const customTimesWrap = document.getElementById("custom-times-wrap");
-const customSelectedDate = document.getElementById("custom-selected-date");
-const customSelectedTime = document.getElementById("custom-selected-time");
-const customCalendarTitle = document.getElementById("custom-calendar-title");
-const customCalendarPrev = document.getElementById("custom-calendar-prev");
-const customCalendarNext = document.getElementById("custom-calendar-next");
-const btnCustomCreate = document.getElementById("btn-custom-create");
-
-const customReservationState = {
-  guests: null,
-  date: "",
-  time: "",
-  dates: [],
-  times: [],
-  loadingDates: false,
-  loadingTimes: false,
-  creating: false,
-};
-
-let customGuestsTimer = null;
-let customCalendarCursor = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-
-function formatAdminUiDate(dateStr) {
-  const date = new Date(`${dateStr}T00:00:00`);
-  return date.toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    weekday: "short",
-  });
-}
-
-
-function normalizeCustomIsoDate(value) {
-  const raw = String(value || "").trim();
-
-  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
-    return raw;
-  }
-
-  const parsed = new Date(raw);
-  if (Number.isNaN(parsed.getTime())) {
-    return "";
-  }
-
-  const year = parsed.getFullYear();
-  const month = String(parsed.getMonth() + 1).padStart(2, "0");
-  const day = String(parsed.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-function setCustomStatus(type, message) {
-  customReservationStatus.classList.remove("hidden");
-  customReservationStatus.textContent = message;
-
-  if (type === "error") {
-    customReservationStatus.className = "rounded-lg border px-4 py-3 text-sm mb-5 border-red-400/30 bg-red-500/10 text-red-300";
-    return;
-  }
-
-  if (type === "success") {
-    customReservationStatus.className = "rounded-lg border px-4 py-3 text-sm mb-5 border-green-400/30 bg-green-500/10 text-green-300";
-    return;
-  }
-
-  customReservationStatus.className = "rounded-lg border px-4 py-3 text-sm mb-5 border-white/20 bg-white/5 text-white/80";
-}
-
-function clearCustomStatus() {
-  customReservationStatus.classList.add("hidden");
-  customReservationStatus.textContent = "";
-}
-
-function resetCustomReservationState() {
-  customReservationState.guests = null;
-  customReservationState.date = "";
-  customReservationState.time = "";
-  customCalendarCursor = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-  customReservationState.dates = [];
-  customReservationState.times = [];
-  customReservationState.loadingDates = false;
-  customReservationState.loadingTimes = false;
-  customReservationState.creating = false;
-
-  customGuestsInput.value = "";
-  customFullNameInput.value = "";
-  customPhoneInput.value = "";
-  customRequestsInput.value = "";
-
-  customSelectedDate.textContent = "No date selected";
-  customSelectedTime.textContent = "No time selected";
-
-  clearCustomStatus();
-  renderCustomDates();
-  renderCustomTimes();
-  updateCustomCreateButton();
-}
-
-function openCustomReservationModal() {
-  resetCustomReservationState();
-  customReservationModal.classList.remove("hidden");
-  customReservationModal.classList.add("flex");
-}
-
-function closeCustomReservationModal() {
-  customReservationModal.classList.add("hidden");
-  customReservationModal.classList.remove("flex");
-}
-
-function updateCustomCreateButton() {
-  const ready =
-    Number.isInteger(customReservationState.guests) &&
-    customReservationState.guests >= 1 &&
-    customReservationState.guests <= 22 &&
-    customReservationState.date &&
-    customReservationState.time &&
-    customFullNameInput.value.trim() &&
-    !customReservationState.creating;
-
-  btnCustomCreate.disabled = !ready;
-}
-function startOfMonth(date) {
-  return new Date(date.getFullYear(), date.getMonth(), 1);
-}
-
-function parseLocalDate(dateStr) {
-  const [year, month, day] = String(dateStr).split("-").map(Number);
-  return new Date(year, month - 1, day);
-}
-
-function formatIsoDateLocal(date) {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-}
-
-const customMonthNames = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December"
-];
-
-function renderCustomDates() {
-  if (!Number.isInteger(customReservationState.guests)) {
-    customCalendarTitle.textContent = "";
-    customCalendarPrev.disabled = true;
-    customCalendarNext.disabled = true;
-    customDatesWrap.innerHTML = `
-      <div class="text-white/50 text-sm">
-        Enter the guest count first.
-      </div>
-    `;
-    return;
-  }
-
-  if (customReservationState.loadingDates) {
-    customCalendarTitle.textContent = "";
-    customCalendarPrev.disabled = true;
-    customCalendarNext.disabled = true;
-    customDatesWrap.innerHTML = `
-      <div class="text-white/60 text-sm">
-        Loading available dates...
-      </div>
-    `;
-    return;
-  }
-
-  if (!customReservationState.dates.length) {
-    customCalendarTitle.textContent = "";
-    customCalendarPrev.disabled = true;
-    customCalendarNext.disabled = true;
-    customDatesWrap.innerHTML = `
-      <div class="text-white/50 text-sm">
-        No dates available for this guest count.
-      </div>
-    `;
-    return;
-  }
-
-  const datesMap = new Map(customReservationState.dates.map((item) => [item.date, item]));
-  const firstAvailableDate = parseLocalDate(customReservationState.dates[0].date);
-  const lastAvailableDate = parseLocalDate(customReservationState.dates[customReservationState.dates.length - 1].date);
-
-  const minMonth = startOfMonth(firstAvailableDate);
-  const maxMonth = startOfMonth(lastAvailableDate);
-
-  const currentMonth = customCalendarCursor.getMonth();
-  const currentYear = customCalendarCursor.getFullYear();
-
-  customCalendarTitle.textContent = `${customMonthNames[currentMonth]} ${currentYear}`;
-
-  customCalendarPrev.disabled =
-    customCalendarCursor.getFullYear() === minMonth.getFullYear() &&
-    customCalendarCursor.getMonth() === minMonth.getMonth();
-
-  customCalendarNext.disabled =
-    customCalendarCursor.getFullYear() === maxMonth.getFullYear() &&
-    customCalendarCursor.getMonth() === maxMonth.getMonth();
-
-  const firstDay = new Date(currentYear, currentMonth, 1);
-  const lastDay = new Date(currentYear, currentMonth + 1, 0);
-
-  let firstWeekday = firstDay.getDay();
-  if (firstWeekday === 0) firstWeekday = 7;
-
-  const cells = [];
-
-  for (let i = 1; i < firstWeekday; i += 1) {
-    cells.push(`<div></div>`);
-  }
-
-  for (let day = 1; day <= lastDay.getDate(); day += 1) {
-    const dateObj = new Date(currentYear, currentMonth, day);
-    const iso = formatIsoDateLocal(dateObj);
-    const item = datesMap.get(iso);
-    const selected = customReservationState.date === iso;
-    const disabled = !item || !item.available;
-
-    cells.push(`
-      <button
-        type="button"
-        class="custom-date-btn min-h-[46px] rounded-lg border text-sm transition
-          ${disabled
-            ? "bg-white/5 border-white/10 text-white/25 cursor-not-allowed"
-            : selected
-              ? "bg-[#D0842F] border-[#D0842F] text-white"
-              : "bg-white/10 border-white/10 text-white hover:bg-white/15"}"
-        data-date="${escapeHtml(iso)}"
-        ${disabled ? "disabled" : ""}
-      >
-        ${day}
-      </button>
-    `);
-  }
-
-  customDatesWrap.innerHTML = `
-    <div class="grid grid-cols-7 gap-2">
-      ${cells.join("")}
-    </div>
-  `;
-
-  document.querySelectorAll(".custom-date-btn").forEach((button) => {
-    button.addEventListener("click", async () => {
-      const date = button.dataset.date || "";
-      customReservationState.date = date;
-      customReservationState.time = "";
-      customSelectedDate.textContent = formatAdminUiDate(date);
-      customSelectedTime.textContent = "No time selected";
-      renderCustomDates();
-      renderCustomTimes();
-      updateCustomCreateButton();
-      await loadCustomTimesForDate(date);
-    });
-  });
-}
-
-
-
-customCalendarPrev.addEventListener("click", () => {
-  customCalendarCursor = new Date(
-    customCalendarCursor.getFullYear(),
-    customCalendarCursor.getMonth() - 1,
-    1
-  );
-  renderCustomDates();
-});
-
-customCalendarNext.addEventListener("click", () => {
-  customCalendarCursor = new Date(
-    customCalendarCursor.getFullYear(),
-    customCalendarCursor.getMonth() + 1,
-    1
-  );
-  renderCustomDates();
-});
-
-
-
-
-function renderCustomTimes() {
-  if (!customReservationState.date) {
-    customTimesWrap.innerHTML = `
-      <div class="text-white/50 text-sm">
-        Pick a date first.
-      </div>
-    `;
-    return;
-  }
-
-  if (customReservationState.loadingTimes) {
-    customTimesWrap.innerHTML = `
-      <div class="text-white/60 text-sm">
-        Loading available times...
-      </div>
-    `;
-    return;
-  }
-
-  if (!customReservationState.times.length) {
-    customTimesWrap.innerHTML = `
-      <div class="text-white/50 text-sm">
-        No times available for the selected date.
-      </div>
-    `;
-    return;
-  }
-
-  customTimesWrap.innerHTML = `
-    <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2">
-      ${customReservationState.times.map((item) => {
-        const selected = customReservationState.time === item.time;
-        const disabled = !item.available;
-        const secondary =
-          !item.available && item.reason === "min_advance"
-            ? "Too soon"
-            : !item.available
-              ? "Full"
-              : "Available";
-
-        return `
-          <button
-            type="button"
-            class="custom-time-btn px-3 py-3 rounded-lg border text-left transition
-              ${disabled
-                ? "bg-white/5 border-white/10 text-white/25 cursor-not-allowed"
-                : selected
-                  ? "bg-[#D0842F] border-[#D0842F] text-white"
-                  : "bg-white/10 border-white/10 text-white hover:bg-white/15"}"
-            data-time="${escapeHtml(item.time)}"
-            ${disabled ? "disabled" : ""}
-          >
-            <div class="font-medium">${escapeHtml(item.time)}</div>
-            <div class="text-xs mt-1 ${disabled ? "text-white/25" : "text-white/60"}">${escapeHtml(secondary)}</div>
-          </button>
-        `;
-      }).join("")}
-    </div>
-  `;
-
-  document.querySelectorAll(".custom-time-btn").forEach((button) => {
-    button.addEventListener("click", () => {
-      const time = button.dataset.time || "";
-      customReservationState.time = time;
-      customSelectedTime.textContent = time;
-      renderCustomTimes();
-      updateCustomCreateButton();
-    });
-  });
-}
-
-async function loadCustomDates() {
-  if (!Number.isInteger(customReservationState.guests) || customReservationState.guests < 1 || customReservationState.guests > 22) {
-    customReservationState.dates = [];
-    customReservationState.times = [];
-    customReservationState.date = "";
-    customReservationState.time = "";
-    customSelectedDate.textContent = "No date selected";
-    customSelectedTime.textContent = "No time selected";
-    renderCustomDates();
-    renderCustomTimes();
-    updateCustomCreateButton();
-    return;
-  }
-
-  customReservationState.loadingDates = true;
-  customReservationState.dates = [];
-  customReservationState.times = [];
-  customReservationState.date = "";
-  customReservationState.time = "";
-  customSelectedDate.textContent = "No date selected";
-  customSelectedTime.textContent = "No time selected";
-  clearCustomStatus();
-  renderCustomDates();
-  renderCustomTimes();
-  updateCustomCreateButton();
-
-  try {
-    const response = await fetch(
-      `/api/admin/custom-reservation-availability?guests=${encodeURIComponent(customReservationState.guests)}`,
-      {
-        credentials: "same-origin",
+    }
+    function openDialog(id) {
+      const opener = document.activeElement;
+      dialogOpeners.set(id,{element:opener,action:opener?.dataset.action,id:opener?.dataset.id});
+      $(id).showModal();
+    }
+    function dialogBusy(id, busy, buttonId, label) {
+      const dialog = $(id); dialog.dataset.busy = String(busy);
+      dialog.querySelectorAll('[data-close]').forEach(button => button.disabled = busy);
+      $(buttonId).disabled = busy;
+      $(buttonId).textContent = busy ? 'Saving...' : label;
+    }
+    function fillRecord(r) {
+      state.editing = String(r.id);
+      $('edit-form').reset(); $('edit-fields').disabled = false;
+      showError('edit-error','');
+      dialogBusy('edit-dialog',false,'edit-save','Save changes');
+      const times = [];
+      for (let minutes = 12*60; minutes <= 20*60+30; minutes += 15) {
+        times.push(`${String(Math.floor(minutes/60)).padStart(2,'0')}:${String(minutes%60).padStart(2,'0')}`);
       }
-    );
-
-    const data = await response.json().catch(() => ({}));
-
-    if (!response.ok || !data.ok) {
-      throw new Error(data.error || "Failed to load dates.");
+      if (r.booking_time && !times.includes(r.booking_time)) times.push(r.booking_time);
+      $('edit-time').innerHTML = times.map(time => `<option value="${esc(time)}">${esc(time)}</option>`).join('');
+      ['first_name','last_name','phone','booking_date','booking_time','guests','table_number','status'].forEach(key => $('edit-form').elements.namedItem(key).value = r[key] ?? '');
+      $('edit-subtitle').textContent = `${dateLabel(r.booking_date)} / ${r.booking_time}`;
+      $('edit-notes').textContent = r.requests ? `Guest requests: ${r.requests}` : '';
+      $('edit-notes').hidden = !r.requests;
+      $('edit-dialog').querySelector('details').open = true;
+      const paidCreated = r.paid_at || r.callback_received_at || r.created_at;
+      const source = r.paid_at ? 'Paid' : r.callback_received_at ? 'Callback' : 'Created';
+      const details = [['Deposit',money(r)],['Payment status',paymentLabel(r)],['Paid / created',`${source}: ${stamp(paidCreated)}`],['Reservation date',dateLabel(r.booking_date)],['Reservation time',r.booking_time],['Checked in',arrived(r) ? stamp(r.checked_in_at) : 'No'],['Created',stamp(r.created_at)],['Last updated',stamp(r.updated_at)],['Record ID',r.id]];
+      $('record-details').innerHTML = details.map(([key,value]) => `<dt>${esc(key)}</dt><dd>${esc(value)}</dd>`).join('');
+      openDialog('edit-dialog');
     }
-
-    customReservationState.dates = Array.isArray(data.dates) ? data.dates : [];
-
-if (customReservationState.dates.length) {
-  const firstDate = parseLocalDate(customReservationState.dates[0].date);
-  customCalendarCursor = new Date(firstDate.getFullYear(), firstDate.getMonth(), 1);
-}
-  } catch (error) {
-    customReservationState.dates = [];
-    setCustomStatus("error", String(error?.message || error));
-  } finally {
-    customReservationState.loadingDates = false;
-    renderCustomDates();
-    renderCustomTimes();
-    updateCustomCreateButton();
-  }
-}
-
-async function loadCustomTimesForDate(date) {
-  if (!date) return;
-
-  customReservationState.loadingTimes = true;
-  customReservationState.times = [];
-  clearCustomStatus();
-  renderCustomTimes();
-  updateCustomCreateButton();
-
-  try {
-    const response = await fetch(
-      `/api/admin/custom-reservation-availability?guests=${encodeURIComponent(customReservationState.guests)}&date=${encodeURIComponent(date)}`,
-      {
-        credentials: "same-origin",
+    async function toggleCheckin(id) {
+      const r = find(id); if (!r || state.busy.has(id)) return;
+      const session = state.session;
+      state.busy.add(id); render();
+      try {
+        const data = await api('reservation-checkin',{id:r.id,checked_in:!arrived(r),undo:true});
+        if (session !== state.session) return;
+        rememberUndo(data,`${arrived(r) ? 'Undo check-in removal' : 'Undo check-in'} / ${nameOf(r)}`,'checkin');
+        Object.assign(r,data.reservation);
+        notify(`${nameOf(r)} ${arrived(r) ? 'checked in.' : 'check-in undone.'}`);
+      } catch(error) { if (state.authenticated) pageError(error.message); }
+      finally {
+        state.busy.delete(id);
+        if (state.authenticated) {
+          render();
+          const button = [...$('rows').querySelectorAll('[data-action="checkin"]')].find(button => button.dataset.id === id);
+          button?.focus({preventScroll:true});
+        }
       }
-    );
-
-    const data = await response.json().catch(() => ({}));
-
-    if (!response.ok || !data.ok) {
-      throw new Error(data.error || "Failed to load times.");
     }
-
-    customReservationState.times = Array.isArray(data.slots) ? data.slots : [];
-  } catch (error) {
-    customReservationState.times = [];
-    setCustomStatus("error", String(error?.message || error));
-  } finally {
-    customReservationState.loadingTimes = false;
-    renderCustomTimes();
-    updateCustomCreateButton();
-  }
-}
-
-btnCustomReservation.addEventListener("click", openCustomReservationModal);
-btnCustomClose.addEventListener("click", closeCustomReservationModal);
-
-customReservationModal.addEventListener("click", (event) => {
-  if (event.target === customReservationModal) {
-    closeCustomReservationModal();
-  }
-});
-
-document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape" && !customReservationModal.classList.contains("hidden")) {
-    closeCustomReservationModal();
-  }
-});
-
-customGuestsInput.addEventListener("input", () => {
-  clearTimeout(customGuestsTimer);
-
-  const value = Number(customGuestsInput.value);
-  customReservationState.guests = Number.isInteger(value) ? value : null;
-
-  updateCustomCreateButton();
-
-  customGuestsTimer = setTimeout(() => {
-    loadCustomDates();
-  }, 250);
-});
-
-customFullNameInput.addEventListener("input", updateCustomCreateButton);
-customPhoneInput.addEventListener("input", updateCustomCreateButton);
-customRequestsInput.addEventListener("input", updateCustomCreateButton);
-
-btnCustomCreate.addEventListener("click", async () => {
-  if (btnCustomCreate.disabled) return;
-
-  const normalizedDate = normalizeCustomIsoDate(customReservationState.date);
-
-  if (!normalizedDate) {
-    setCustomStatus("error", "Invalid date.");
-    return;
-  }
-
-  customReservationState.creating = true;
-  updateCustomCreateButton();
-  clearCustomStatus();
-
-  try {
-    const response = await fetch("/api/admin/custom-reservation-create", {
-      method: "POST",
-      credentials: "same-origin",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        full_name: customFullNameInput.value.trim(),
-        phone: customPhoneInput.value.trim(),
-        requests: customRequestsInput.value.trim(),
-        guests: customReservationState.guests,
-        booking_date: normalizedDate,
-        booking_time: customReservationState.time,
-      }),
+    $('rows').addEventListener('click',event => {
+      const button = event.target.closest('button[data-action]'); if (!button) return;
+      const id = button.dataset.id, r = find(id); if (!r || state.busy.has(id)) return;
+      if (button.dataset.action === 'checkin') toggleCheckin(id);
+      if (button.dataset.action === 'edit') fillRecord(r);
+      if (button.dataset.action === 'table') {
+        state.tableId = id; $('table-number').value = r.table_number || ''; $('table-number').disabled = false;
+        $('table-guest').textContent = `${nameOf(r)} / ${r.booking_time} / ${r.guests} guests`;
+        showError('table-error',''); dialogBusy('table-dialog',false,'table-save','Save table'); openDialog('table-dialog');
+        $('table-number').focus(); $('table-number').select();
+      }
     });
-
-    const data = await response.json().catch(() => ({}));
-
-    if (!response.ok || !data.ok) {
-      throw new Error(data.error || "Failed to create reservation.");
+    async function saveExisting(event, mode) {
+      event.preventDefault();
+      const edit = mode === 'edit', id = edit ? state.editing : state.tableId;
+      const r = find(id), form = event.currentTarget;
+      if (!r || state.busy.has(id)) return;
+      const body = Object.fromEntries(new FormData(form)); body.id = r.id;
+      if (edit) body.guests = Number(body.guests);
+      for (const key of Object.keys(body)) if (typeof body[key] === 'string') body[key] = body[key].trim();
+      // Send only edits so an unchanged field cannot overwrite another staff member's update.
+      for (const key of Object.keys(body)) {
+        if (key !== 'id' && String(body[key]) === String(r[key] ?? '')) delete body[key];
+      }
+      if (Object.keys(body).length === 1) { $(`${mode}-dialog`).close(); notify('No changes made.'); return; }
+      const session = state.session, dialog = `${mode}-dialog`, save = `${mode}-save`;
+      showError(`${mode}-error`,''); state.busy.add(id); render();
+      dialogBusy(dialog,true,save,'');
+      if (edit) $('edit-fields').disabled = true; else $('table-number').disabled = true;
+      try {
+        const data = await api('reservation-update',{...body,undo:true});
+        if (session !== state.session) return;
+        rememberUndo(data,`${edit ? 'Revert reservation edit' : 'Revert table assignment'} / ${nameOf(r)}`,'update');
+        Object.assign(r,body,{updated_at:new Date().toISOString()});
+        $(dialog).close(); notify(edit ? 'Reservation updated.' : body.table_number ? `Table ${body.table_number} assigned.` : 'Table assignment removed.');
+      } catch(error) { if (state.authenticated) showError(`${mode}-error`,error.message); }
+      finally {
+        state.busy.delete(id);
+        dialogBusy(dialog,false,save,edit ? 'Save changes' : 'Save table');
+        if (edit) $('edit-fields').disabled = false; else $('table-number').disabled = false;
+        if (state.authenticated) render();
+      }
     }
-
-    setCustomStatus("success", "Custom reservation created.");
-    await loadReservations();
-
-    setTimeout(() => {
-      closeCustomReservationModal();
-    }, 500);
-  } catch (error) {
-    setCustomStatus("error", String(error?.message || error));
-  } finally {
-    customReservationState.creating = false;
-    updateCustomCreateButton();
-  }
-});
-}
-
-    quickTodayPaid.addEventListener("click", () => {
-      currentQuickFilter = "today_paid";
-      applyView();
+    $('edit-form').addEventListener('submit',event => saveExisting(event,'edit'));
+    $('table-form').addEventListener('submit',event => saveExisting(event,'table'));
+    function closeCalendar() {
+      $('create-calendar').hidden = true;
+      $('create-date-trigger').setAttribute('aria-expanded','false');
+    }
+    function monthOffset(month, offset) {
+      const date = new Date(`${month}-01T12:00:00Z`);
+      date.setUTCMonth(date.getUTCMonth()+offset);
+      return date.toISOString().slice(0,7);
+    }
+    function renderCalendar(focusDate = '') {
+      if (!state.dates.length || !calendarMonth) return;
+      const [year,month] = calendarMonth.split('-').map(Number);
+      const first = new Date(Date.UTC(year,month-1,1));
+      const days = new Date(Date.UTC(year,month,0)).getUTCDate();
+      const offset = (first.getUTCDay()+6)%7;
+      const dates = new Map(state.dates.map(item => [item.date,item.available]));
+      const selected = $('create-date').value;
+      const focus = focusDate || (selected.startsWith(calendarMonth) ? selected : state.dates.find(item => item.available && item.date.startsWith(calendarMonth))?.date);
+      $('create-month').textContent = first.toLocaleDateString('en-GB',{month:'long',year:'numeric',timeZone:'UTC'});
+      $('create-month-prev').disabled = monthOffset(calendarMonth,-1) < state.dates[0].date.slice(0,7);
+      $('create-month-next').disabled = monthOffset(calendarMonth,1) > state.dates[state.dates.length-1].date.slice(0,7);
+      const cells = Array.from({length:offset},() => '<span aria-hidden="true"></span>');
+      for (let day=1; day<=days; day++) {
+        const iso = `${calendarMonth}-${String(day).padStart(2,'0')}`;
+        const available = dates.get(iso) === true;
+        cells.push(`<button type="button" class="calendar-day" data-date="${iso}" aria-label="${esc(dateLabel(iso,{weekday:'long'}))}${available ? '' : ' / Unavailable'}" aria-pressed="${iso === selected}" tabindex="${iso === focus ? '0' : '-1'}" ${available ? '' : 'disabled'}>${day}</button>`);
+      }
+      $('create-calendar-days').innerHTML = cells.join('');
+      if (focusDate) $('create-calendar-days').querySelector(`[data-date="${focusDate}"]`)?.focus();
+    }
+    $('create-date-trigger').addEventListener('click',() => {
+      if (!$('create-calendar').hidden) { closeCalendar(); return; }
+      calendarMonth = $('create-date').value.slice(0,7) || state.dates.find(item => item.available)?.date.slice(0,7) || '';
+      renderCalendar(); $('create-calendar').hidden = false; $('create-date-trigger').setAttribute('aria-expanded','true');
+      $('create-calendar-days').querySelector('[tabindex="0"]')?.focus();
+      $('create-calendar').scrollIntoView({block:'nearest'});
     });
-
-    quickTodayAll.addEventListener("click", () => {
-      currentQuickFilter = "today_all";
-      applyView();
+    for (const [id,offset] of [['create-month-prev',-1],['create-month-next',1]]) {
+      $(id).addEventListener('click',() => { calendarMonth = monthOffset(calendarMonth,offset); renderCalendar(); });
+    }
+    $('create-calendar-days').addEventListener('click',event => {
+      const button = event.target.closest('button[data-date]');
+      if (!button || button.disabled || !state.dates.some(item => item.date === button.dataset.date && item.available)) return;
+      $('create-date').value = button.dataset.date;
+      $('create-date-label').textContent = dateLabel(button.dataset.date,{weekday:'short'});
+      closeCalendar(); $('create-date-trigger').focus(); loadTimes();
     });
-
-    quickUpcomingPaid.addEventListener("click", () => {
-      currentQuickFilter = "upcoming_paid";
-      applyView();
+    $('create-calendar').addEventListener('keydown',event => {
+      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeCalendar(); $('create-date-trigger').focus(); return; }
+      const button = event.target.closest('button[data-date]');
+      const step = {ArrowLeft:-1,ArrowRight:1,ArrowUp:-7,ArrowDown:7}[event.key];
+      if (!button || !step) return;
+      event.preventDefault();
+      let target = shiftDay(button.dataset.date,step);
+      const first = state.dates[0]?.date, last = state.dates[state.dates.length-1]?.date;
+      while (target >= first && target <= last) {
+        if (state.dates.some(item => item.date === target && item.available)) { calendarMonth = target.slice(0,7); renderCalendar(target); break; }
+        target = shiftDay(target,step);
+      }
     });
-
-    quickAll.addEventListener("click", () => {
-      currentQuickFilter = "all";
-      applyView();
+    function invalidateAvailability() {
+      state.availability++; state.dates = []; state.slots = [];
+      $('create-date').value = ''; $('create-date-label').textContent = 'Loading dates...'; $('create-date-trigger').disabled = true; closeCalendar();
+      $('create-time').innerHTML = '<option value="">Choose a date first</option>'; $('create-time').disabled = true;
+      $('create-save').disabled = true;
+    }
+    function updateCreateButton() {
+      const validSlot = state.slots.some(slot => slot.time === $('create-time').value && slot.available);
+      const validDate = state.dates.some(item => item.date === $('create-date').value && item.available);
+      $('create-save').disabled = $('create-dialog').dataset.busy === 'true' || !validSlot || !validDate || $('create-date-trigger').disabled || $('create-time').disabled || !$('create-name').value.trim();
+    }
+    async function loadDates() {
+      const ticket = state.availability, guests = Number($('create-guests').value);
+      if (!Number.isInteger(guests) || guests < 1 || guests > 22) { $('create-date-label').textContent = 'Enter 1 to 22 guests'; return; }
+      showError('create-error','');
+      try {
+        const data = await api(`custom-reservation-availability?guests=${guests}`);
+        if (ticket !== state.availability || !$('create-dialog').open) return;
+        state.dates = (Array.isArray(data.dates) ? data.dates : []).slice().sort((a,b) => a.date.localeCompare(b.date));
+        $('create-date-trigger').disabled = !state.dates.some(item => item.available);
+        if ($('create-date-trigger').disabled) { $('create-date-label').textContent = 'No dates available'; showError('create-error','No dates are available for this guest count.'); return; }
+        const preferred = state.dates.find(item => item.available && item.date === state.date) || state.dates.find(item => item.available);
+        $('create-date').value = preferred.date;
+        $('create-date-label').textContent = dateLabel(preferred.date,{weekday:'short'});
+        calendarMonth = preferred.date.slice(0,7);
+        await loadTimes();
+      } catch(error) { if (ticket === state.availability && state.authenticated) { showError('create-error',`${error.message} Change the guest count to retry.`); $('create-date-label').textContent = 'Dates unavailable'; } }
+    }
+    async function loadTimes() {
+      const ticket = ++state.availability, date = $('create-date').value, guests = Number($('create-guests').value);
+      state.slots = []; $('create-time').disabled = true; $('create-save').disabled = true;
+      $('create-time').innerHTML = '<option value="">Loading times...</option>';
+      if (!state.dates.some(item => item.date === date && item.available)) { $('create-time').innerHTML = '<option value="">Choose an available date first</option>'; return; }
+      showError('create-error','');
+      try {
+        const data = await api(`custom-reservation-availability?guests=${guests}&date=${encodeURIComponent(date)}`);
+        if (ticket !== state.availability || !$('create-dialog').open) return;
+        state.slots = Array.isArray(data.slots) ? data.slots : [];
+        $('create-time').innerHTML = '<option value="">Choose a time</option>' + state.slots.map(slot => `<option value="${esc(slot.time)}" ${slot.available ? '' : 'disabled'}>${esc(slot.time)}${slot.available ? '' : slot.reason === 'min_advance' ? ' / Too soon' : ' / Unavailable'}</option>`).join('');
+        $('create-time').disabled = !state.slots.some(slot => slot.available);
+        if ($('create-time').disabled) showError('create-error','No times are available. Choose another date or guest count.');
+        updateCreateButton();
+      } catch(error) { if (ticket === state.availability && state.authenticated) { showError('create-error',`${error.message} Choose a date again to retry.`); $('create-time').innerHTML = '<option value="">Times unavailable</option>'; } }
+    }
+    $('new-reservation').addEventListener('click',() => {
+      $('create-form').reset(); $('create-fields').disabled = false;
+      showError('create-error',''); dialogBusy('create-dialog',false,'create-save','Add reservation');
+      invalidateAvailability(); openDialog('create-dialog'); $('create-name').focus(); loadDates();
     });
-
-    sortAscBtn.addEventListener("click", () => {
-      currentSort = "asc";
-      applyView();
+    $('create-guests').addEventListener('input',() => { clearTimeout(guestsTimer); invalidateAvailability(); guestsTimer = setTimeout(loadDates,300); });
+    $('create-time').addEventListener('change',updateCreateButton);
+    $('create-name').addEventListener('input',updateCreateButton);
+    $('create-form').addEventListener('submit',async event => {
+      event.preventDefault(); if ($('create-save').disabled) return;
+      const body = Object.fromEntries(new FormData(event.currentTarget)); body.guests = Number(body.guests);
+      for (const key of Object.keys(body)) if (typeof body[key] === 'string') body[key] = body[key].trim();
+      const session = state.session;
+      showError('create-error',''); dialogBusy('create-dialog',true,'create-save',''); $('create-fields').disabled = true;
+      try {
+        // The manual-booking endpoint predates the guarded endpoints; verify the session first.
+        await api('reservations');
+        if (session !== state.session) return;
+        const data = await api('custom-reservation-create',{...body,undo:true});
+        if (session !== state.session) return;
+        rememberUndo(data,`Remove added reservation / ${body.full_name}`,'create');
+        $('create-dialog').close(); $('search').value = ''; $('status-filter').value = ''; $('arrival-filter').value = '';
+        setView('date',body.booking_date); notify('Reservation added. No online deposit collected.');
+        await loadReservations();
+        if (!data.undo && state.authenticated) pageError('The reservation was added, but Undo is unavailable for that action.');
+      } catch(error) {
+        if (state.authenticated) { showError('create-error',error.message); }
+      } finally {
+        dialogBusy('create-dialog',false,'create-save','Add reservation'); $('create-fields').disabled = false; updateCreateButton();
+      }
     });
-
-    sortDescBtn.addEventListener("click", () => {
-      currentSort = "desc";
-      applyView();
+    $('open-delete').addEventListener('click',() => {
+      const r = find(state.editing); if (!r || state.busy.has(state.editing)) return;
+      state.deleteId = String(r.id); $('edit-dialog').close(); showError('delete-error','');
+      $('delete-name').textContent = nameOf(r); $('delete-booking').textContent = `${dateLabel(r.booking_date)} / ${r.booking_time} / ${r.guests} guests`;
+      dialogBusy('delete-dialog',false,'delete-save','Delete permanently'); openDialog('delete-dialog');
+      $('delete-dialog').querySelector('.dialog-actions [data-close]').focus();
     });
-
-    btnRefresh.addEventListener("click", loadReservations);
-    filterDate.addEventListener("change", applyView);
-    filterStatus.addEventListener("change", applyView);
-
-    btnLogout.addEventListener("click", async () => {
-      await fetch("/api/admin/logout", {
-        method: "POST",
-        credentials: "same-origin",
+    $('delete-form').addEventListener('submit',async event => {
+      event.preventDefault(); const id = state.deleteId, r = find(id);
+      if (!r || state.busy.has(id)) return;
+      const session = state.session; state.busy.add(id); render();
+      showError('delete-error',''); dialogBusy('delete-dialog',true,'delete-save','');
+      try {
+        const data = await api('reservation-delete',{id:r.id,undo:true});
+        if (session !== state.session) return;
+        rememberUndo(data,`Restore deleted reservation / ${nameOf(r)}`,'delete');
+        state.reservations = state.reservations.filter(row => String(row.id) !== id);
+        $('delete-dialog').close(); notify('Reservation deleted.');
+      } catch(error) { if (state.authenticated) showError('delete-error',error.message); }
+      finally { state.busy.delete(id); dialogBusy('delete-dialog',false,'delete-save','Delete permanently'); if (state.authenticated) render(); }
+    });
+    document.querySelectorAll('dialog').forEach(dialog => {
+      dialog.addEventListener('cancel',event => { if (dialog.dataset.busy === 'true') event.preventDefault(); });
+      dialog.querySelectorAll('[data-close]').forEach(button => button.addEventListener('click',() => { if (dialog.dataset.busy !== 'true') dialog.close(); }));
+      dialog.addEventListener('close',() => {
+        if (dialog.id === 'create-dialog') { clearTimeout(guestsTimer); state.availability++; }
+        if (!state.authenticated || document.querySelector('dialog[open]')) return;
+        const opener = dialogOpeners.get(dialog.id);
+        const rowButton = opener?.action && [...$('rows').querySelectorAll('[data-action]')].find(button => button.dataset.id === opener.id && button.dataset.action === opener.action);
+        const target = rowButton || (opener?.element?.isConnected ? opener.element : $('new-reservation'));
+        (target?.disabled ? $('new-reservation') : target)?.focus({preventScroll:true});
       });
-      window.location.href = "/admin/login.html";
     });
-
+    $('undo').addEventListener('click',() => {
+      const action = undoHistory[undoHistory.length-1]; if (!action || $('undo').disabled) return;
+      $('undo-description').textContent = action.description;
+      $('undo-note').textContent = action.kind === 'create' ? 'This deletes the manually added booking. It does not issue a refund.' : action.kind === 'delete' ? 'The original reservation will be restored, including its payment record. No payment or email is sent.' : 'The previous values will be restored. Payments are not charged or refunded.';
+      showError('undo-error',''); dialogBusy('undo-dialog',false,'undo-save','Undo change'); openDialog('undo-dialog');
+      $('undo-dialog').querySelector('.dialog-actions [data-close]').focus();
+    });
+    $('undo-form').addEventListener('submit',async event => {
+      event.preventDefault(); const action = undoHistory[undoHistory.length-1];
+      if (!action || $('undo-save').disabled) return;
+      const session = state.session; state.busy.add('undo'); render();
+      showError('undo-error',''); dialogBusy('undo-dialog',true,'undo-save','Undo change');
+      try {
+        await api('reservation-undo',{token:action.token});
+        if (session !== state.session) return;
+        undoHistory.pop(); $('undo-dialog').close(); notify('Last change undone.');
+        state.busy.delete('undo'); await loadReservations();
+      } catch(error) { if (state.authenticated) showError('undo-error',error.message); }
+      finally { state.busy.delete('undo'); dialogBusy('undo-dialog',false,'undo-save','Undo change'); if (state.authenticated) render(); }
+    });
+    document.querySelectorAll('[data-view]').forEach(button => button.addEventListener('click',() => setView(button.dataset.view)));
+    $('view-date').addEventListener('change',() => { if ($('view-date').value) setView('date',$('view-date').value); else setView('all'); });
+    $('previous-day').addEventListener('click',() => setView('date',shiftDay($('view-date').value || georgiaToday(),-1)));
+    $('next-day').addEventListener('click',() => setView('date',shiftDay($('view-date').value || georgiaToday(),1)));
+    ['search','status-filter','arrival-filter','sort'].forEach(id => $(id).addEventListener(id === 'search' ? 'input' : 'change',render));
+    $('toggle-filters').addEventListener('click',() => {
+      const expanded = $('toggle-filters').getAttribute('aria-expanded') !== 'true';
+      $('toggle-filters').setAttribute('aria-expanded',String(expanded));
+      document.querySelector('.filters').classList.toggle('expanded',expanded); render();
+    });
+    function clearFilters() { $('search').value = ''; $('status-filter').value = ''; $('arrival-filter').value = ''; render(); }
+    ['reset-filters','empty-reset'].forEach(id => $(id).addEventListener('click',clearFilters));
+    $('clear-search').addEventListener('click',() => { $('search').value = ''; render(); $('search').focus(); });
+    function refreshDesk() { undoHistory.length = 0; syncUndo(); loadReservations(); }
+    $('refresh').addEventListener('click',refreshDesk); $('retry').addEventListener('click',refreshDesk);
+    $('dismiss-toast').addEventListener('click',() => { $('toast').hidden = true; });
+    $('login-form').addEventListener('submit',async event => {
+      event.preventDefault(); if ($('login-button').disabled) return;
+      $('login-button').disabled = true; $('login-button').textContent = 'Signing in...'; showError('login-error','');
+      try { await api('login',{password:$('password').value}); $('password').value = ''; await loadReservations(); }
+      catch(error) { showError('login-error',error.message); }
+      finally { $('login-button').disabled = false; $('login-button').textContent = 'Sign in'; }
+    });
+    $('logout').addEventListener('click',async () => {
+      if (state.busy.size || [...document.querySelectorAll('dialog')].some(dialog => dialog.dataset.busy === 'true')) { notify('Please wait for the current save to finish.'); return; }
+      $('logout').disabled = true;
+      try { await api('logout',{}); requireLogin('Signed out.'); }
+      catch(error) { if (state.authenticated) pageError(error.message); }
+      finally { $('logout').disabled = false; }
+    });
+    // Recheck a restored tab: never reveal cached reservation data after sign-out.
+    window.addEventListener('pageshow',event => { if (event.persisted) { requireLogin('Checking your session...'); loadReservations(); } });
+    window.addEventListener('pagehide',() => { undoHistory.length = 0; });
+    state.date = georgiaToday();
     loadReservations();
   </script>
-
-
-<div
-  id="custom-reservation-modal"
-  class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 p-4"
->
-  <div class="w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-2xl border border-white/10 bg-[#0f0f0f] p-5 md:p-6">
-    <div class="flex items-start justify-between gap-4 mb-5">
-      <div>
-        <p class="text-white/60 text-xs uppercase tracking-[0.2em]">Reserve</p>
-        <h2 class="text-2xl md:text-3xl font-semibold mt-2">Create custom reservation</h2>
-        <p class="text-white/60 mt-2">
-          Enter the guest count first. Unavailable dates and times will be greyed out automatically.
-        </p>
-      </div>
-
-      <button
-        id="btn-custom-close"
-        class="px-3 py-2 rounded-md bg-white/10 text-white hover:bg-white/20 transition"
-        type="button"
-      >
-        Close
-      </button>
-    </div>
-
-    <div id="custom-reservation-status" class="hidden rounded-lg border px-4 py-3 text-sm mb-5"></div>
-
-    <div class="grid grid-cols-1 xl:grid-cols-[320px_1fr] gap-6">
-      <div class="space-y-4">
-        <div>
-          <label class="block text-sm text-white/70 mb-2">Number of guests</label>
-          <input
-            id="custom-guests"
-            type="number"
-            min="1"
-            max="22"
-            step="1"
-            class="w-full px-3 py-2 rounded-md bg-white text-black"
-            placeholder="1 to 22"
-          />
-          <p class="text-white/45 text-xs mt-2">Up to 22 guests. Same 1-hour minimum and 2-hour block rules apply.</p>
-        </div>
-
-        <div>
-          <label class="block text-sm text-white/70 mb-2">Guest name</label>
-          <input
-            id="custom-full-name"
-            type="text"
-            class="w-full px-3 py-2 rounded-md bg-white text-black"
-            placeholder="Full name"
-          />
-        </div>
-
-        <div>
-          <label class="block text-sm text-white/70 mb-2">Phone</label>
-          <input
-            id="custom-phone"
-            type="text"
-            class="w-full px-3 py-2 rounded-md bg-white text-black"
-            placeholder="Optional"
-          />
-        </div>
-
-        <div>
-          <label class="block text-sm text-white/70 mb-2">Notes</label>
-          <textarea
-            id="custom-requests"
-            rows="4"
-            class="w-full px-3 py-2 rounded-md bg-white text-black"
-            placeholder="Optional notes"
-          ></textarea>
-        </div>
-
-        <button
-          id="btn-custom-create"
-          type="button"
-          class="w-full px-4 py-3 rounded-md bg-[#D0842F] text-white hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled
-        >
-          Create reservation
-        </button>
-      </div>
-
-      <div class="space-y-6">
-        <section class="rounded-xl border border-white/10 bg-white/5 p-4">
-  <div class="flex items-center justify-between gap-3 mb-4">
-    <h3 class="text-lg font-semibold">1. Pick an available date</h3>
-    <span id="custom-selected-date" class="text-sm text-white/60">No date selected</span>
-  </div>
-
-  <div class="flex items-center justify-between gap-3 mb-4">
-    <button
-      id="custom-calendar-prev"
-      type="button"
-      class="w-10 h-10 rounded-lg bg-white/10 text-white hover:bg-white/15 transition disabled:opacity-30 disabled:cursor-not-allowed"
-    >
-      &#8249;
-    </button>
-
-    <div id="custom-calendar-title" class="text-sm font-medium text-white tracking-[0.12em] uppercase text-center"></div>
-
-    <button
-      id="custom-calendar-next"
-      type="button"
-      class="w-10 h-10 rounded-lg bg-white/10 text-white hover:bg-white/15 transition disabled:opacity-30 disabled:cursor-not-allowed"
-    >
-      &#8250;
-    </button>
-  </div>
-
-  <div class="grid grid-cols-7 gap-2 mb-2 text-xs text-white/45 text-center">
-    <div>Mon</div>
-    <div>Tue</div>
-    <div>Wed</div>
-    <div>Thu</div>
-    <div>Fri</div>
-    <div>Sat</div>
-    <div>Sun</div>
-  </div>
-
-  <div id="custom-dates-wrap" class="min-h-[280px]"></div>
-</section>
-
-        <section class="rounded-xl border border-white/10 bg-white/5 p-4">
-          <div class="flex items-center justify-between gap-3 mb-4">
-            <h3 class="text-lg font-semibold">2. Pick an available time</h3>
-            <span id="custom-selected-time" class="text-sm text-white/60">No time selected</span>
-          </div>
-          <div id="custom-times-wrap" class="min-h-[96px]"></div>
-        </section>
-      </div>
-    </div>
-  </div>
-</div>
-
 </body>
 </html>

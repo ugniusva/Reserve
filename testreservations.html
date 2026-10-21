@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Reservations | Reserve Restaurant</title>
+    <title>Reserve</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, nofollow" />
     <meta name="theme-color" content="#fdfdfc" />
@@ -47,7 +47,7 @@ button, img { -webkit-user-select: none; user-select: none; }
 #site-header .top-buttons-down { transform: none; display: flex; align-items: center; }
 #site-header > div { justify-self: start; gap: 16px; font-size: 13px; }
 #site-header > div a { display: grid; place-items: center; min-width: 28px; min-height: 44px; }
-#site-header > div a:first-child { text-decoration: underline; text-decoration-color: var(--brand); text-underline-offset: 7px; }
+#site-header > div a[aria-current="page"] { text-decoration: underline; text-decoration-color: var(--brand); text-underline-offset: 7px; }
 #site-header > div > span { width: 1px; height: 12px; font-size: 0; background: var(--line); }
 #site-header nav { justify-self: end; gap: 30px; font-size: 14px; }
 #site-header nav > * { min-height: 44px; display: flex; align-items: center; }
@@ -312,9 +312,9 @@ footer a:hover { color: var(--brand); }
       class="fixed top-0 left-0 w-full z-20 flex items-start justify-between px-4 sm:px-10 pt-0 pb-0 text-white"
     >
       <div class="top-buttons-down flex items-center gap-2 sm:gap-4 text-sm text-black sm:text-base md:text-xl tracking-wide">
-        <a href="#top" class="hover:opacity-80">EN</a>
+        <a href="#top" class="hover:opacity-80" lang="en" aria-current="page">EN</a>
         <span class="hidden sm:inline">|</span>
-        <a href="Rge.html" class="hover:opacity-80">GE</a>
+        <a href="testreservationsge.html" class="hover:opacity-80" lang="ka">GE</a>
       </div>
 
       <a href="index.html#top" data-preview-home id="logo-link" class="opacity-80 hover:opacity-80" aria-label="Reserve">
@@ -2014,7 +2014,7 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
     </script>
     <script data-presentation>
 (() => {
-  const isPreview = location.pathname.split('/').pop() === 'testreservations.html';
+  const isPreview = location.pathname.split('/').filter(Boolean).pop()?.replace(/\.html$/, '') === 'testreservations';
   document.querySelectorAll('[data-preview-home]').forEach(link => {
     if (isPreview) link.href = 'test.html#top';
   });

@@ -1,0 +1,1434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reserve Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: #0a0a0a;
+      color: white;
+    }
+
+    .filter-chip {
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.88);
+      transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
+    }
+
+    .filter-chip:hover {
+      background: rgba(255,255,255,0.12);
+      transform: translateY(-1px);
+    }
+
+    .filter-chip.active {
+      background: #D0842F;
+      border-color: #D0842F;
+      color: white;
+    }
+
+    .sort-chip {
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.88);
+      transition: background 180ms ease, border-color 180ms ease;
+    }
+
+    .sort-chip:hover {
+      background: rgba(255,255,255,0.12);
+    }
+
+    .sort-chip.active {
+      background: rgba(208, 132, 47, 0.16);
+      border-color: rgba(208, 132, 47, 0.5);
+      color: #ffd8aa;
+    }
+
+    .today-row {
+      background: rgba(208, 132, 47, 0.08);
+    }
+
+    .checked-in-row {
+      background: rgba(34, 197, 94, 0.14);
+    }
+
+    .checked-in-row:hover {
+      background: rgba(34, 197, 94, 0.2);
+    }
+
+    .admin-table {
+      table-layout: fixed;
+      width: 100%;
+    }
+
+    .admin-table th,
+    .admin-table td {
+      padding: 0.7rem 0.55rem;
+      vertical-align: top;
+    }
+
+    .admin-table th {
+      font-size: 0.72rem;
+      line-height: 1.2;
+    }
+
+    .admin-table td {
+      font-size: 0.82rem;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+
+    .admin-muted {
+      color: rgba(255, 255, 255, 0.48);
+      font-size: 0.72rem;
+      margin-top: 0.2rem;
+    }
+
+    .admin-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+
+    .admin-actions button,
+    .checkin-btn {
+      padding: 0.28rem 0.5rem;
+      font-size: 0.72rem;
+      line-height: 1.2;
+    }
+  </style>
+</head>
+<body class="min-h-screen px-4 py-8 md:px-8">
+  <div class="max-w-7xl mx-auto space-y-6">
+    <div class="flex flex-col gap-5">
+      <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+        <div>
+          <p class="text-white/60 text-sm uppercase tracking-[0.2em]">Reserve</p>
+          <h1 class="text-3xl md:text-4xl font-semibold">Reservations Admin</h1>
+          <p class="text-white/60 mt-2">Simple dashboard for staff</p>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-3">
+          <div>
+            <label class="block text-sm text-white/70 mb-1">Date</label>
+            <input
+              id="filter-date"
+              type="date"
+              class="px-3 py-2 rounded-md bg-white text-black"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm text-white/70 mb-1">Status</label>
+            <select
+              id="filter-status"
+              class="px-3 py-2 rounded-md bg-white text-black"
+            >
+              <option value="">All</option>
+              <option value="pending_payment">Pending payment</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="payment_failed">Payment failed</option>
+              <option value="cancelled">Cancelled</option>
+              <option value="completed">Completed</option>
+              <option value="no_show">No show</option>
+            </select>
+          </div>
+
+          <div class="flex items-end">
+            <button
+              id="btn-refresh"
+              class="px-4 py-2 rounded-md bg-[#D0842F] text-white hover:opacity-90 transition"
+            >
+              Refresh
+            </button>
+          </div>
+
+
+          <div class="flex items-end">
+            <button
+              id="btn-custom-reservation"
+              class="px-4 py-2 rounded-md bg-[#D0842F] text-white hover:opacity-90 transition"
+            >
+              Custom reservation
+            </button>
+          </div>
+
+          <div class="flex items-end">
+            <button
+              id="btn-logout"
+              class="px-4 py-2 rounded-md bg-white/10 text-white hover:bg-white/20 transition"
+            >
+              Log out
+            </button>
+          </div>
+
+
+
+        </div>
+      </div>
+
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div>
+          <p class="text-sm text-white/60 mb-2">Quick filters</p>
+          <div class="flex flex-wrap gap-2">
+            <button id="quick-today-paid" class="filter-chip active px-4 py-2 rounded-full text-sm">
+              Today paid
+            </button>
+            <button id="quick-today-all" class="filter-chip px-4 py-2 rounded-full text-sm">
+              Today all
+            </button>
+            <button id="quick-upcoming-paid" class="filter-chip px-4 py-2 rounded-full text-sm">
+              Upcoming paid
+            </button>
+            <button id="quick-all" class="filter-chip px-4 py-2 rounded-full text-sm">
+              All
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <p class="text-sm text-white/60 mb-2">Sort order</p>
+          <div class="flex flex-wrap gap-2">
+            <button id="sort-asc" class="sort-chip active px-4 py-2 rounded-full text-sm">
+              Earliest first
+            </button>
+            <button id="sort-desc" class="sort-chip px-4 py-2 rounded-full text-sm">
+              Latest first
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="rounded-xl bg-white/5 border border-white/10 p-4">
+        <p class="text-white/60 text-sm">Visible reservations</p>
+        <p id="stat-total" class="text-3xl font-semibold mt-2">0</p>
+      </div>
+      <div class="rounded-xl bg-white/5 border border-white/10 p-4">
+        <p class="text-white/60 text-sm">Today paid</p>
+        <p id="stat-today-paid" class="text-3xl font-semibold mt-2">0</p>
+      </div>
+      <div class="rounded-xl bg-white/5 border border-white/10 p-4">
+        <p class="text-white/60 text-sm">Pending payment</p>
+        <p id="stat-pending" class="text-3xl font-semibold mt-2">0</p>
+      </div>
+      <div class="rounded-xl bg-white/5 border border-white/10 p-4">
+        <p class="text-white/60 text-sm">Confirmed / completed</p>
+        <p id="stat-confirmed" class="text-3xl font-semibold mt-2">0</p>
+      </div>
+    </div>
+
+    <div class="rounded-2xl border border-white/10 bg-white/5 overflow-hidden">
+      <div class="px-4 py-3 border-b border-white/10 text-sm text-white/60">
+        <span id="table-caption">Showing today’s paid reservations, sorted by time.</span>
+      </div>
+
+      <div>
+        <table class="admin-table text-sm">
+          <colgroup>
+            <col style="width: 10%" />
+            <col style="width: 11%" />
+            <col style="width: 10%" />
+            <col style="width: 17%" />
+            <col style="width: 8%" />
+            <col style="width: 9%" />
+            <col style="width: 11%" />
+            <col style="width: 14%" />
+            <col style="width: 10%" />
+          </colgroup>
+          <thead class="bg-white/10 text-left text-white/70">
+            <tr>
+              <th class="px-4 py-3">Paid/created</th>
+              <th class="px-4 py-3">Reservation</th>
+              <th class="px-4 py-3">Check-in</th>
+              <th class="px-4 py-3">Guest</th>
+              <th class="px-4 py-3">Party</th>
+              <th class="px-4 py-3">Deposit</th>
+              <th class="px-4 py-3">Status</th>
+              <th class="px-4 py-3">Requests</th>
+              <th class="px-4 py-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="reservations-body" class="divide-y divide-white/10">
+            <tr>
+              <td colspan="9" class="px-4 py-6 text-center text-white/50">
+                Loading...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const filterDate = document.getElementById("filter-date");
+    const filterStatus = document.getElementById("filter-status");
+    const btnRefresh = document.getElementById("btn-refresh");
+    const btnLogout = document.getElementById("btn-logout");
+    const bodyEl = document.getElementById("reservations-body");
+    const tableCaption = document.getElementById("table-caption");
+
+    const statTotal = document.getElementById("stat-total");
+    const statTodayPaid = document.getElementById("stat-today-paid");
+    const statPending = document.getElementById("stat-pending");
+    const statConfirmed = document.getElementById("stat-confirmed");
+
+    const quickTodayPaid = document.getElementById("quick-today-paid");
+    const quickTodayAll = document.getElementById("quick-today-all");
+    const quickUpcomingPaid = document.getElementById("quick-upcoming-paid");
+    const quickAll = document.getElementById("quick-all");
+
+    const sortAscBtn = document.getElementById("sort-asc");
+    const sortDescBtn = document.getElementById("sort-desc");
+
+    const todayIso = new Date().toISOString().slice(0, 10);
+
+    let allReservations = [];
+    let currentQuickFilter = "today_paid";
+    let currentSort = "asc";
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function isPaidStatus(status) {
+      return status === "confirmed" || status === "completed";
+    }
+
+    function getReservationDateTime(r) {
+      return new Date(`${r.booking_date}T${r.booking_time}:00`).getTime();
+    }
+
+    function statusBadge(status) {
+      const styles = {
+        pending_payment: "bg-yellow-500/20 text-yellow-300 border-yellow-400/30",
+        confirmed: "bg-green-500/20 text-green-300 border-green-400/30",
+        payment_failed: "bg-red-500/20 text-red-300 border-red-400/30",
+        cancelled: "bg-gray-500/20 text-gray-300 border-gray-400/30",
+        completed: "bg-blue-500/20 text-blue-300 border-blue-400/30",
+        no_show: "bg-pink-500/20 text-pink-300 border-pink-400/30",
+      };
+
+      const labels = {
+        pending_payment: "Pending payment",
+        confirmed: "Confirmed",
+        payment_failed: "Payment failed",
+        cancelled: "Cancelled",
+        completed: "Completed",
+        no_show: "No show",
+      };
+
+      const cls = styles[status] || "bg-white/10 text-white border-white/20";
+      const label = labels[status] || status;
+
+      return `
+        <span class="inline-flex px-2 py-1 rounded-full border text-xs ${cls}">
+          ${escapeHtml(label)}
+        </span>
+      `;
+    }
+
+    function getPaidCreatedTimestamp(reservation) {
+      return reservation.paid_at || reservation.callback_received_at || reservation.created_at || "";
+    }
+
+    function getPaidCreatedSource(reservation) {
+      if (reservation.paid_at) return "Paid";
+      if (reservation.callback_received_at) return "Callback";
+      if (reservation.created_at) return "Created";
+      return "";
+    }
+
+    function formatDateOnly(value) {
+      const raw = String(value || "").trim();
+      if (!raw) return "&mdash;";
+
+      const isoDate = raw.match(/^\d{4}-\d{2}-\d{2}/);
+      return isoDate ? isoDate[0] : escapeHtml(raw);
+    }
+
+    function isCheckedIn(reservation) {
+      return Number(reservation.checked_in) === 1 || reservation.checked_in === true;
+    }
+
+    function renderRows(reservations) {
+      if (!reservations.length) {
+        bodyEl.innerHTML = `
+          <tr>
+            <td colspan="9" class="px-4 py-6 text-center text-white/50">
+              No reservations found.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      bodyEl.innerHTML = reservations.map(r => {
+        const isToday = r.booking_date === todayIso;
+        const checkedIn = isCheckedIn(r);
+        const paidCreatedAt = getPaidCreatedTimestamp(r);
+        const paidCreatedSource = getPaidCreatedSource(r);
+        const rowClass = checkedIn ? "checked-in-row" : isToday ? "today-row" : "";
+        return `
+          <tr class="hover:bg-white/5 align-top ${rowClass}">
+            <td>
+              <div>${formatDateOnly(paidCreatedAt)}</div>
+              <div class="admin-muted">${escapeHtml(paidCreatedSource)}</div>
+            </td>
+            <td>
+              <div>${escapeHtml(r.booking_date)}</div>
+              <div class="admin-muted">${escapeHtml(r.booking_time)}</div>
+            </td>
+            <td>
+              <button
+                class="checkin-btn px-3 py-1 rounded-md border text-xs transition ${checkedIn ? "bg-green-500/20 border-green-400/30 text-green-200 hover:bg-green-500/30" : "bg-white/10 border-white/10 text-white/80 hover:bg-white/20"}"
+                data-id="${escapeHtml(r.id)}"
+                data-checked="${checkedIn ? "1" : "0"}"
+                aria-pressed="${checkedIn ? "true" : "false"}"
+              >
+                ${checkedIn ? "Checked in" : "Check in"}
+              </button>
+              ${checkedIn && r.checked_in_at ? `<div class="admin-muted">${formatDateOnly(r.checked_in_at)}</div>` : ""}
+            </td>
+            <td>
+              <div class="font-medium">${escapeHtml(r.first_name)} ${escapeHtml(r.last_name)}</div>
+              <div class="admin-muted">${escapeHtml(r.phone || "-")}</div>
+            </td>
+            <td>
+              <div>${escapeHtml(r.guests)}</div>
+              <div class="admin-muted">Table ${escapeHtml(r.table_number || "-")}</div>
+            </td>
+            <td>${escapeHtml(r.deposit_amount)} ${escapeHtml(r.currency)}</td>
+            <td>${statusBadge(r.status)}</td>
+            <td class="text-white/70">${escapeHtml(r.requests || "-")}</td>
+            <td>
+              <div class="admin-actions">
+                <button
+                  class="edit-btn px-3 py-1 rounded-md bg-white/10 hover:bg-white/20 transition"
+                  data-id="${escapeHtml(r.id)}"
+                >
+                  Edit
+                </button>
+                <button
+                  class="delete-btn px-3 py-1 rounded-md bg-red-500/20 text-red-300 hover:bg-red-500/30 transition"
+                  data-id="${escapeHtml(r.id)}"
+                >
+                  Delete
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function updateStats(sourceReservations, visibleReservations) {
+      statTotal.textContent = visibleReservations.length;
+      statTodayPaid.textContent = sourceReservations.filter(r => r.booking_date === todayIso && isPaidStatus(r.status)).length;
+      statPending.textContent = sourceReservations.filter(r => r.status === "pending_payment").length;
+      statConfirmed.textContent = sourceReservations.filter(r => isPaidStatus(r.status)).length;
+    }
+
+    function setQuickFilterButtonState() {
+      [quickTodayPaid, quickTodayAll, quickUpcomingPaid, quickAll].forEach(btn => {
+        btn.classList.remove("active");
+      });
+
+      if (currentQuickFilter === "today_paid") quickTodayPaid.classList.add("active");
+      if (currentQuickFilter === "today_all") quickTodayAll.classList.add("active");
+      if (currentQuickFilter === "upcoming_paid") quickUpcomingPaid.classList.add("active");
+      if (currentQuickFilter === "all") quickAll.classList.add("active");
+    }
+
+    function setSortButtonState() {
+      sortAscBtn.classList.toggle("active", currentSort === "asc");
+      sortDescBtn.classList.toggle("active", currentSort === "desc");
+    }
+
+    function applyQuickFilter(reservations) {
+      if (currentQuickFilter === "today_paid") {
+        return reservations.filter(r => r.booking_date === todayIso && isPaidStatus(r.status));
+      }
+
+      if (currentQuickFilter === "today_all") {
+        return reservations.filter(r => r.booking_date === todayIso);
+      }
+
+      if (currentQuickFilter === "upcoming_paid") {
+        return reservations.filter(r => r.booking_date >= todayIso && isPaidStatus(r.status));
+      }
+
+      return reservations.slice();
+    }
+
+    function applyManualFilters(reservations) {
+      let result = reservations.slice();
+
+      if (filterDate.value) {
+        result = result.filter(r => r.booking_date === filterDate.value);
+      }
+
+      if (filterStatus.value) {
+        result = result.filter(r => r.status === filterStatus.value);
+      }
+
+      return result;
+    }
+
+    function sortReservations(reservations) {
+      const sorted = reservations.slice().sort((a, b) => {
+        const diff = getReservationDateTime(a) - getReservationDateTime(b);
+        return currentSort === "asc" ? diff : -diff;
+      });
+
+      return sorted;
+    }
+
+    function updateCaption(reservations) {
+      let base = "";
+
+      if (currentQuickFilter === "today_paid") base = "Showing today’s paid reservations";
+      else if (currentQuickFilter === "today_all") base = "Showing all of today’s reservations";
+      else if (currentQuickFilter === "upcoming_paid") base = "Showing upcoming paid reservations";
+      else base = "Showing all reservations";
+
+      if (filterDate.value) {
+        base += ` on ${filterDate.value}`;
+      }
+
+      if (filterStatus.value) {
+        base += ` with status "${filterStatus.value}"`;
+      }
+
+      base += currentSort === "asc" ? ", earliest first." : ", latest first.";
+      base += ` Total: ${reservations.length}.`;
+
+      tableCaption.textContent = base;
+    }
+
+    function applyView() {
+      const quickFiltered = applyQuickFilter(allReservations);
+      const manualFiltered = applyManualFilters(quickFiltered);
+      const sorted = sortReservations(manualFiltered);
+
+      renderRows(sorted);
+      updateStats(allReservations, sorted);
+      updateCaption(sorted);
+      attachRowActions(sorted);
+      setQuickFilterButtonState();
+      setSortButtonState();
+    }
+
+    function attachRowActions(reservations) {
+      document.querySelectorAll(".checkin-btn").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const id = btn.dataset.id;
+          const currentlyCheckedIn = btn.dataset.checked === "1";
+
+          btn.disabled = true;
+
+          try {
+            const response = await fetch("/api/admin/reservation-checkin", {
+              method: "POST",
+              credentials: "same-origin",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                id,
+                checked_in: !currentlyCheckedIn,
+              }),
+            });
+
+            const data = await response.json().catch(() => ({}));
+
+            if (!response.ok || !data.ok) {
+              throw new Error(data.error || "Failed to update check-in status.");
+            }
+
+            const updated = data.reservation || {};
+            allReservations = allReservations.map((reservation) => {
+              if (reservation.id !== id) return reservation;
+
+              return {
+                ...reservation,
+                checked_in: updated.checked_in,
+                checked_in_at: updated.checked_in_at,
+              };
+            });
+
+            applyView();
+          } catch (error) {
+            alert(String(error?.message || error));
+            btn.disabled = false;
+          }
+        });
+      });
+
+      document.querySelectorAll(".edit-btn").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const id = btn.dataset.id;
+          const reservation = reservations.find(r => r.id === id);
+          if (!reservation) return;
+
+          const first_name = prompt("First name:", reservation.first_name);
+          if (first_name === null) return;
+
+          const last_name = prompt("Last name:", reservation.last_name);
+          if (last_name === null) return;
+
+          const phone = prompt("Phone number:", reservation.phone);
+          if (phone === null) return;
+
+          const bookingDate = prompt("Reservation date (YYYY-MM-DD):", reservation.booking_date || "");
+          if (bookingDate === null) return;
+
+          const normalizedBookingDate = bookingDate.trim();
+          if (!/^\d{4}-\d{2}-\d{2}$/.test(normalizedBookingDate)) {
+            alert("Reservation date must use YYYY-MM-DD format.");
+            return;
+          }
+
+          const bookingTime = prompt("Reservation time (HH:MM):", reservation.booking_time || "");
+          if (bookingTime === null) return;
+
+          const normalizedBookingTime = bookingTime.trim();
+          if (!/^([01]\d|2[0-3]):(00|15|30|45)$/.test(normalizedBookingTime)) {
+            alert("Reservation time must use HH:MM format with 15-minute increments.");
+            return;
+          }
+
+          const guestsInput = prompt("Enter guest count:", reservation.guests);
+          if (guestsInput === null) return;
+
+          const guests = Number(guestsInput);
+          if (!Number.isInteger(guests) || guests < 1 || guests > 22) {
+            alert("Guest count must be a whole number from 1 to 22.");
+            return;
+          }
+          const tableNumber = prompt("Table number:", reservation.table_number || "");
+          if (tableNumber === null) return;
+
+          const statusInput = prompt(
+            "Enter status:\npending_payment, confirmed, payment_failed, cancelled, completed, no_show",
+            reservation.status
+          );
+          if (statusInput === null) return;
+
+          const status = statusInput.trim();
+
+          const response = await fetch("/api/admin/reservation-update", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              id,
+              first_name: first_name.trim(),
+              last_name: last_name.trim(),
+              phone: phone.trim(),
+              booking_date: normalizedBookingDate,
+              booking_time: normalizedBookingTime,
+              guests,
+              table_number: tableNumber.trim(),
+              status,
+            }),
+          });
+
+          const data = await response.json();
+
+          if (!response.ok || !data.ok) {
+            alert(data.error || "Failed to update reservation.");
+            return;
+          }
+
+          alert("Reservation updated.");
+          loadReservations();
+        });
+      });
+
+      document.querySelectorAll(".delete-btn").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const id = btn.dataset.id;
+
+          const confirmed = confirm("Are you sure you want to delete this reservation?");
+          if (!confirmed) return;
+
+          const response = await fetch("/api/admin/reservation-delete", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ id }),
+          });
+
+          const data = await response.json();
+
+          if (!response.ok || !data.ok) {
+            alert(data.error || "Failed to delete reservation.");
+            return;
+          }
+
+          alert("Reservation deleted.");
+          loadReservations();
+        });
+      });
+    }
+
+    async function loadReservations() {
+      bodyEl.innerHTML = `
+        <tr>
+          <td colspan="9" class="px-4 py-6 text-center text-white/50">
+            Loading...
+          </td>
+        </tr>
+      `;
+
+      try {
+        const response = await fetch(`/api/admin/reservations`, {
+          credentials: "same-origin",
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.ok) {
+          throw new Error(data.error || "Failed to load reservations.");
+        }
+
+        allReservations = Array.isArray(data.reservations) ? data.reservations.slice() : [];
+        applyView();
+      } catch (error) {
+        bodyEl.innerHTML = `
+          <tr>
+            <td colspan="9" class="px-4 py-6 text-center text-red-300">
+              Failed to load reservations.
+            </td>
+          </tr>
+        `;
+      }
+      const btnCustomReservation = document.getElementById("btn-custom-reservation");
+const customReservationModal = document.getElementById("custom-reservation-modal");
+const btnCustomClose = document.getElementById("btn-custom-close");
+const customReservationStatus = document.getElementById("custom-reservation-status");
+
+const customGuestsInput = document.getElementById("custom-guests");
+const customFullNameInput = document.getElementById("custom-full-name");
+const customPhoneInput = document.getElementById("custom-phone");
+const customRequestsInput = document.getElementById("custom-requests");
+
+const customDatesWrap = document.getElementById("custom-dates-wrap");
+const customTimesWrap = document.getElementById("custom-times-wrap");
+const customSelectedDate = document.getElementById("custom-selected-date");
+const customSelectedTime = document.getElementById("custom-selected-time");
+const customCalendarTitle = document.getElementById("custom-calendar-title");
+const customCalendarPrev = document.getElementById("custom-calendar-prev");
+const customCalendarNext = document.getElementById("custom-calendar-next");
+const btnCustomCreate = document.getElementById("btn-custom-create");
+
+const customReservationState = {
+  guests: null,
+  date: "",
+  time: "",
+  dates: [],
+  times: [],
+  loadingDates: false,
+  loadingTimes: false,
+  creating: false,
+};
+
+let customGuestsTimer = null;
+let customCalendarCursor = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+
+function formatAdminUiDate(dateStr) {
+  const date = new Date(`${dateStr}T00:00:00`);
+  return date.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    weekday: "short",
+  });
+}
+
+
+function normalizeCustomIsoDate(value) {
+  const raw = String(value || "").trim();
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    return raw;
+  }
+
+  const parsed = new Date(raw);
+  if (Number.isNaN(parsed.getTime())) {
+    return "";
+  }
+
+  const year = parsed.getFullYear();
+  const month = String(parsed.getMonth() + 1).padStart(2, "0");
+  const day = String(parsed.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function setCustomStatus(type, message) {
+  customReservationStatus.classList.remove("hidden");
+  customReservationStatus.textContent = message;
+
+  if (type === "error") {
+    customReservationStatus.className = "rounded-lg border px-4 py-3 text-sm mb-5 border-red-400/30 bg-red-500/10 text-red-300";
+    return;
+  }
+
+  if (type === "success") {
+    customReservationStatus.className = "rounded-lg border px-4 py-3 text-sm mb-5 border-green-400/30 bg-green-500/10 text-green-300";
+    return;
+  }
+
+  customReservationStatus.className = "rounded-lg border px-4 py-3 text-sm mb-5 border-white/20 bg-white/5 text-white/80";
+}
+
+function clearCustomStatus() {
+  customReservationStatus.classList.add("hidden");
+  customReservationStatus.textContent = "";
+}
+
+function resetCustomReservationState() {
+  customReservationState.guests = null;
+  customReservationState.date = "";
+  customReservationState.time = "";
+  customCalendarCursor = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  customReservationState.dates = [];
+  customReservationState.times = [];
+  customReservationState.loadingDates = false;
+  customReservationState.loadingTimes = false;
+  customReservationState.creating = false;
+
+  customGuestsInput.value = "";
+  customFullNameInput.value = "";
+  customPhoneInput.value = "";
+  customRequestsInput.value = "";
+
+  customSelectedDate.textContent = "No date selected";
+  customSelectedTime.textContent = "No time selected";
+
+  clearCustomStatus();
+  renderCustomDates();
+  renderCustomTimes();
+  updateCustomCreateButton();
+}
+
+function openCustomReservationModal() {
+  resetCustomReservationState();
+  customReservationModal.classList.remove("hidden");
+  customReservationModal.classList.add("flex");
+}
+
+function closeCustomReservationModal() {
+  customReservationModal.classList.add("hidden");
+  customReservationModal.classList.remove("flex");
+}
+
+function updateCustomCreateButton() {
+  const ready =
+    Number.isInteger(customReservationState.guests) &&
+    customReservationState.guests >= 1 &&
+    customReservationState.guests <= 22 &&
+    customReservationState.date &&
+    customReservationState.time &&
+    customFullNameInput.value.trim() &&
+    !customReservationState.creating;
+
+  btnCustomCreate.disabled = !ready;
+}
+function startOfMonth(date) {
+  return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+function parseLocalDate(dateStr) {
+  const [year, month, day] = String(dateStr).split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
+function formatIsoDateLocal(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+const customMonthNames = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"
+];
+
+function renderCustomDates() {
+  if (!Number.isInteger(customReservationState.guests)) {
+    customCalendarTitle.textContent = "";
+    customCalendarPrev.disabled = true;
+    customCalendarNext.disabled = true;
+    customDatesWrap.innerHTML = `
+      <div class="text-white/50 text-sm">
+        Enter the guest count first.
+      </div>
+    `;
+    return;
+  }
+
+  if (customReservationState.loadingDates) {
+    customCalendarTitle.textContent = "";
+    customCalendarPrev.disabled = true;
+    customCalendarNext.disabled = true;
+    customDatesWrap.innerHTML = `
+      <div class="text-white/60 text-sm">
+        Loading available dates...
+      </div>
+    `;
+    return;
+  }
+
+  if (!customReservationState.dates.length) {
+    customCalendarTitle.textContent = "";
+    customCalendarPrev.disabled = true;
+    customCalendarNext.disabled = true;
+    customDatesWrap.innerHTML = `
+      <div class="text-white/50 text-sm">
+        No dates available for this guest count.
+      </div>
+    `;
+    return;
+  }
+
+  const datesMap = new Map(customReservationState.dates.map((item) => [item.date, item]));
+  const firstAvailableDate = parseLocalDate(customReservationState.dates[0].date);
+  const lastAvailableDate = parseLocalDate(customReservationState.dates[customReservationState.dates.length - 1].date);
+
+  const minMonth = startOfMonth(firstAvailableDate);
+  const maxMonth = startOfMonth(lastAvailableDate);
+
+  const currentMonth = customCalendarCursor.getMonth();
+  const currentYear = customCalendarCursor.getFullYear();
+
+  customCalendarTitle.textContent = `${customMonthNames[currentMonth]} ${currentYear}`;
+
+  customCalendarPrev.disabled =
+    customCalendarCursor.getFullYear() === minMonth.getFullYear() &&
+    customCalendarCursor.getMonth() === minMonth.getMonth();
+
+  customCalendarNext.disabled =
+    customCalendarCursor.getFullYear() === maxMonth.getFullYear() &&
+    customCalendarCursor.getMonth() === maxMonth.getMonth();
+
+  const firstDay = new Date(currentYear, currentMonth, 1);
+  const lastDay = new Date(currentYear, currentMonth + 1, 0);
+
+  let firstWeekday = firstDay.getDay();
+  if (firstWeekday === 0) firstWeekday = 7;
+
+  const cells = [];
+
+  for (let i = 1; i < firstWeekday; i += 1) {
+    cells.push(`<div></div>`);
+  }
+
+  for (let day = 1; day <= lastDay.getDate(); day += 1) {
+    const dateObj = new Date(currentYear, currentMonth, day);
+    const iso = formatIsoDateLocal(dateObj);
+    const item = datesMap.get(iso);
+    const selected = customReservationState.date === iso;
+    const disabled = !item || !item.available;
+
+    cells.push(`
+      <button
+        type="button"
+        class="custom-date-btn min-h-[46px] rounded-lg border text-sm transition
+          ${disabled
+            ? "bg-white/5 border-white/10 text-white/25 cursor-not-allowed"
+            : selected
+              ? "bg-[#D0842F] border-[#D0842F] text-white"
+              : "bg-white/10 border-white/10 text-white hover:bg-white/15"}"
+        data-date="${escapeHtml(iso)}"
+        ${disabled ? "disabled" : ""}
+      >
+        ${day}
+      </button>
+    `);
+  }
+
+  customDatesWrap.innerHTML = `
+    <div class="grid grid-cols-7 gap-2">
+      ${cells.join("")}
+    </div>
+  `;
+
+  document.querySelectorAll(".custom-date-btn").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const date = button.dataset.date || "";
+      customReservationState.date = date;
+      customReservationState.time = "";
+      customSelectedDate.textContent = formatAdminUiDate(date);
+      customSelectedTime.textContent = "No time selected";
+      renderCustomDates();
+      renderCustomTimes();
+      updateCustomCreateButton();
+      await loadCustomTimesForDate(date);
+    });
+  });
+}
+
+
+
+customCalendarPrev.addEventListener("click", () => {
+  customCalendarCursor = new Date(
+    customCalendarCursor.getFullYear(),
+    customCalendarCursor.getMonth() - 1,
+    1
+  );
+  renderCustomDates();
+});
+
+customCalendarNext.addEventListener("click", () => {
+  customCalendarCursor = new Date(
+    customCalendarCursor.getFullYear(),
+    customCalendarCursor.getMonth() + 1,
+    1
+  );
+  renderCustomDates();
+});
+
+
+
+
+function renderCustomTimes() {
+  if (!customReservationState.date) {
+    customTimesWrap.innerHTML = `
+      <div class="text-white/50 text-sm">
+        Pick a date first.
+      </div>
+    `;
+    return;
+  }
+
+  if (customReservationState.loadingTimes) {
+    customTimesWrap.innerHTML = `
+      <div class="text-white/60 text-sm">
+        Loading available times...
+      </div>
+    `;
+    return;
+  }
+
+  if (!customReservationState.times.length) {
+    customTimesWrap.innerHTML = `
+      <div class="text-white/50 text-sm">
+        No times available for the selected date.
+      </div>
+    `;
+    return;
+  }
+
+  customTimesWrap.innerHTML = `
+    <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2">
+      ${customReservationState.times.map((item) => {
+        const selected = customReservationState.time === item.time;
+        const disabled = !item.available;
+        const secondary =
+          !item.available && item.reason === "min_advance"
+            ? "Too soon"
+            : !item.available
+              ? "Full"
+              : "Available";
+
+        return `
+          <button
+            type="button"
+            class="custom-time-btn px-3 py-3 rounded-lg border text-left transition
+              ${disabled
+                ? "bg-white/5 border-white/10 text-white/25 cursor-not-allowed"
+                : selected
+                  ? "bg-[#D0842F] border-[#D0842F] text-white"
+                  : "bg-white/10 border-white/10 text-white hover:bg-white/15"}"
+            data-time="${escapeHtml(item.time)}"
+            ${disabled ? "disabled" : ""}
+          >
+            <div class="font-medium">${escapeHtml(item.time)}</div>
+            <div class="text-xs mt-1 ${disabled ? "text-white/25" : "text-white/60"}">${escapeHtml(secondary)}</div>
+          </button>
+        `;
+      }).join("")}
+    </div>
+  `;
+
+  document.querySelectorAll(".custom-time-btn").forEach((button) => {
+    button.addEventListener("click", () => {
+      const time = button.dataset.time || "";
+      customReservationState.time = time;
+      customSelectedTime.textContent = time;
+      renderCustomTimes();
+      updateCustomCreateButton();
+    });
+  });
+}
+
+async function loadCustomDates() {
+  if (!Number.isInteger(customReservationState.guests) || customReservationState.guests < 1 || customReservationState.guests > 22) {
+    customReservationState.dates = [];
+    customReservationState.times = [];
+    customReservationState.date = "";
+    customReservationState.time = "";
+    customSelectedDate.textContent = "No date selected";
+    customSelectedTime.textContent = "No time selected";
+    renderCustomDates();
+    renderCustomTimes();
+    updateCustomCreateButton();
+    return;
+  }
+
+  customReservationState.loadingDates = true;
+  customReservationState.dates = [];
+  customReservationState.times = [];
+  customReservationState.date = "";
+  customReservationState.time = "";
+  customSelectedDate.textContent = "No date selected";
+  customSelectedTime.textContent = "No time selected";
+  clearCustomStatus();
+  renderCustomDates();
+  renderCustomTimes();
+  updateCustomCreateButton();
+
+  try {
+    const response = await fetch(
+      `/api/admin/custom-reservation-availability?guests=${encodeURIComponent(customReservationState.guests)}`,
+      {
+        credentials: "same-origin",
+      }
+    );
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok || !data.ok) {
+      throw new Error(data.error || "Failed to load dates.");
+    }
+
+    customReservationState.dates = Array.isArray(data.dates) ? data.dates : [];
+
+if (customReservationState.dates.length) {
+  const firstDate = parseLocalDate(customReservationState.dates[0].date);
+  customCalendarCursor = new Date(firstDate.getFullYear(), firstDate.getMonth(), 1);
+}
+  } catch (error) {
+    customReservationState.dates = [];
+    setCustomStatus("error", String(error?.message || error));
+  } finally {
+    customReservationState.loadingDates = false;
+    renderCustomDates();
+    renderCustomTimes();
+    updateCustomCreateButton();
+  }
+}
+
+async function loadCustomTimesForDate(date) {
+  if (!date) return;
+
+  customReservationState.loadingTimes = true;
+  customReservationState.times = [];
+  clearCustomStatus();
+  renderCustomTimes();
+  updateCustomCreateButton();
+
+  try {
+    const response = await fetch(
+      `/api/admin/custom-reservation-availability?guests=${encodeURIComponent(customReservationState.guests)}&date=${encodeURIComponent(date)}`,
+      {
+        credentials: "same-origin",
+      }
+    );
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok || !data.ok) {
+      throw new Error(data.error || "Failed to load times.");
+    }
+
+    customReservationState.times = Array.isArray(data.slots) ? data.slots : [];
+  } catch (error) {
+    customReservationState.times = [];
+    setCustomStatus("error", String(error?.message || error));
+  } finally {
+    customReservationState.loadingTimes = false;
+    renderCustomTimes();
+    updateCustomCreateButton();
+  }
+}
+
+btnCustomReservation.addEventListener("click", openCustomReservationModal);
+btnCustomClose.addEventListener("click", closeCustomReservationModal);
+
+customReservationModal.addEventListener("click", (event) => {
+  if (event.target === customReservationModal) {
+    closeCustomReservationModal();
+  }
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !customReservationModal.classList.contains("hidden")) {
+    closeCustomReservationModal();
+  }
+});
+
+customGuestsInput.addEventListener("input", () => {
+  clearTimeout(customGuestsTimer);
+
+  const value = Number(customGuestsInput.value);
+  customReservationState.guests = Number.isInteger(value) ? value : null;
+
+  updateCustomCreateButton();
+
+  customGuestsTimer = setTimeout(() => {
+    loadCustomDates();
+  }, 250);
+});
+
+customFullNameInput.addEventListener("input", updateCustomCreateButton);
+customPhoneInput.addEventListener("input", updateCustomCreateButton);
+customRequestsInput.addEventListener("input", updateCustomCreateButton);
+
+btnCustomCreate.addEventListener("click", async () => {
+  if (btnCustomCreate.disabled) return;
+
+  const normalizedDate = normalizeCustomIsoDate(customReservationState.date);
+
+  if (!normalizedDate) {
+    setCustomStatus("error", "Invalid date.");
+    return;
+  }
+
+  customReservationState.creating = true;
+  updateCustomCreateButton();
+  clearCustomStatus();
+
+  try {
+    const response = await fetch("/api/admin/custom-reservation-create", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        full_name: customFullNameInput.value.trim(),
+        phone: customPhoneInput.value.trim(),
+        requests: customRequestsInput.value.trim(),
+        guests: customReservationState.guests,
+        booking_date: normalizedDate,
+        booking_time: customReservationState.time,
+      }),
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok || !data.ok) {
+      throw new Error(data.error || "Failed to create reservation.");
+    }
+
+    setCustomStatus("success", "Custom reservation created.");
+    await loadReservations();
+
+    setTimeout(() => {
+      closeCustomReservationModal();
+    }, 500);
+  } catch (error) {
+    setCustomStatus("error", String(error?.message || error));
+  } finally {
+    customReservationState.creating = false;
+    updateCustomCreateButton();
+  }
+});
+}
+
+    quickTodayPaid.addEventListener("click", () => {
+      currentQuickFilter = "today_paid";
+      applyView();
+    });
+
+    quickTodayAll.addEventListener("click", () => {
+      currentQuickFilter = "today_all";
+      applyView();
+    });
+
+    quickUpcomingPaid.addEventListener("click", () => {
+      currentQuickFilter = "upcoming_paid";
+      applyView();
+    });
+
+    quickAll.addEventListener("click", () => {
+      currentQuickFilter = "all";
+      applyView();
+    });
+
+    sortAscBtn.addEventListener("click", () => {
+      currentSort = "asc";
+      applyView();
+    });
+
+    sortDescBtn.addEventListener("click", () => {
+      currentSort = "desc";
+      applyView();
+    });
+
+    btnRefresh.addEventListener("click", loadReservations);
+    filterDate.addEventListener("change", applyView);
+    filterStatus.addEventListener("change", applyView);
+
+    btnLogout.addEventListener("click", async () => {
+      await fetch("/api/admin/logout", {
+        method: "POST",
+        credentials: "same-origin",
+      });
+      window.location.href = "/admin/login.html";
+    });
+
+    loadReservations();
+  </script>
+
+
+<div
+  id="custom-reservation-modal"
+  class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 p-4"
+>
+  <div class="w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-2xl border border-white/10 bg-[#0f0f0f] p-5 md:p-6">
+    <div class="flex items-start justify-between gap-4 mb-5">
+      <div>
+        <p class="text-white/60 text-xs uppercase tracking-[0.2em]">Reserve</p>
+        <h2 class="text-2xl md:text-3xl font-semibold mt-2">Create custom reservation</h2>
+        <p class="text-white/60 mt-2">
+          Enter the guest count first. Unavailable dates and times will be greyed out automatically.
+        </p>
+      </div>
+
+      <button
+        id="btn-custom-close"
+        class="px-3 py-2 rounded-md bg-white/10 text-white hover:bg-white/20 transition"
+        type="button"
+      >
+        Close
+      </button>
+    </div>
+
+    <div id="custom-reservation-status" class="hidden rounded-lg border px-4 py-3 text-sm mb-5"></div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-[320px_1fr] gap-6">
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm text-white/70 mb-2">Number of guests</label>
+          <input
+            id="custom-guests"
+            type="number"
+            min="1"
+            max="22"
+            step="1"
+            class="w-full px-3 py-2 rounded-md bg-white text-black"
+            placeholder="1 to 22"
+          />
+          <p class="text-white/45 text-xs mt-2">Up to 22 guests. Same 1-hour minimum and 2-hour block rules apply.</p>
+        </div>
+
+        <div>
+          <label class="block text-sm text-white/70 mb-2">Guest name</label>
+          <input
+            id="custom-full-name"
+            type="text"
+            class="w-full px-3 py-2 rounded-md bg-white text-black"
+            placeholder="Full name"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm text-white/70 mb-2">Phone</label>
+          <input
+            id="custom-phone"
+            type="text"
+            class="w-full px-3 py-2 rounded-md bg-white text-black"
+            placeholder="Optional"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm text-white/70 mb-2">Notes</label>
+          <textarea
+            id="custom-requests"
+            rows="4"
+            class="w-full px-3 py-2 rounded-md bg-white text-black"
+            placeholder="Optional notes"
+          ></textarea>
+        </div>
+
+        <button
+          id="btn-custom-create"
+          type="button"
+          class="w-full px-4 py-3 rounded-md bg-[#D0842F] text-white hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled
+        >
+          Create reservation
+        </button>
+      </div>
+
+      <div class="space-y-6">
+        <section class="rounded-xl border border-white/10 bg-white/5 p-4">
+  <div class="flex items-center justify-between gap-3 mb-4">
+    <h3 class="text-lg font-semibold">1. Pick an available date</h3>
+    <span id="custom-selected-date" class="text-sm text-white/60">No date selected</span>
+  </div>
+
+  <div class="flex items-center justify-between gap-3 mb-4">
+    <button
+      id="custom-calendar-prev"
+      type="button"
+      class="w-10 h-10 rounded-lg bg-white/10 text-white hover:bg-white/15 transition disabled:opacity-30 disabled:cursor-not-allowed"
+    >
+      &#8249;
+    </button>
+
+    <div id="custom-calendar-title" class="text-sm font-medium text-white tracking-[0.12em] uppercase text-center"></div>
+
+    <button
+      id="custom-calendar-next"
+      type="button"
+      class="w-10 h-10 rounded-lg bg-white/10 text-white hover:bg-white/15 transition disabled:opacity-30 disabled:cursor-not-allowed"
+    >
+      &#8250;
+    </button>
+  </div>
+
+  <div class="grid grid-cols-7 gap-2 mb-2 text-xs text-white/45 text-center">
+    <div>Mon</div>
+    <div>Tue</div>
+    <div>Wed</div>
+    <div>Thu</div>
+    <div>Fri</div>
+    <div>Sat</div>
+    <div>Sun</div>
+  </div>
+
+  <div id="custom-dates-wrap" class="min-h-[280px]"></div>
+</section>
+
+        <section class="rounded-xl border border-white/10 bg-white/5 p-4">
+          <div class="flex items-center justify-between gap-3 mb-4">
+            <h3 class="text-lg font-semibold">2. Pick an available time</h3>
+            <span id="custom-selected-time" class="text-sm text-white/60">No time selected</span>
+          </div>
+          <div id="custom-times-wrap" class="min-h-[96px]"></div>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
