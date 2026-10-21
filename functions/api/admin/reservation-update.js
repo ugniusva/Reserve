@@ -9,6 +9,7 @@ import {
   CUSTOM_MAX_GUESTS,
   canFitCustomReservation,
 } from "./_custom-reservation.js";
+import { createUndoToken, snapshotGuard } from "./_undo.js";
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -78,16 +79,7 @@ export async function onRequestPost(context) {
     }
 
     const current = await DB.prepare(`
-      SELECT
-        id,
-        first_name,
-        last_name,
-        phone,
-        booking_date,
-        booking_time,
-        guests,
-        table_number,
-        status
+      SELECT *
       FROM reservations
       WHERE id = ?
       LIMIT 1
@@ -192,6 +184,9 @@ export async function onRequestPost(context) {
     }
 
     const updatedAt = new Date().toISOString();
+    const after = { ...current, first_name: firstName, last_name: lastName, phone, booking_date: bookingDate, booking_time: bookingTime, guests, table_number: tableNumber || null, status, updated_at: updatedAt };
+    const undo = body.undo === true ? await createUndoToken(context.env, current, after) : null;
+    const guard = undo ? snapshotGuard(current) : { sql: "id = ?", values: [id] };
 
     const result = await DB.prepare(`
       UPDATE reservations
@@ -205,7 +200,7 @@ export async function onRequestPost(context) {
         table_number = ?,
         status = ?,
         updated_at = ?
-      WHERE id = ?
+      WHERE ${guard.sql}
     `).bind(
       firstName,
       lastName,
@@ -216,10 +211,11 @@ export async function onRequestPost(context) {
       tableNumber || null,
       status,
       updatedAt,
-      id
+      ...guard.values
     ).run();
 
-    return json({ ok: true, result });
+    if (undo && Number(result.meta?.changes) !== 1) return json({ ok: false, error: "This reservation changed. Refresh it before saving." }, 409);
+    return json({ ok: true, result, ...(undo ? { undo } : {}) });
   } catch (error) {
     return json({
       ok: false,

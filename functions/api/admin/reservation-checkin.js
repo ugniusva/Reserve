@@ -1,3 +1,5 @@
+import { createUndoToken, snapshotGuard } from "./_undo.js";
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -45,7 +47,7 @@ export async function onRequestPost(context) {
     }
 
     const current = await DB.prepare(`
-      SELECT id
+      SELECT *
       FROM reservations
       WHERE id = ?
       LIMIT 1
@@ -58,6 +60,9 @@ export async function onRequestPost(context) {
     const updatedAt = new Date().toISOString();
     const checkedInAt = checkedIn ? updatedAt : null;
     const checkedInValue = checkedIn ? 1 : 0;
+    const after = { ...current, checked_in: checkedInValue, checked_in_at: checkedInAt, updated_at: updatedAt };
+    const undo = body.undo === true ? await createUndoToken(context.env, current, after) : null;
+    const guard = undo ? snapshotGuard(current) : { sql: "id = ?", values: [id] };
 
     const result = await DB.prepare(`
       UPDATE reservations
@@ -65,13 +70,14 @@ export async function onRequestPost(context) {
         checked_in = ?,
         checked_in_at = ?,
         updated_at = ?
-      WHERE id = ?
+      WHERE ${guard.sql}
     `).bind(
       checkedInValue,
       checkedInAt,
       updatedAt,
-      id
+      ...guard.values
     ).run();
+    if (undo && Number(result.meta?.changes) !== 1) return json({ ok: false, error: "This reservation changed. Refresh it before checking in." }, 409);
 
     return json({
       ok: true,
@@ -82,6 +88,7 @@ export async function onRequestPost(context) {
         updated_at: updatedAt,
       },
       result,
+      ...(undo ? { undo } : {}),
     });
   } catch (error) {
     return json({

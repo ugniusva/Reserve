@@ -2,12 +2,14 @@ import {
   CUSTOM_MAX_GUESTS,
   canFitCustomReservation,
 } from "./_custom-reservation.js";
+import { adminAuthenticated, createUndoToken } from "./_undo.js";
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
     headers: {
       "Content-Type": "application/json",
+      "Cache-Control": "no-store",
     },
   });
 }
@@ -53,6 +55,7 @@ export async function onRequestPost(context) {
   try {
     const { DB } = context.env;
     const body = await context.request.json();
+    if (body.undo === true && !adminAuthenticated(context.request)) return json({ ok: false, error: "Unauthorized" }, 401);
 
     const fullName = (body.full_name || "").trim();
     const phone = (body.phone || "").trim();
@@ -95,8 +98,10 @@ export async function onRequestPost(context) {
     const { firstName, lastName } = splitName(fullName);
     const id = crypto.randomUUID();
     const createdAt = new Date().toISOString();
+    // Check encryption/configuration and payload size before creating an undo-enabled booking.
+    if (body.undo === true) await createUndoToken(context.env, null, { id, requests, first_name: firstName, last_name: lastName, phone });
 
-    await DB.prepare(`
+    const insert = DB.prepare(`
       INSERT INTO reservations (
         id,
         first_name,
@@ -121,6 +126,7 @@ export async function onRequestPost(context) {
         created_at,
         updated_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ${body.undo === true ? "RETURNING *" : ""}
     `).bind(
       id,
       firstName,
@@ -144,12 +150,21 @@ export async function onRequestPost(context) {
       null,
       createdAt,
       createdAt
-    ).run();
+    );
+    let undo = null;
+    if (body.undo === true) {
+      const created = await insert.first();
+      try { undo = await createUndoToken(context.env, null, created); }
+      catch (error) { console.error("Reservation created but undo token unavailable", id); }
+    } else {
+      await insert.run();
+    }
 
     return json({
       ok: true,
       reservationId: id,
       message: "Custom reservation created.",
+      ...(body.undo === true ? { undo, undoUnavailable: !undo } : {}),
     });
   } catch (error) {
     return json({

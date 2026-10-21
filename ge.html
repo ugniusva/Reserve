@@ -377,6 +377,8 @@
         filter: brightness(0) invert(1);
       }
     </style>
+    <style>.hero-video::-webkit-media-controls-start-playback-button { display: none !important; }</style>
+    <script src="background-video.js" defer></script>
   </head>
  
   <body class="bg-[#D0842F] text-[#1a1a1a]">
@@ -454,8 +456,13 @@
         muted
         loop
         playsinline
+        webkit-playsinline
+        preload="auto"
+        aria-hidden="true"
+        tabindex="-1"
         poster="images/hero-poster.jpg"
       >
+        <source src="videos/hero.mp4" type="video/mp4" />
         <source src="videos/hero.webm" type="video/webm" />
       </video>
  
@@ -758,21 +765,6 @@
       logoLink.addEventListener("click", (e) => {
         e.preventDefault();
         window.scrollTo({ top: 0, behavior: "smooth" });
-      });
- 
-      const video = document.getElementById("hero-video");
-      const toggleBtn = document.getElementById("video-toggle");
-      let isPaused = false;
- 
-      toggleBtn.addEventListener("click", () => {
-        if (isPaused) {
-          video.play();
-          toggleBtn.textContent = "❚❚";
-        } else {
-          video.pause();
-          toggleBtn.textContent = "►";
-        }
-        isPaused = !isPaused;
       });
  
       const revealEls = Array.from(document.querySelectorAll(".reveal"));
