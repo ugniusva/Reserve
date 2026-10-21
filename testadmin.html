@@ -135,6 +135,15 @@
     .full{grid-column:1/-1}
     fieldset{border:0;padding:0;margin:0;min-width:0}
     .field-note{font-size:12px;color:var(--muted);margin-top:5px}
+    .date-trigger{width:100%;justify-content:space-between;min-height:43px;padding:9px 11px;font-weight:400;text-align:left}
+    .date-calendar{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:12px 0}
+    .calendar-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+    .calendar-heading strong{font-size:15px}
+    .calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+    .calendar-weekday{text-align:center;font-size:11px;color:var(--muted);padding:4px 0}
+    .calendar-day{width:100%;min-width:0;min-height:38px;padding:5px;border-color:transparent;font-size:14px;font-variant-numeric:tabular-nums}
+    .calendar-day:disabled{opacity:.3;background:transparent}
+    .calendar-day[aria-pressed="true"]{background:#d0842f!important;border-color:#d0842f!important;color:#20180f!important}
     .form-error{background:var(--red-light);color:var(--red);padding:11px 13px;border-radius:4px;margin-bottom:18px;font-size:14px}
     .record-details{border-top:1px solid var(--line);margin-top:24px;padding-top:17px}
     summary{cursor:pointer;font-size:13px;font-weight:700;color:var(--muted)}
@@ -318,7 +327,7 @@
           <div class="full"><label for="edit-status">Booking status</label><select id="edit-status" name="status"><option value="confirmed">Confirmed</option><option value="completed">Completed</option><option value="pending_payment">Pending payment</option><option value="payment_failed">Payment failed</option><option value="cancelled">Cancelled</option><option value="no_show">No show</option></select></div>
         </div></fieldset>
         <div id="edit-notes" class="static-notes" hidden></div>
-        <details class="record-details"><summary>Payment &amp; record details</summary><dl id="record-details"></dl><button type="button" class="delete-record" id="open-delete"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg>Delete reservation</button></details>
+        <details class="record-details" open><summary>Payment &amp; record details</summary><dl id="record-details"></dl><button type="button" class="delete-record" id="open-delete"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg>Delete reservation</button></details>
       </div>
       <div class="dialog-actions"><button type="button" data-close>Cancel</button><button class="primary" id="edit-save" type="submit">Save changes</button></div>
     </form>
@@ -339,7 +348,12 @@
           <div><label for="create-phone">Phone <span class="muted">(optional)</span></label><input id="create-phone" name="phone" type="tel" autocomplete="off"></div>
           <div><label for="create-table">Table <span class="muted">(optional)</span></label><input id="create-table" name="table_number" autocomplete="off"></div>
           <div><label for="create-guests">Guests</label><input id="create-guests" name="guests" type="number" min="1" max="22" step="1" value="2" required></div>
-          <div><label for="create-date">Available date</label><select id="create-date" name="booking_date" required disabled><option value="">Loading dates...</option></select></div>
+          <div><label id="create-date-heading" for="create-date-trigger">Available date</label><input id="create-date" name="booking_date" type="hidden"><button id="create-date-trigger" class="date-trigger" type="button" aria-labelledby="create-date-heading create-date-label" aria-expanded="false" aria-controls="create-calendar" disabled><span id="create-date-label">Loading dates...</span><svg class="icon" aria-hidden="true"><use href="#i-calendar"/></svg></button></div>
+          <div id="create-calendar" class="date-calendar full" role="group" aria-labelledby="create-month" hidden>
+            <div class="calendar-heading"><button class="icon-button" id="create-month-prev" type="button" title="Previous month" aria-label="Previous month"><svg class="icon" aria-hidden="true"><use href="#i-left"/></svg></button><strong id="create-month" aria-live="polite"></strong><button class="icon-button" id="create-month-next" type="button" title="Next month" aria-label="Next month"><svg class="icon" aria-hidden="true"><use href="#i-right"/></svg></button></div>
+            <div class="calendar-grid" aria-hidden="true"><span class="calendar-weekday">Mon</span><span class="calendar-weekday">Tue</span><span class="calendar-weekday">Wed</span><span class="calendar-weekday">Thu</span><span class="calendar-weekday">Fri</span><span class="calendar-weekday">Sat</span><span class="calendar-weekday">Sun</span></div>
+            <div class="calendar-grid" id="create-calendar-days"></div>
+          </div>
           <div class="full"><label for="create-time">Available time</label><select id="create-time" name="booking_time" required disabled><option value="">Choose a date first</option></select></div>
           <div class="full"><label for="create-notes">Requests / notes <span class="muted">(optional)</span></label><textarea id="create-notes" name="requests" rows="3"></textarea></div>
         </div></fieldset>
@@ -369,6 +383,7 @@
     const state = {authenticated:false, reservations:[], view:'today', date:'', loading:false, busy:new Set(), session:0, load:0, availability:0, dates:[], slots:[], editing:null, tableId:null, deleteId:null};
     const dialogOpeners = new Map();
     const undoHistory = [];
+    let calendarMonth = '';
     let toastTimer, guestsTimer;
     const active = r => r.status === 'confirmed' || r.status === 'completed';
     const arrived = r => Number(r.checked_in) === 1;
@@ -436,7 +451,7 @@
       $('undo-description').textContent = ''; $('undo-note').textContent = '';
       $('rows').replaceChildren(); $('record-details').replaceChildren(); $('edit-notes').textContent = '';
       $('delete-name').textContent = ''; $('delete-booking').textContent = ''; $('table-guest').textContent = ''; $('edit-subtitle').textContent = '';
-      $('create-date').replaceChildren(); $('create-time').replaceChildren(); $('toast').hidden = true; $('toast-message').textContent = '';
+      $('create-date').value = ''; closeCalendar(); $('create-calendar-days').replaceChildren(); $('create-time').replaceChildren(); $('toast').hidden = true; $('toast-message').textContent = '';
       $('search').value = ''; $('status-filter').value = ''; $('arrival-filter').value = '';
       $('sort').value = 'asc'; $('toggle-filters').setAttribute('aria-expanded','false'); document.querySelector('.filters').classList.remove('expanded');
       ['count-bookings','count-guests','count-arrived','count-unassigned'].forEach(id => $(id).textContent = '0');
@@ -566,7 +581,7 @@
       $('edit-subtitle').textContent = `${dateLabel(r.booking_date)} / ${r.booking_time}`;
       $('edit-notes').textContent = r.requests ? `Guest requests: ${r.requests}` : '';
       $('edit-notes').hidden = !r.requests;
-      $('edit-dialog').querySelector('details').open = false;
+      $('edit-dialog').querySelector('details').open = true;
       const paidCreated = r.paid_at || r.callback_received_at || r.created_at;
       const source = r.paid_at ? 'Paid' : r.callback_received_at ? 'Callback' : 'Created';
       const details = [['Deposit',money(r)],['Payment status',paymentLabel(r)],['Paid / created',`${source}: ${stamp(paidCreated)}`],['Reservation date',dateLabel(r.booking_date)],['Reservation time',r.booking_time],['Checked in',arrived(r) ? stamp(r.checked_in_at) : 'No'],['Created',stamp(r.created_at)],['Last updated',stamp(r.updated_at)],['Record ID',r.id]];
@@ -638,37 +653,99 @@
     }
     $('edit-form').addEventListener('submit',event => saveExisting(event,'edit'));
     $('table-form').addEventListener('submit',event => saveExisting(event,'table'));
+    function closeCalendar() {
+      $('create-calendar').hidden = true;
+      $('create-date-trigger').setAttribute('aria-expanded','false');
+    }
+    function monthOffset(month, offset) {
+      const date = new Date(`${month}-01T12:00:00Z`);
+      date.setUTCMonth(date.getUTCMonth()+offset);
+      return date.toISOString().slice(0,7);
+    }
+    function renderCalendar(focusDate = '') {
+      if (!state.dates.length || !calendarMonth) return;
+      const [year,month] = calendarMonth.split('-').map(Number);
+      const first = new Date(Date.UTC(year,month-1,1));
+      const days = new Date(Date.UTC(year,month,0)).getUTCDate();
+      const offset = (first.getUTCDay()+6)%7;
+      const dates = new Map(state.dates.map(item => [item.date,item.available]));
+      const selected = $('create-date').value;
+      const focus = focusDate || (selected.startsWith(calendarMonth) ? selected : state.dates.find(item => item.available && item.date.startsWith(calendarMonth))?.date);
+      $('create-month').textContent = first.toLocaleDateString('en-GB',{month:'long',year:'numeric',timeZone:'UTC'});
+      $('create-month-prev').disabled = monthOffset(calendarMonth,-1) < state.dates[0].date.slice(0,7);
+      $('create-month-next').disabled = monthOffset(calendarMonth,1) > state.dates[state.dates.length-1].date.slice(0,7);
+      const cells = Array.from({length:offset},() => '<span aria-hidden="true"></span>');
+      for (let day=1; day<=days; day++) {
+        const iso = `${calendarMonth}-${String(day).padStart(2,'0')}`;
+        const available = dates.get(iso) === true;
+        cells.push(`<button type="button" class="calendar-day" data-date="${iso}" aria-label="${esc(dateLabel(iso,{weekday:'long'}))}${available ? '' : ' / Unavailable'}" aria-pressed="${iso === selected}" tabindex="${iso === focus ? '0' : '-1'}" ${available ? '' : 'disabled'}>${day}</button>`);
+      }
+      $('create-calendar-days').innerHTML = cells.join('');
+      if (focusDate) $('create-calendar-days').querySelector(`[data-date="${focusDate}"]`)?.focus();
+    }
+    $('create-date-trigger').addEventListener('click',() => {
+      if (!$('create-calendar').hidden) { closeCalendar(); return; }
+      calendarMonth = $('create-date').value.slice(0,7) || state.dates.find(item => item.available)?.date.slice(0,7) || '';
+      renderCalendar(); $('create-calendar').hidden = false; $('create-date-trigger').setAttribute('aria-expanded','true');
+      $('create-calendar-days').querySelector('[tabindex="0"]')?.focus();
+      $('create-calendar').scrollIntoView({block:'nearest'});
+    });
+    for (const [id,offset] of [['create-month-prev',-1],['create-month-next',1]]) {
+      $(id).addEventListener('click',() => { calendarMonth = monthOffset(calendarMonth,offset); renderCalendar(); });
+    }
+    $('create-calendar-days').addEventListener('click',event => {
+      const button = event.target.closest('button[data-date]');
+      if (!button || button.disabled || !state.dates.some(item => item.date === button.dataset.date && item.available)) return;
+      $('create-date').value = button.dataset.date;
+      $('create-date-label').textContent = dateLabel(button.dataset.date,{weekday:'short'});
+      closeCalendar(); $('create-date-trigger').focus(); loadTimes();
+    });
+    $('create-calendar').addEventListener('keydown',event => {
+      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeCalendar(); $('create-date-trigger').focus(); return; }
+      const button = event.target.closest('button[data-date]');
+      const step = {ArrowLeft:-1,ArrowRight:1,ArrowUp:-7,ArrowDown:7}[event.key];
+      if (!button || !step) return;
+      event.preventDefault();
+      let target = shiftDay(button.dataset.date,step);
+      const first = state.dates[0]?.date, last = state.dates[state.dates.length-1]?.date;
+      while (target >= first && target <= last) {
+        if (state.dates.some(item => item.date === target && item.available)) { calendarMonth = target.slice(0,7); renderCalendar(target); break; }
+        target = shiftDay(target,step);
+      }
+    });
     function invalidateAvailability() {
       state.availability++; state.dates = []; state.slots = [];
-      $('create-date').innerHTML = '<option value="">Loading dates...</option>'; $('create-date').disabled = true;
+      $('create-date').value = ''; $('create-date-label').textContent = 'Loading dates...'; $('create-date-trigger').disabled = true; closeCalendar();
       $('create-time').innerHTML = '<option value="">Choose a date first</option>'; $('create-time').disabled = true;
       $('create-save').disabled = true;
     }
     function updateCreateButton() {
       const validSlot = state.slots.some(slot => slot.time === $('create-time').value && slot.available);
-      $('create-save').disabled = $('create-dialog').dataset.busy === 'true' || !validSlot || $('create-date').disabled || $('create-time').disabled || !$('create-name').value.trim();
+      const validDate = state.dates.some(item => item.date === $('create-date').value && item.available);
+      $('create-save').disabled = $('create-dialog').dataset.busy === 'true' || !validSlot || !validDate || $('create-date-trigger').disabled || $('create-time').disabled || !$('create-name').value.trim();
     }
     async function loadDates() {
       const ticket = state.availability, guests = Number($('create-guests').value);
-      if (!Number.isInteger(guests) || guests < 1 || guests > 22) { $('create-date').innerHTML = '<option value="">Enter 1 to 22 guests</option>'; return; }
+      if (!Number.isInteger(guests) || guests < 1 || guests > 22) { $('create-date-label').textContent = 'Enter 1 to 22 guests'; return; }
       showError('create-error','');
       try {
         const data = await api(`custom-reservation-availability?guests=${guests}`);
         if (ticket !== state.availability || !$('create-dialog').open) return;
-        state.dates = Array.isArray(data.dates) ? data.dates : [];
-        $('create-date').innerHTML = '<option value="">Choose a date</option>' + state.dates.map(item => `<option value="${esc(item.date)}" ${item.available ? '' : 'disabled'}>${esc(dateLabel(item.date,{weekday:'short'}))}${item.available ? '' : ' / Unavailable'}</option>`).join('');
-        $('create-date').disabled = !state.dates.some(item => item.available);
-        if ($('create-date').disabled) { showError('create-error','No dates are available for this guest count.'); return; }
+        state.dates = (Array.isArray(data.dates) ? data.dates : []).slice().sort((a,b) => a.date.localeCompare(b.date));
+        $('create-date-trigger').disabled = !state.dates.some(item => item.available);
+        if ($('create-date-trigger').disabled) { $('create-date-label').textContent = 'No dates available'; showError('create-error','No dates are available for this guest count.'); return; }
         const preferred = state.dates.find(item => item.available && item.date === state.date) || state.dates.find(item => item.available);
         $('create-date').value = preferred.date;
+        $('create-date-label').textContent = dateLabel(preferred.date,{weekday:'short'});
+        calendarMonth = preferred.date.slice(0,7);
         await loadTimes();
-      } catch(error) { if (ticket === state.availability && state.authenticated) { showError('create-error',`${error.message} Change the guest count to retry.`); $('create-date').innerHTML = '<option value="">Dates unavailable</option>'; } }
+      } catch(error) { if (ticket === state.availability && state.authenticated) { showError('create-error',`${error.message} Change the guest count to retry.`); $('create-date-label').textContent = 'Dates unavailable'; } }
     }
     async function loadTimes() {
       const ticket = ++state.availability, date = $('create-date').value, guests = Number($('create-guests').value);
       state.slots = []; $('create-time').disabled = true; $('create-save').disabled = true;
       $('create-time').innerHTML = '<option value="">Loading times...</option>';
-      if (!date) { $('create-time').innerHTML = '<option value="">Choose a date first</option>'; return; }
+      if (!state.dates.some(item => item.date === date && item.available)) { $('create-time').innerHTML = '<option value="">Choose an available date first</option>'; return; }
       showError('create-error','');
       try {
         const data = await api(`custom-reservation-availability?guests=${guests}&date=${encodeURIComponent(date)}`);
@@ -686,7 +763,6 @@
       invalidateAvailability(); openDialog('create-dialog'); $('create-name').focus(); loadDates();
     });
     $('create-guests').addEventListener('input',() => { clearTimeout(guestsTimer); invalidateAvailability(); guestsTimer = setTimeout(loadDates,300); });
-    $('create-date').addEventListener('change',loadTimes);
     $('create-time').addEventListener('change',updateCreateButton);
     $('create-name').addEventListener('input',updateCreateButton);
     $('create-form').addEventListener('submit',async event => {
