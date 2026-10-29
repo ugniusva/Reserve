@@ -1,10 +1,6 @@
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
-export function adminAuthenticated(request) {
-  return (request.headers.get("Cookie") || "").includes("admin_auth=ok");
-}
-
 export function columnName(name) {
   if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name)) throw new Error("Invalid reservation column.");
   return `"${name}"`;

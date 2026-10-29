@@ -6,6 +6,12 @@ import {
   parseDateTime,
   canFitReservation,
 } from "./_availability.js";
+import {
+  CHECKOUT_TTL_MINUTES,
+  MAX_CHECKOUT_SETUP_MS,
+  CAPACITY_WRITE_ATTEMPTS,
+  readCapacitySnapshot,
+} from "./_capacity.js";
 
 const DEPOSIT_PER_PERSON = 50; // testing; later change to 50
 
@@ -96,12 +102,18 @@ async function getBogAccessToken(env) {
 
 async function createBogOrder({ env, request, reservation, amount }) {
   const accessToken = await getBogAccessToken(env);
-  const origin = new URL(request.url).origin;
+  const requestUrl = new URL(request.url);
+  const origin = requestUrl.origin;
+  // Preview pages opt in separately; both versions keep language-specific, same-origin returns.
+  const testReturn = requestUrl.searchParams.get("return_page") === "test";
+  const resultPrefix = testReturn ? "testreservation" : "reservation";
+  const resultSuffix = requestUrl.searchParams.get("lang") === "ka" ? "ge" : "";
   const buyerName = `${reservation.first_name || ""} ${reservation.last_name || ""}`.trim();
 
   const payload = {
     callback_url: `${origin}/api/bog/callback`,
     external_order_id: reservation.id,
+    ttl: CHECKOUT_TTL_MINUTES,
     purchase_units: {
       currency: "GEL",
       total_amount: amount,
@@ -116,8 +128,8 @@ async function createBogOrder({ env, request, reservation, amount }) {
       ],
     },
     redirect_urls: {
-      success: `${origin}/reservation-success.html?reservationId=${encodeURIComponent(reservation.id)}`,
-      fail: `${origin}/reservation-failed.html?reservationId=${encodeURIComponent(reservation.id)}`,
+      success: `${origin}/${resultPrefix}-success${resultSuffix}.html?reservationId=${encodeURIComponent(reservation.id)}`,
+      fail: `${origin}/${resultPrefix}-failed${resultSuffix}.html?reservationId=${encodeURIComponent(reservation.id)}`,
     },
     buyer: {
       full_name: buyerName || undefined,
@@ -159,6 +171,11 @@ async function createBogOrder({ env, request, reservation, amount }) {
 }
 
 export async function onRequestPost(context) {
+  return createReservation(context);
+}
+
+// Test mode is a server-only option; public request fields cannot change the price.
+export async function createReservation(context, { testBooking = false } = {}) {
   try {
     const { DB } = context.env;
     const body = await context.request.json().catch(() => null);
@@ -174,7 +191,7 @@ export async function onRequestPost(context) {
     const bookingDate = String(body.booking_date || "").trim();
     const bookingTime = String(body.booking_time || "").trim();
     const guests = Number(body.guests);
-    const requests = String(body.requests || "").trim();
+    const requests = (testBooking ? "TEST BOOKING - 1 GEL per person. " : "") + String(body.requests || "").trim();
 
     if (!firstName || !lastName || !email || !phone || !bookingDate || !bookingTime || !guests) {
       return json({ ok: false, error: "Missing required fields." }, 400);
@@ -209,88 +226,92 @@ export async function onRequestPost(context) {
       return json({ ok: false, error: "Invalid date/time." }, 400);
     }
 
-    const confirmedRows = await DB.prepare(`
-      SELECT id, booking_date, booking_time, guests, status
-      FROM reservations
-      WHERE booking_date = ?
-        AND status IN ('confirmed', 'completed')
-    `).bind(bookingDate).all();
-
-    const availability = canFitReservation({
-      dateStr: bookingDate,
-      timeStr: bookingTime,
-      guests,
-      reservations: confirmedRows.results || [],
-      now: new Date(),
-    });
-
-    if (!availability.available) {
-      return json(
-        {
-          ok: false,
-          error: availabilityReasonToMessage(availability.reason),
-        },
-        409
-      );
-    }
-
-    const depositAmount = guests * DEPOSIT_PER_PERSON;
+    const depositAmount = guests * (testBooking ? 1 : DEPOSIT_PER_PERSON);
 
     if (!Number.isFinite(depositAmount) || depositAmount <= 0) {
       return json({ ok: false, error: "Invalid deposit amount." }, 500);
     }
 
     const id = crypto.randomUUID();
-    const createdAt = new Date().toISOString();
-    const updatedAt = createdAt;
+    let createdAt;
+    let reserved = false;
 
-    await DB.prepare(`
-      INSERT INTO reservations (
+    for (let attempt = 0; attempt < CAPACITY_WRITE_ATTEMPTS; attempt += 1) {
+      const now = new Date();
+      const { reservations, guard } = await readCapacitySnapshot(DB, bookingDate, null, now);
+      const availability = canFitReservation({
+        dateStr: bookingDate,
+        timeStr: bookingTime,
+        guests,
+        reservations,
+        now,
+      });
+
+      if (!availability.available) {
+        return json({ ok: false, error: availabilityReasonToMessage(availability.reason) }, 409);
+      }
+
+      createdAt = new Date().toISOString();
+
+      const result = await DB.prepare(`
+        INSERT INTO reservations (
+          id,
+          first_name,
+          last_name,
+          email,
+          phone,
+          booking_date,
+          booking_time,
+          guests,
+          requests,
+          deposit_amount,
+          currency,
+          status,
+          payment_status,
+          payment_provider,
+          payment_ref,
+          payment_order_id,
+          paid_at,
+          callback_received_at,
+          callback_payload,
+          created_at,
+          updated_at
+        ) SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+        WHERE ${guard.sql}
+      `).bind(
         id,
-        first_name,
-        last_name,
+        firstName,
+        lastName,
         email,
         phone,
-        booking_date,
-        booking_time,
+        bookingDate,
+        bookingTime,
         guests,
-        requests,
-        deposit_amount,
-        currency,
-        status,
-        payment_status,
-        payment_provider,
-        payment_ref,
-        payment_order_id,
-        paid_at,
-        callback_received_at,
-        callback_payload,
-        created_at,
-        updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).bind(
-      id,
-      firstName,
-      lastName,
-      email,
-      phone,
-      bookingDate,
-      bookingTime,
-      guests,
-      requests || null,
-      depositAmount,
-      "GEL",
-      "pending_payment",
-      "created",
-      "bog",
-      null,
-      null,
-      null,
-      null,
-      null,
-      createdAt,
-      updatedAt
-    ).run();
+        requests || null,
+        depositAmount,
+        "GEL",
+        "pending_payment",
+        "created",
+        "bog",
+        null,
+        null,
+        null,
+        null,
+        null,
+        createdAt,
+        createdAt,
+        ...guard.values
+      ).run();
+
+      if (Number(result.meta?.changes) === 1) {
+        reserved = true;
+        break;
+      }
+    }
+
+    if (!reserved) {
+      return json({ ok: false, error: "Availability changed. Please select your time again." }, 409);
+    }
 
     try {
       const bogOrder = await createBogOrder({
@@ -309,21 +330,36 @@ export async function onRequestPost(context) {
         amount: depositAmount,
       });
 
-      await DB.prepare(`
-  UPDATE reservations
-  SET
-    payment_provider = ?,
-    payment_order_id = ?,
-    payment_status = ?,
-    updated_at = ?
-  WHERE id = ?
-`).bind(
-  "bog",
-  bogOrder.orderId,
-  "created",
-  new Date().toISOString(),
-  id
-).run();
+      // Never expose a checkout whose payment lifespan can outlast its hold.
+      // The remaining two minutes also allow for a delayed bank callback.
+      if (Date.now() - Date.parse(createdAt) > MAX_CHECKOUT_SETUP_MS) {
+        throw new Error("Payment setup took too long. Please try again.");
+      }
+
+      const orderAttached = await DB.prepare(`
+        UPDATE reservations
+        SET
+          payment_provider = ?,
+          payment_order_id = ?,
+          updated_at = ?
+        WHERE id = ? AND status = 'pending_payment' AND payment_provider = 'bog' AND paid_at IS NULL
+          AND booking_date IS ? AND booking_time IS ? AND guests IS ? AND created_at IS ?
+          AND (payment_order_id IS NULL OR payment_order_id = ?)
+      `).bind(
+        "bog",
+        bogOrder.orderId,
+        new Date().toISOString(),
+        id,
+        bookingDate,
+        bookingTime,
+        guests,
+        createdAt,
+        bogOrder.orderId
+      ).run();
+
+      if (Number(orderAttached.meta?.changes) !== 1 || Date.now() - Date.parse(createdAt) > MAX_CHECKOUT_SETUP_MS) {
+        throw new Error("Reservation changed during payment setup. Please try again.");
+      }
 
       return json({
         ok: true,
@@ -340,7 +376,7 @@ export async function onRequestPost(context) {
           payment_status = ?,
           payment_provider = ?,
           updated_at = ?
-        WHERE id = ?
+        WHERE id = ? AND status = 'pending_payment' AND paid_at IS NULL
       `).bind(
         "payment_failed",
         "rejected",

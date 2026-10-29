@@ -6,12 +6,15 @@ import {
   groupReservationsByDate,
   toIsoDate,
 } from "./_custom-reservation.js";
+import { capacityStatusWhere, paymentHoldCutoff, readCapacitySnapshot } from "../reservations/_capacity.js";
+import { isValidDate } from "../reservations/_availability.js";
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
     headers: {
       "Content-Type": "application/json",
+      "Cache-Control": "no-store",
     },
   });
 }
@@ -32,14 +35,8 @@ export async function onRequestGet(context) {
     const now = new Date();
 
     if (dateStr) {
-      const rows = await DB.prepare(`
-        SELECT booking_date, booking_time, guests, status
-        FROM reservations
-        WHERE booking_date = ?
-          AND status IN ('confirmed', 'completed')
-      `).bind(dateStr).all();
-
-      const reservations = rows.results || [];
+      if (!isValidDate(dateStr)) return json({ ok: false, error: "Invalid date." }, 400);
+      const { reservations } = await readCapacitySnapshot(DB, dateStr, null, now);
       const slots = getTimeSlots().map((time) => {
         const result = canFitCustomReservation({
           dateStr,
@@ -71,8 +68,8 @@ export async function onRequestGet(context) {
       SELECT booking_date, booking_time, guests, status
       FROM reservations
       WHERE booking_date BETWEEN ? AND ?
-        AND status IN ('confirmed', 'completed')
-    `).bind(startDate, endDate).all();
+        AND ${capacityStatusWhere()}
+    `).bind(startDate, endDate, paymentHoldCutoff(now)).all();
 
     const grouped = groupReservationsByDate(rows.results || []);
     const slots = getTimeSlots();

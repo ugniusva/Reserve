@@ -4,6 +4,7 @@ import {
   parseDateTime,
   isValidDate,
   isValidTimeSlotFormat,
+  getRestaurantDate,
 } from "../reservations/_availability.js";
 
 export const CUSTOM_MAX_GUESTS = 22;
@@ -40,15 +41,12 @@ export function formatMinutesToTime(totalMinutes) {
 
 export function addDays(date, days) {
   const next = new Date(date);
-  next.setDate(next.getDate() + days);
+  next.setUTCDate(next.getUTCDate() + days);
   return next;
 }
 
 export function toIsoDate(date) {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
+  return getRestaurantDate(date);
 }
 
 export function groupReservationsByDate(rows) {

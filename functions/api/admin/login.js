@@ -1,3 +1,5 @@
+import { ADMIN_SESSION_SECONDS, createAdminSession } from "./_auth.js";
+
 function json(data, status = 200, extraHeaders = {}) {
   return new Response(JSON.stringify(data), {
     status,
@@ -22,11 +24,12 @@ export async function onRequestPost(context) {
       return json({ ok: false, error: "Incorrect password." }, 401);
     }
 
+    const session = await createAdminSession(context.env);
     return json(
       { ok: true },
       200,
       {
-        "Set-Cookie": `admin_auth=ok; Path=/; HttpOnly; SameSite=Strict; Secure; Max-Age=86400`,
+        "Set-Cookie": `admin_auth=${session}; Path=/; HttpOnly; SameSite=Strict; Secure; Max-Age=${ADMIN_SESSION_SECONDS}`,
       }
     );
   } catch (error) {

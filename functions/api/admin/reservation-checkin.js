@@ -1,4 +1,5 @@
 import { createUndoToken, snapshotGuard } from "./_undo.js";
+import { adminAuthenticated } from "./_auth.js";
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -10,11 +11,6 @@ function json(data, status = 200) {
   });
 }
 
-function isAuthenticated(request) {
-  const cookie = request.headers.get("Cookie") || "";
-  return cookie.includes("admin_auth=ok");
-}
-
 function parseCheckedIn(value) {
   if (typeof value === "boolean") return value;
   if (value === 1 || value === "1") return true;
@@ -24,7 +20,7 @@ function parseCheckedIn(value) {
 
 export async function onRequestPost(context) {
   try {
-    if (!isAuthenticated(context.request)) {
+    if (!(await adminAuthenticated(context.request, context.env))) {
       return json({ ok: false, error: "Unauthorized" }, 401);
     }
 

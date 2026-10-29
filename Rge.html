@@ -1,856 +1,291 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ka">
   <head>
     <meta charset="UTF-8" />
-    <title>Reserve Restaurant – Reservations</title>
+    <title>Reserve</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#fdfdfc" />
+    <link rel="preload" href="fonts/Lato-Regular.ttf" as="font" type="font/ttf" crossorigin />
+    <link rel="preload" href="fonts/NotoSansGeorgian-Variable.ttf" as="font" type="font/ttf" crossorigin />
 
     <link rel="icon" type="image/svg+xml" href="images/R.svg" />
-    <script src="https://cdn.tailwindcss.com"></script>
+
 
     <style>
-      @font-face {
-        font-family: "LatoLocal";
-        src: url("fonts/Lato-Regular.ttf") format("truetype");
-        font-weight: 400;
-        font-style: normal;
-        font-display: swap;
-      }
-
-      @font-face {
-        font-family: "GlacialBold";
-        src: url("fonts/GlacialIndifference-Bold.otf") format("opentype");
-        font-weight: 700;
-        font-style: normal;
-        font-display: swap;
-      }
-
-      :root {
-        --accent: #d0842f;
-        --accent-soft: rgba(208, 132, 47, 0.16);
-        --panel-dark: rgba(12, 12, 12, 0.9);
-        --panel-border: rgba(255, 255, 255, 0.12);
-        --input-bg: rgba(255, 255, 255, 0.96);
-        --input-border: rgba(0, 0, 0, 0.12);
-        --input-text: #1a1a1a;
-        --muted: rgba(255, 255, 255, 0.72);
-        --danger: #f2c28e;
-        --shadow-lg: 0 26px 80px rgba(0, 0, 0, 0.34);
-      }
-
-      .reservation-main-wrap {
-        width: 100%;
-        max-width: 900px;
-        margin: 0 auto;
-        padding-top: clamp(110px, 11vh, 160px);
-      }
-
-      .reservation-hero {
-        text-align: center;
-        padding-top: clamp(12px, 2vh, 28px);
-        padding-bottom: clamp(10px, 2vh, 22px);
-      }
-
-      .reservation-title {
-        font-size: clamp(3rem, 5.8vw, 5.2rem);
-        line-height: 0.98;
-        margin-bottom: clamp(16px, 2vh, 24px);
-      }
-
-      .reservation-copy {
-        font-size: clamp(1rem, 1.15vw, 1.08rem);
-        line-height: 1.9;
-        max-width: 760px;
-        margin: 0 auto;
-      }
-
-      .reservation-card-wrap {
-        display: flex;
-        justify-content: center;
-        margin-top: clamp(18px, 3vh, 34px);
-      }
-
-      .booking-card {
-        width: min(100%, 620px);
-      }
-
-      @media (max-width: 768px) {
-        .reservation-main-wrap {
-          padding-top: 120px;
-        }
-
-        .reservation-copy {
-          line-height: 1.75;
-        }
-
-        .booking-card {
-          width: 100%;
-        }
-      }
-
-      @media (min-width: 1600px) {
-        .reservation-main-wrap {
-          padding-top: 130px;
-        }
-      }
-
-      html {
-        scroll-behavior: smooth;
-      }
-
-      body {
-        font-family: "LatoLocal", Arial, sans-serif;
-      }
-
-      #logo-link {
-  position: relative;
-  display: inline-block;
-  overflow: hidden;
-  /* Image is ~188px tall, shifted up 45px — clip bottom dead zone */
-  padding-bottom: 0;
-  height: calc(188px - 45px); /* = 143px of actual visible area below baseline */
+@font-face { font-family: NotoGeorgian; src: url("fonts/NotoSansGeorgian-Variable.ttf") format("truetype"); font-weight: 100 900; font-style: normal; font-display: swap; }
+@font-face { font-family: LatoLocal; src: url("fonts/Lato-Regular.ttf") format("truetype"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: LatoLocal; src: url("fonts/Lato-Light.ttf") format("truetype"); font-weight: 300; font-style: normal; font-display: swap; }
+@font-face { font-family: LatoLocal; src: url("fonts/Lato-Bold.ttf") format("truetype"); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: Glacial; src: url("fonts/GlacialIndifference-Regular.otf") format("opentype"); font-weight: 400; font-style: normal; font-display: swap; }
+:root { --ink: #1d211f; --muted: #60665f; --paper: #fdfdfc; --accent: #9c5d1f; --brand: #d0842f; --brand-hover: #e3a14f; --line: #dce0d9; --danger: #a1392d; --header-height: 96px; --gutter: 64px; color-scheme: light; }
+*, *::before, *::after { box-sizing: border-box; letter-spacing: 0; }
+html { scroll-behavior: smooth; scroll-padding-top: 120px; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 400 16px/1.7 LatoLocal, NotoGeorgian, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+body.policy-open { overflow: hidden; }
+h1, h2, h3, p, figure { margin: 0; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; touch-action: manipulation; }
+a { color: inherit; text-decoration: none; -webkit-tap-highlight-color: transparent; }
+img { display: block; max-width: 100%; height: auto; }
+button, img { -webkit-user-select: none; user-select: none; }
+::selection { background: #e5bc8a; color: #171c19; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.hidden { display: none !important; }
+.opacity-0 { opacity: 0; }
+.opacity-100 { opacity: 1; }
+.flex { display: flex; }
+.grid { display: grid; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.justify-end { justify-content: flex-end; }
+.gap-3 { gap: 12px; }
+.gap-4 { gap: 16px; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+.skip-link { position: fixed; left: 16px; top: 12px; z-index: 300; padding: 12px 20px; background: white; transform: translateY(-160%); }
+.skip-link:focus { transform: none; }
+.heading-font, .calendar-title, .policy-notice-title { font-family: Glacial, LatoLocal, NotoGeorgian, sans-serif; font-weight: 400; }
+#site-header { position: fixed; inset: 0 0 auto; z-index: 100; height: var(--header-height); padding: 0 var(--gutter); display: grid; grid-template-columns: 1fr 220px 1fr; align-items: center; background: #fdfdfcf5; color: var(--ink); border-bottom: 1px solid var(--line); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+#site-header .top-buttons-down { transform: none; display: flex; align-items: center; }
+#site-header > div { justify-self: start; gap: 16px; font-size: 13px; }
+#site-header > div a { display: grid; place-items: center; min-width: 28px; min-height: 44px; }
+#site-header > div a[aria-current="page"] { text-decoration: underline; text-decoration-color: var(--brand); text-underline-offset: 7px; }
+#site-header > div > span { width: 1px; height: 12px; font-size: 0; background: var(--line); }
+#site-header nav { justify-self: end; gap: 30px; font-size: 14px; }
+#site-header nav > * { min-height: 44px; display: flex; align-items: center; }
+#site-header nav span { color: var(--muted); }
+#site-header a:hover { color: var(--accent); }
+#logo-link { justify-self: center; position: relative; width: 220px; height: 84px; overflow: hidden; opacity: 1; }
+#logo-link img { position: absolute; left: 50%; top: 50%; width: 330px; height: auto; max-width: none; transform: translate(-50%, -50%); }
+#logo-link .logo-white { display: none !important; }
+#logo-link .logo-black { display: block !important; }
+main { min-height: calc(100vh - 120px); padding: var(--header-height) 0 0; }
+.reservation-main-wrap { width: 100%; margin: 0 auto; display: grid; grid-template-columns: minmax(340px, min(41%, 600px)) minmax(0, 1fr); align-items: start; background: #242722; }
+.reservation-hero { text-align: left; position: sticky; top: var(--header-height); min-width: 0; min-height: calc(100vh - var(--header-height)); min-height: calc(100svh - var(--header-height)); padding: 48px 56px; color: #f8f9f5; display: flex; flex-direction: column; isolation: isolate; overflow: hidden; }
+.reservation-monogram { position: absolute; width: 310px; height: auto; right: -42px; bottom: 24px; opacity: .055; filter: brightness(0) invert(1); z-index: -1; pointer-events: none; }
+.reservation-back { display: inline-flex; align-items: center; gap: 12px; align-self: flex-start; min-height: 40px; margin-bottom: 48px; color: #ccd1c7; font-size: 12px; }
+.reservation-back::before { content: "\2190"; font-size: 18px; }
+.reservation-back:hover { color: var(--brand); }
+.reservation-kicker { display: flex; align-items: center; gap: 14px; color: var(--brand); font-size: 11px; text-transform: uppercase; margin-bottom: 20px; }
+.reservation-kicker::before { content: ""; width: 28px; height: 1px; background: currentColor; }
+.reservation-title { font: 400 48px/1.15 Glacial, LatoLocal, NotoGeorgian, sans-serif !important; margin-bottom: 20px; overflow-wrap: break-word; }
+.reservation-welcome { max-width: 320px; color: #d0d5cc; font-size: 15px; line-height: 1.85; }
+.reservation-deposit { max-width: 350px; margin: 40px 0 44px; padding-top: 26px; border-top: 1px solid var(--brand); }
+.deposit-amount { display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px; }
+.deposit-amount strong { font: 400 32px/1.2 Glacial, LatoLocal, NotoGeorgian, sans-serif; color: var(--brand); }
+.deposit-amount span { font-size: 12px; color: #d0d5cc; }
+.reservation-copy { color: #d0d5cc; font-size: 14px; line-height: 1.85; }
+.reservation-contact { max-width: 350px; margin-top: auto; padding-top: 26px; font-size: 13px; }
+.reservation-contact > p:first-child { color: #d0d5cc; font-size: 12px; margin-bottom: 4px; }
+.reservation-contact a { display: inline-block; color: #f8f9f5; padding: 8px 0; border-bottom: 1px solid var(--brand); font-size: 17px; }
+.reservation-contact > p:last-child { color: #d0d5cc; margin-top: 18px; font-size: 12px; }
+.reservation-card-wrap { min-width: 0; width: 100%; min-height: calc(100vh - var(--header-height)); min-height: calc(100svh - var(--header-height)); padding: 62px 64px 72px; background: var(--paper); align-self: stretch; }
+.booking-card { width: 100%; min-width: 0; background: transparent; color: var(--ink); scroll-margin-top: 120px; }
+.booking-card { max-width: 610px; margin: 0 auto; }
+.booking-card > .flex:first-child { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.booking-card h2 { font: 400 27px/1.25 Glacial, NotoGeorgian, sans-serif; }
+.eyebrow { font-size: 11px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.step-chip { font-size: 12px; color: var(--muted); white-space: nowrap; padding-bottom: 4px; }
+.progress-track { width: 100%; height: 2px; background: var(--line); margin-top: 0; overflow: hidden; }
+.progress-bar { width: 33.3333%; height: 100%; background: var(--brand); transition: width 240ms ease; }
+.booking-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); list-style: none; gap: 12px; margin: 16px 0 44px; padding: 0; font-size: 13px; color: var(--muted); }
+.booking-steps li:last-child { text-align: right; }
+.booking-steps li:nth-child(2) { text-align: center; }
+.booking-steps span { margin-right: 5px; color: #7b817a; }
+.booking-steps [aria-current="step"] { color: var(--ink); font-weight: 700; }
+.booking-steps [aria-current="step"] span { color: var(--accent); }
+.booking-card section > * + * { margin-top: 22px; }
+.booking-card section h3 { font: 400 30px/1.3 Glacial, NotoGeorgian, sans-serif; }
+.booking-card section h3:focus { outline: none; }
+#step-1 > .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.field-wrap { position: relative; min-width: 0; }
+.field-label { display: block; color: var(--ink); font-size: 13px; margin-bottom: 8px; }
+.text-input, .textarea-input, .country-code-select, .selector-trigger { width: 100%; min-width: 0; border: 1px solid #8a9386; border-radius: 3px; background: #fff; color: var(--ink); outline: none; font-size: 16px; transition: border-color 180ms ease, box-shadow 180ms ease; }
+.text-input, .country-code-select { min-height: 56px; padding: 0 16px; }
+.text-input::placeholder, .textarea-input::placeholder { color: #687065; opacity: 1; }
+.text-input:focus, .textarea-input:focus, .country-code-select:focus, .selector-trigger:focus-visible { border-color: var(--accent); box-shadow: 0 0 0 3px #d0842f26; }
+.textarea-input { display: block; padding: 13px 14px; min-height: 110px; resize: vertical; line-height: 1.6; }
+.phone-shell { display: grid; grid-template-columns: 122px minmax(0, 1fr); gap: 10px; }
+.select-shell { position: relative; min-width: 0; }
+.select-shell::before { content: attr(data-display); position: absolute; left: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; font-size: 14px; white-space: nowrap; max-width: calc(100% - 32px); overflow: hidden; text-overflow: ellipsis; }
+.country-code-select { appearance: none; padding-right: 28px; cursor: pointer; color: transparent; text-shadow: 0 0 0 transparent; }
+.country-code-select option { color: var(--ink); }
+.select-chevron { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--muted); font-size: 12px; }
+.selector-trigger { display: flex; justify-content: space-between; align-items: center; gap: 16px; min-height: 56px; padding: 13px 16px; text-align: left; }
+.selector-trigger .placeholder { color: #687065; }
+.selector-chevron-inline { color: var(--muted); font-size: 13px; transition: transform 180ms ease; }
+.selector-wrap.open .selector-chevron-inline { transform: rotate(180deg); }
+.selector-panel { position: relative; margin-top: 10px; width: 100%; border: 1px solid var(--line); border-radius: 4px; background: #fff; box-shadow: 0 8px 28px #1d211f08; overflow: hidden; }
+.panel-inner, .calendar-shell { padding: 14px; }
+.panel-empty { padding: 14px 4px; font-size: 13px; color: var(--muted); }
+.people-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
+.people-option, .calendar-day, .time-option { background: #fff; color: var(--ink); border: 1px solid var(--line); border-radius: 3px; transition: border-color 160ms ease, background 160ms ease; }
+.people-option { min-height: 50px; font-size: 17px; }
+.people-option:hover:not(:disabled), .calendar-day:hover:not(:disabled), .time-option:hover:not(:disabled) { border-color: var(--accent); background: #fbf1e4; }
+.people-option.selected, .calendar-day.selected, .time-option.selected { border-color: var(--accent); background: var(--brand); color: var(--ink); }
+.people-option.disabled, .calendar-day.disabled, .time-option.disabled { background: #f4f5f2; color: #747b72; cursor: not-allowed; }
+.time-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; max-height: 320px; overflow-y: auto; overscroll-behavior: contain; padding: 2px; scrollbar-width: thin; scrollbar-color: #a4aba1 transparent; }
+.time-list > .panel-empty { grid-column: 1 / -1; }
+.time-option { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 3px; min-height: 68px; width: 100%; padding: 10px 12px; text-align: left; }
+.time-option-time { font-size: 18px; font-weight: 400; line-height: 1.4; font-variant-numeric: tabular-nums; }
+.time-option-status { font-size: 10px; line-height: 1.4; text-transform: uppercase; }
+.time-option-status.available { color: #386448; }
+.time-option-status.unavailable { color: #666e64; }
+.time-option.selected .time-option-status { color: var(--ink); }
+.calendar-header { display: grid; grid-template-columns: 40px 1fr 40px; align-items: center; gap: 8px; margin-bottom: 18px; }
+.calendar-nav-btn { width: 40px; height: 40px; border: 1px solid var(--line); border-radius: 3px; background: #fff; font-size: 24px; display: grid; place-items: center; }
+.calendar-nav-btn:hover:not(:disabled) { border-color: var(--accent); }
+.calendar-nav-btn:disabled { opacity: .35; cursor: not-allowed; }
+.calendar-title { text-align: center; font-size: 18px; line-height: 1.3; }
+.calendar-weekdays, .calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.calendar-weekdays { margin-bottom: 8px; }
+.calendar-weekday { text-align: center; font-size: 11px; color: var(--muted); }
+.calendar-cell { min-height: 40px; }
+.calendar-day { width: 100%; min-height: 40px; font-size: 14px; border-color: transparent; }
+.calendar-day.today { text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 5px; }
+.calendar-legend { font-size: 11px; color: var(--muted); margin-top: 14px; }
+.button-primary, .button-secondary { min-height: 50px; padding: 12px 24px; border-radius: 2px; font-size: 14px; border: 1px solid transparent; transition: background 180ms ease, border-color 180ms ease; }
+.button-primary { color: var(--ink); background: var(--brand); min-width: 160px; }
+.button-primary:hover:not(:disabled) { background: var(--brand-hover); }
+.button-secondary { color: var(--ink); background: transparent; border-color: #8a9386; }
+.button-secondary:hover:not(:disabled) { border-color: var(--ink); }
+.button-primary:disabled, .button-secondary:disabled { opacity: .55; cursor: not-allowed; }
+.booking-card section > .flex:last-child { margin-top: 30px; padding-top: 24px; border-top: 1px solid var(--line); }
+.field-error-text { color: var(--danger); font-size: 12px; line-height: 1.5; margin-top: 7px; }
+.has-error .text-input, .has-error .textarea-input, .has-error .country-code-select, .has-error .selector-trigger { border-color: var(--danger); box-shadow: 0 0 0 3px #a1392d10; }
+.status-banner { font-size: 13px; line-height: 1.6; padding: 13px 15px; margin-bottom: 22px; border-left: 2px solid var(--accent); background: #f6f3ef; color: var(--ink); }
+.status-banner[data-type="error"] { color: #843126; border-color: #a1392d; background: #fbf2ef; }
+.status-banner[data-type="success"] { color: #2e563b; border-color: #386448; background: #f0f5ee; }
+.hint-box { border-left: 2px solid var(--brand); background: #fcf6ec; padding: 14px 16px; color: #535c51; font-size: 12px; line-height: 1.8; }
+.summary-card { padding: 0; border-top: 1px solid var(--line); }
+.summary-row { display: grid; grid-template-columns: 100px minmax(0, 1fr); align-items: baseline; gap: 18px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.summary-label { color: var(--muted); font-size: 12px; }
+.summary-value { text-align: right; overflow-wrap: anywhere; color: var(--ink); font-size: 14px; }
+.summary-visit { display: grid; grid-template-columns: minmax(0, 1.35fr) repeat(2, minmax(0, 1fr)); gap: 12px; padding: 20px 0; border-bottom: 1px solid var(--line); }
+.summary-visit .summary-row { display: block; padding: 0; border: 0; }
+.summary-visit .summary-value { text-align: left; font-size: 18px; margin-top: 6px; font-variant-numeric: tabular-nums; }
+#summary-deposit-row .summary-value { font-weight: 700; }
+.subtle-copy { color: var(--muted); font-size: 12px; line-height: 1.8; margin-top: 8px; }
+.terms-consent { display: flex; align-items: flex-start; gap: 12px; padding: 16px 0; }
+.terms-checkbox { width: 20px; height: 20px; flex: 0 0 20px; margin: 1px 0 0; accent-color: var(--brand); cursor: pointer; }
+.terms-copy { font-size: 13px; line-height: 1.7; }
+.terms-copy label { cursor: pointer; }
+.terms-link { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+.has-error .terms-consent { color: var(--danger); }
+.policy-notice { position: fixed; inset: 0; z-index: 250; display: grid; place-items: center; padding: 20px; opacity: 0; pointer-events: none; transition: opacity 180ms ease; }
+.policy-notice.is-visible { opacity: 1; pointer-events: auto; }
+.policy-notice-backdrop { position: absolute; inset: 0; background: #151b1766; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
+.policy-notice-card { position: relative; width: min(100%, 410px); max-height: calc(100vh - 40px); max-height: calc(100dvh - 40px); overflow-y: auto; overscroll-behavior: contain; padding: 32px; background: var(--paper); border: 1px solid var(--line); border-radius: 6px; box-shadow: 0 24px 80px #0002; transform: translateY(8px); transition: transform 180ms ease; }
+.policy-notice.is-visible .policy-notice-card { transform: none; }
+.policy-notice-card { border-top: 3px solid var(--brand); }
+.policy-notice-kicker { font-size: 11px; color: var(--accent); text-transform: uppercase; margin-bottom: 16px; }
+.policy-notice-title { font-size: 28px; line-height: 1.2; margin-bottom: 18px; }
+.policy-notice-copy { font-size: 14px; color: var(--muted); line-height: 1.85; }
+.policy-notice-action { width: 100%; margin-top: 26px; }
+footer { background: #171c19; color: white; padding: 32px var(--gutter); }
+footer > div { max-width: 1140px; margin: 0 auto; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 12px; }
+footer .social-btn { display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid #ffffff35; }
+footer .social-btn:hover { border-color: var(--brand); }
+footer img { width: 16px; height: 16px; }
+footer a[href^="mailto"] { font-size: 13px; padding: 12px; }
+footer a:hover { color: var(--brand); }
+#page-overlay { position: fixed; inset: 0; z-index: 200; pointer-events: none; transition: opacity 300ms ease; }
+#page-panel { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: var(--brand); transform: translateY(0); transition: transform 1050ms cubic-bezier(.76, 0, .24, 1); }
+#page-panel.translate-y-full { transform: translateY(100%); }
+#page-logo { width: 420px; max-width: 100%; transition: opacity 500ms ease; }
+#page-logo img { width: 100%; height: auto; }
+@media (min-width: 768px) { #page-logo { width: 500px; } }
+@media (max-width: 1100px) {
+  :root { --gutter: 36px; --header-height: 84px; }
+  .reservation-hero { padding: 38px 36px; }
+  .reservation-card-wrap { padding: 46px 40px 56px; }
+  .reservation-title { font-size: 42px !important; }
+  .reservation-back { margin-bottom: 34px; }
+  .time-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
-@media (min-width: 768px) {
-  #logo-link {
-    height: calc(222px - 122px); /* = 177px */
-  }
+@media (max-width: 800px) {
+  :root { --gutter: 28px; --header-height: 76px; }
+  #site-header { grid-template-columns: 1fr 180px 1fr; }
+  #logo-link { width: 180px; height: 72px; }
+  #logo-link img { width: 270px; }
+  #site-header > div { gap: 4px; font-size: 12px; }
+  #site-header > div > span, #site-header nav > span { display: none; }
+  .reservation-main-wrap { grid-template-columns: 1fr; }
+  .reservation-hero { position: relative; top: 0; min-height: 0; padding: 32px max(28px, calc((100vw - 620px) / 2)); }
+  .reservation-back { display: none; }
+  .reservation-kicker { margin-bottom: 12px; }
+  .reservation-welcome, .reservation-contact { display: none; }
+  .reservation-deposit { display: grid; grid-template-columns: 110px minmax(0, 1fr); align-items: start; gap: 24px; margin: 20px 0 0; padding: 0; border: 0; max-width: 550px; }
+  .deposit-amount { display: flex; flex-direction: column; gap: 4px; margin: 0; }
+  .deposit-amount strong { font-size: 28px; }
+  .reservation-copy { font-size: 13px; line-height: 1.75; }
+  .reservation-monogram { width: 230px; bottom: -100px; right: -38px; opacity: .045; }
+  .reservation-card-wrap { min-height: 0; padding: 36px 28px 64px; }
+  .time-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .reservation-title { font-size: 38px !important; margin-bottom: 0; }
+}
+@media (max-width: 480px) {
+  :root { --gutter: 24px; --header-height: 72px; }
+  #site-header { grid-template-columns: 1fr 150px 1fr; padding: 0 20px; }
+  #logo-link { width: 150px; height: 72px; }
+  #logo-link img { width: 250px; }
+  #site-header > div { gap: 0; font-size: 12px; }
+  #site-header > div a { min-width: 26px; }
+  #site-header nav { font-size: 13px; }
+  .reservation-hero { padding: 24px; }
+  .reservation-title { font-size: 34px !important; }
+  .reservation-kicker { display: none; }
+  .reservation-deposit { grid-template-columns: 84px minmax(0, 1fr); gap: 18px; margin-top: 16px; }
+  .deposit-amount strong { font-size: 24px; }
+  .deposit-amount span { font-size: 11px; }
+  .reservation-card-wrap { padding: 28px 24px 48px; }
+  .booking-card h2 { font-size: 25px; }
+  .booking-card section h3 { font-size: 26px; }
+  #step-1 > .grid { grid-template-columns: 1fr; gap: 20px; }
+  .booking-steps { font-size: 11px; gap: 6px; }
+  .booking-steps span { margin-right: 3px; }
+  .booking-steps { margin-top: 12px; margin-bottom: 28px; }
+  .phone-shell { grid-template-columns: 112px minmax(0, 1fr); gap: 8px; }
+  .people-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .time-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .time-option { padding: 10px; }
+  .panel-inner, .calendar-shell { padding: 10px; }
+  .calendar-weekdays, .calendar-grid { gap: 2px; }
+  .summary-row { grid-template-columns: 72px minmax(0, 1fr); gap: 10px; }
+  .summary-visit .summary-value { font-size: 16px; }
+  .button-primary, .button-secondary { padding: 12px 18px; }
+  .button-primary { min-width: 144px; }
+  #btn-next-1 { width: 100%; }
+  #btn-submit { font-size: 14px; padding-inline: 16px; min-width: 0; }
+  .policy-notice-card { padding: 26px; }
+  footer { padding: 28px 20px; }
+}
+@media (max-width: 360px) {
+  :root { --gutter: 20px; }
+  .reservation-hero { padding: 24px 20px; }
+  .reservation-card-wrap { padding-inline: 20px; }
+  .reservation-title { font-size: 32px !important; }
+  .booking-steps span { display: none; }
+  .phone-shell { grid-template-columns: 104px minmax(0, 1fr); }
+  .button-primary, .button-secondary { padding-inline: 14px; }
+  #btn-submit { padding-inline: 14px; }
+}
+@media (max-height: 850px) and (min-width: 801px) {
+  .reservation-hero { position: relative; top: 0; padding-block: 32px; }
+  .reservation-back { margin-bottom: 30px; }
+  .reservation-deposit { margin: 28px 0; padding-top: 22px; }
+  .reservation-contact { padding-top: 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { transition: none !important; animation: none !important; }
 }
 
-      #logo-link img {
-        display: block;
-      }
 
-      #logo-link .logo-black {
-        display: none;
-      }
-
-      header.header-dark #logo-link .logo-white {
-        display: none;
-      }
-
-      header.header-dark #logo-link .logo-black {
-        display: block;
-      }
-
-      .page-panel {
-        background-color: #d0842f;
-      }
-
-      .brand-logo {
-        height: 188px;
-        width: auto;
-        display: block;
-      }
-
-      @media (min-width: 768px) {
-        .brand-logo {
-          height: 222px;
-        }
-      }
-
-      .top-logo-up {
-        transform: translate(20px, -45px);
-      }
-
-      .top-buttons-down {
-        transform: translateY(40px);
-      }
-
-      .social-btn {
-        opacity: 0.75;
-        transition: opacity 200ms ease, transform 200ms ease;
-      }
-
-      .social-btn:hover {
-        opacity: 1;
-        transform: translateY(-1px);
-      }
-
-      .social-btn:active {
-        transform: translateY(0);
-      }
-
-      .booking-card {
-        background: var(--panel-dark);
-        border: 1px solid var(--panel-border);
-        border-radius: 24px;
-        box-shadow: var(--shadow-lg);
-        backdrop-filter: blur(10px);
-      }
-
-      .heading-font {
-        font-family: "GlacialBold", Arial, sans-serif;
-      }
-
-      .eyebrow {
-        letter-spacing: 0.24em;
-        text-transform: uppercase;
-        font-size: 0.72rem;
-        color: rgba(255, 255, 255, 0.68);
-      }
-
-      .step-chip {
-        border: 1px solid rgba(255, 255, 255, 0.14);
-        background: rgba(255, 255, 255, 0.06);
-        color: white;
-        border-radius: 999px;
-        padding: 0.5rem 0.9rem;
-        font-size: 0.84rem;
-        white-space: nowrap;
-      }
-
-      .progress-track {
-        width: 100%;
-        height: 6px;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.12);
-        overflow: hidden;
-      }
-
-      .progress-bar {
-        height: 100%;
-        width: 33.3333%;
-        border-radius: 999px;
-        background: linear-gradient(90deg, #d0842f, #efb06a);
-        transition: width 240ms ease;
-      }
-
-      .status-banner {
-        border-radius: 16px;
-        padding: 0.9rem 1rem;
-        font-size: 0.92rem;
-        line-height: 1.45;
-        border: 1px solid transparent;
-      }
-
-      .status-banner[data-type="error"] {
-        background: rgba(208, 132, 47, 0.12);
-        border-color: rgba(208, 132, 47, 0.42);
-        color: #fff2e2;
-      }
-
-      .status-banner[data-type="success"] {
-        background: rgba(76, 175, 80, 0.12);
-        border-color: rgba(76, 175, 80, 0.42);
-        color: #eefbed;
-      }
-
-      .status-banner[data-type="info"] {
-        background: rgba(255, 255, 255, 0.08);
-        border-color: rgba(255, 255, 255, 0.14);
-        color: white;
-      }
-
-      .field-label {
-        display: block;
-        font-size: 0.95rem;
-        color: rgba(255, 255, 255, 0.96);
-        margin-bottom: 0.5rem;
-      }
-
-      .field-wrap {
-        position: relative;
-      }
-
-      .text-input,
-      .textarea-input,
-      .country-code-select {
-        width: 100%;
-        border-radius: 15px;
-        border: 1px solid var(--input-border);
-        background: var(--input-bg);
-        color: var(--input-text);
-        outline: none;
-        transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
-      }
-
-      .text-input {
-        min-height: 50px;
-        padding: 0 1rem;
-        font-size: 0.96rem;
-      }
-
-      .textarea-input {
-        min-height: 118px;
-        resize: vertical;
-        padding: 0.9rem 1rem;
-        font-size: 0.96rem;
-      }
-
-      .phone-shell {
-        display: grid;
-        grid-template-columns: 110px 1fr;
-        gap: 0.75rem;
-      }
-
-      @media (max-width: 520px) {
-        .phone-shell {
-          grid-template-columns: 1fr;
-        }
-      }
-
-      .select-shell {
-        position: relative;
-        min-width: 0;
-      }
-
-      .select-shell::before {
-        content: attr(data-display);
-        position: absolute;
-        left: 0.8rem;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #1a1a1a;
-        font-size: 0.95rem;
-        pointer-events: none;
-        z-index: 1;
-        white-space: nowrap;
-        max-width: calc(100% - 2rem);
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .country-code-select {
-        min-width: 0;
-        min-height: 50px;
-        padding: 0 2.5rem 0 0.95rem;
-        appearance: none;
-        cursor: pointer;
-        color: transparent;
-        text-shadow: 0 0 0 transparent;
-      }
-
-      .country-code-select option {
-        color: #1a1a1a;
-      }
-
-      .text-input:focus,
-      .textarea-input:focus,
-      .country-code-select:focus {
-        border-color: rgba(208, 132, 47, 0.65);
-        box-shadow: 0 0 0 4px rgba(208, 132, 47, 0.14);
-      }
-
-      .select-chevron {
-        position: absolute;
-        top: 50%;
-        right: 0.9rem;
-        transform: translateY(-50%);
-        pointer-events: none;
-        color: #3c3c3c;
-        font-size: 0.8rem;
-        z-index: 2;
-      }
-
-      .selector-wrap {
-        position: relative;
-        z-index: 1;
-      }
-
-      .selector-wrap.open {
-        z-index: 80;
-      }
-
-      .selector-trigger {
-        width: 100%;
-        min-height: 56px;
-        border-radius: 16px;
-        border: 1px solid var(--input-border);
-        background: var(--input-bg);
-        color: var(--input-text);
-        padding: 0.85rem 1rem;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 1rem;
-        text-align: left;
-        transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
-      }
-
-      .selector-trigger:hover {
-        transform: translateY(-1px);
-      }
-
-      .selector-trigger:focus-visible {
-        outline: none;
-        border-color: rgba(208, 132, 47, 0.65);
-        box-shadow: 0 0 0 4px rgba(208, 132, 47, 0.14);
-      }
-
-      .selector-trigger .placeholder {
-        color: rgba(26, 26, 26, 0.55);
-      }
-
-      .selector-trigger .value {
-        color: var(--input-text);
-      }
-
-      .selector-chevron-inline {
-        flex: 0 0 auto;
-        font-size: 0.8rem;
-        color: rgba(26, 26, 26, 0.62);
-        transition: transform 180ms ease;
-      }
-
-      .selector-wrap.open .selector-chevron-inline {
-        transform: rotate(180deg);
-      }
-
-      .selector-panel {
-        position: absolute;
-        top: calc(100% + 0.65rem);
-        left: 0;
-        width: 100%;
-        z-index: 90;
-        pointer-events: auto;
-        border-radius: 18px;
-        border: 1px solid rgba(255, 255, 255, 0.14);
-        background: rgba(17, 17, 17, 0.98);
-        box-shadow: 0 18px 42px rgba(0, 0, 0, 0.35);
-        overflow: hidden;
-      }
-
-      .panel-inner {
-        padding: 0.9rem;
-      }
-
-      .panel-empty {
-        color: rgba(255, 255, 255, 0.74);
-        font-size: 0.9rem;
-        padding: 0.85rem 0.2rem 0.35rem;
-      }
-
-      .people-grid {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 0.7rem;
-      }
-
-      .people-option {
-        min-height: 56px;
-        border-radius: 14px;
-        border: 1px solid rgba(255, 255, 255, 0.14);
-        background: white;
-        color: #1a1a1a;
-        font-size: 1rem;
-        transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
-      }
-
-      .people-option:hover:not(:disabled),
-      .calendar-day:hover:not(:disabled),
-      .time-option:hover:not(:disabled) {
-        transform: translateY(-1px);
-      }
-
-      .people-option.selected,
-      .calendar-day.selected,
-      .time-option.selected {
-        border-color: rgba(208, 132, 47, 0.9);
-        box-shadow: 0 0 0 3px rgba(208, 132, 47, 0.18);
-      }
-
-      .people-option.disabled,
-      .calendar-day.disabled,
-      .time-option.disabled {
-        opacity: 0.38;
-        cursor: not-allowed;
-        filter: grayscale(0.08);
-      }
-
-      .time-list {
-        display: flex;
-        flex-direction: column;
-        gap: 0.65rem;
-        max-height: 320px;
-        overflow-y: auto;
-        padding-right: 0.1rem;
-      }
-
-      .time-option {
-        width: 100%;
-        min-height: 58px;
-        border-radius: 14px;
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        background: white;
-        color: #1a1a1a;
-        padding: 0.9rem 1rem;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.8rem;
-        text-align: left;
-        transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
-      }
-
-      .time-option-time {
-        font-size: 1.05rem;
-        font-family: "GlacialBold", Arial, sans-serif;
-        letter-spacing: 0.04em;
-      }
-
-      .time-option-status {
-        font-size: 0.74rem;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-        font-family: "GlacialBold", Arial, sans-serif;
-      }
-
-      .time-option-status.available {
-        color: #2f2f2f;
-      }
-
-      .time-option-status.unavailable {
-        color: #6a6a6a;
-      }
-
-      .calendar-shell {
-        padding: 0.9rem;
-      }
-
-      .calendar-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.75rem;
-        margin-bottom: 0.9rem;
-      }
-
-      .calendar-nav-btn {
-        width: 42px;
-        height: 42px;
-        border-radius: 12px;
-        background: white;
-        color: #1a1a1a;
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        font-size: 1.15rem;
-        transition: transform 160ms ease, opacity 160ms ease;
-      }
-
-      .calendar-nav-btn:hover:not(:disabled) {
-        transform: translateY(-1px);
-      }
-
-      .calendar-nav-btn:disabled {
-        opacity: 0.35;
-        cursor: not-allowed;
-      }
-
-      .calendar-title {
-        color: white;
-        font-family: "GlacialBold", Arial, sans-serif;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        text-align: center;
-        font-size: 1rem;
-      }
-
-      .calendar-weekdays,
-      .calendar-grid {
-        display: grid;
-        grid-template-columns: repeat(7, minmax(0, 1fr));
-        gap: 0.35rem;
-      }
-
-      .calendar-weekdays {
-        margin-bottom: 0.55rem;
-      }
-
-      .calendar-weekday {
-        text-align: center;
-        color: rgba(255, 255, 255, 0.72);
-        font-size: 0.78rem;
-        padding-bottom: 0.2rem;
-      }
-
-      .calendar-cell {
-        min-height: 44px;
-      }
-
-      .calendar-day {
-        width: 100%;
-        min-height: 44px;
-        border-radius: 12px;
-        border: 1px solid transparent;
-        background: white;
-        color: #1a1a1a;
-        font-size: 0.94rem;
-        transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
-      }
-
-      .calendar-day.today {
-        outline: 1px dashed rgba(208, 132, 47, 0.7);
-        outline-offset: -4px;
-      }
-
-      .calendar-legend {
-        color: rgba(255, 255, 255, 0.62);
-        font-size: 0.8rem;
-        margin-top: 0.75rem;
-      }
-
-      .field-error-text {
-        margin-top: 0.45rem;
-        color: var(--danger);
-        font-size: 0.82rem;
-        line-height: 1.4;
-      }
-
-      .has-error .text-input,
-      .has-error .textarea-input,
-      .has-error .country-code-select,
-      .has-error .selector-trigger,
-      .has-error .select-shell::before {
-        border-color: rgba(208, 132, 47, 0.82);
-        box-shadow: 0 0 0 4px rgba(208, 132, 47, 0.14);
-      }
-
-      .shake {
-        animation: shake 300ms ease;
-      }
-
-      @keyframes shake {
-        0%,
-        100% {
-          transform: translateX(0);
-        }
-        25% {
-          transform: translateX(-4px);
-        }
-        50% {
-          transform: translateX(4px);
-        }
-        75% {
-          transform: translateX(-3px);
-        }
-      }
-
-      .button-primary,
-      .button-secondary {
-        min-height: 48px;
-        border-radius: 15px;
-        padding: 0.8rem 1.1rem;
-        font-size: 0.94rem;
-        transition: transform 180ms ease, background-color 180ms ease, color 180ms ease, border-color 180ms ease, opacity 180ms ease;
-      }
-
-      .button-primary:hover:not(:disabled),
-      .button-secondary:hover:not(:disabled) {
-        transform: translateY(-1px);
-      }
-
-      .button-primary:disabled,
-      .button-secondary:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-      }
-
-      .button-primary {
-        background: var(--accent);
-        color: white;
-        border: 1px solid transparent;
-      }
-
-      .button-primary:hover:not(:disabled) {
-        background: #b87226;
-      }
-
-      .button-secondary {
-        background: rgba(255, 255, 255, 0.94);
-        color: #1a1a1a;
-        border: 1px solid rgba(255, 255, 255, 0.16);
-      }
-
-      .button-secondary:hover:not(:disabled) {
-        background: white;
-      }
-
-      .hint-box {
-        border-radius: 16px;
-        border: 1px solid rgba(208, 132, 47, 0.28);
-        background: rgba(208, 132, 47, 0.08);
-        padding: 0.9rem 1rem;
-        color: #f8e2c8;
-        font-size: 0.88rem;
-        line-height: 1.45;
-      }
-
-      .terms-consent {
-        display: flex;
-        align-items: flex-start;
-        gap: 0.8rem;
-        border: 1px solid rgba(255, 255, 255, 0.14);
-        border-radius: 16px;
-        background: rgba(255, 255, 255, 0.06);
-        padding: 1rem;
-        transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
-      }
-
-      .has-error .terms-consent {
-        border-color: rgba(208, 132, 47, 0.82);
-        background: rgba(208, 132, 47, 0.1);
-        box-shadow: 0 0 0 4px rgba(208, 132, 47, 0.14);
-      }
-
-      .terms-checkbox {
-        width: 1.15rem;
-        height: 1.15rem;
-        flex: 0 0 1.15rem;
-        margin-top: 0.16rem;
-        accent-color: var(--accent);
-        cursor: pointer;
-      }
-
-      .terms-copy {
-        color: rgba(255, 255, 255, 0.92);
-        font-size: 0.9rem;
-        line-height: 1.5;
-      }
-
-      .terms-link {
-        color: #f2c28e;
-        text-decoration: underline;
-        text-underline-offset: 3px;
-      }
-
-      .terms-link:hover {
-        color: #ffe0bd;
-      }
-
-      .policy-notice {
-        position: fixed;
-        inset: 0;
-        z-index: 100;
-        display: grid;
-        place-items: center;
-        padding: 1rem;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 180ms ease;
-      }
-
-      .policy-notice.hidden {
-        display: none;
-      }
-
-      .policy-notice.is-visible {
-        opacity: 1;
-        pointer-events: auto;
-      }
-
-      .policy-notice-backdrop {
-        position: absolute;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.58);
-        backdrop-filter: blur(4px);
-      }
-
-      .policy-notice-card {
-        position: relative;
-        width: min(100%, 390px);
-        overflow: hidden;
-        border: 1px solid rgba(208, 132, 47, 0.42);
-        border-radius: 18px;
-        background: #171411;
-        color: white;
-        padding: 1.25rem;
-        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.5);
-        transform: translateY(10px);
-        transition: transform 180ms ease;
-      }
-
-      .policy-notice.is-visible .policy-notice-card {
-        transform: translateY(0);
-      }
-
-      .policy-notice-card::before {
-        content: "";
-        position: absolute;
-        inset: 0 0 auto;
-        height: 3px;
-        background: var(--accent);
-      }
-
-      .policy-notice-kicker {
-        color: #efb06a;
-        font-size: 0.72rem;
-        text-transform: uppercase;
-        letter-spacing: 0.18em;
-      }
-
-      .policy-notice-title {
-        margin-top: 0.45rem;
-        font-family: "GlacialBold", Arial, sans-serif;
-        font-size: 1.35rem;
-      }
-
-      .policy-notice-copy {
-        margin-top: 0.65rem;
-        color: rgba(255, 255, 255, 0.82);
-        font-size: 0.92rem;
-        line-height: 1.55;
-      }
-
-      .policy-notice-action {
-        width: 100%;
-        margin-top: 1rem;
-      }
-
-      @media (prefers-reduced-motion: reduce) {
-        .policy-notice,
-        .policy-notice-card {
-          transition: none;
-        }
-      }
-
-      .summary-card {
-        border-radius: 18px;
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        background: rgba(255, 255, 255, 0.06);
-        padding: 1rem;
-      }
-
-      .summary-row {
-        display: flex;
-        justify-content: space-between;
-        gap: 1rem;
-        padding: 0.65rem 0;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      }
-
-      .summary-row:last-child {
-        border-bottom: none;
-      }
-
-      .summary-label {
-        color: rgba(255, 255, 255, 0.62);
-        font-size: 0.84rem;
-      }
-
-      .summary-value {
-        color: white;
-        text-align: right;
-        font-size: 0.92rem;
-        word-break: break-word;
-      }
-
-      .subtle-copy {
-        color: rgba(255, 255, 255, 0.82);
-        font-size: 0.95rem;
-        line-height: 1.55;
-      }
     </style>
   </head>
 
-  <body
-    class="text-[#1a1a1a]"
-    style="
-      background-image: url('images/background2.jpg');
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      background-attachment: fixed;
-    "
-  >
+  <body>
+    <a class="skip-link" href="#reservation-main">დაჯავშნის ფორმაზე გადასვლა</a>
     <div
       id="page-overlay"
       class="fixed inset-0 z-40 pointer-events-none opacity-100 transition-opacity duration-300"
@@ -863,6 +298,7 @@
           <img
             src="images/logowhite.svg"
             alt="Reserve"
+            width="3840" height="2160"
             class="w-[420px] md:w-[500px] h-auto select-none"
             draggable="false"
           />
@@ -877,99 +313,107 @@
       class="fixed top-0 left-0 w-full z-20 flex items-start justify-between px-4 sm:px-10 pt-0 pb-0 text-white"
     >
       <div class="top-buttons-down flex items-center gap-2 sm:gap-4 text-sm text-black sm:text-base md:text-xl tracking-wide">
-        <a href="#top" class="hover:opacity-80">EN</a>
+        <a href="reservation.html" class="hover:opacity-80" lang="en">EN</a>
         <span class="hidden sm:inline">|</span>
-        <a href="Rge.html" class="hover:opacity-80">GE</a>
+        <a href="#top" class="hover:opacity-80" lang="ka" aria-current="page">GE</a>
       </div>
 
-      <a href="index.html#top" id="logo-link" class="opacity-80 hover:opacity-80" aria-label="Reserve">
+      <a href="ge.html#top" id="logo-link" class="opacity-80 hover:opacity-80" aria-label="Reserve">
         <img
           src="images/logowhite.svg"
           alt="Reserve"
+          width="3840" height="2160"
           class="brand-logo top-logo-up select-none logo-white"
           draggable="false"
         />
         <img
           src="images/logoblack.svg"
           alt="Reserve"
+          width="3840" height="2160"
           class="brand-logo top-logo-up select-none logo-black"
           draggable="false"
         />
       </a>
 
       <nav class="top-buttons-down flex items-center gap-8 text-[#1a1a1a] md:text-lg">
-        <span class="opacity-80 cursor-default">Reservations</span>
-        <a href="menuge.pdf" target="_blank" class="hover:opacity-80">Menu</a>
+        <span class="opacity-80 cursor-default">დაჯავშნა</span>
+        <a href="menuge.pdf" target="_blank" rel="noopener" class="hover:opacity-80">მენიუ</a>
       </nav>
     </header>
 
-    <main class="min-h-screen flex items-start justify-center px-4 sm:px-6 pb-14">
+    <main id="reservation-main" class="min-h-screen flex items-start justify-center px-4 sm:px-6 pb-14">
       <div class="reservation-main-wrap">
         <div class="reservation-hero px-2">
+          <img class="reservation-monogram" src="images/R.svg" alt="" width="2480" height="3508" aria-hidden="true" />
+          <a class="reservation-back" href="ge.html#top">Reserve-ზე დაბრუნება</a>
+          <p class="reservation-kicker">რესტორანი Reserve · თბილისი</p>
           <h1
             class="reservation-title text-[#1a1a1a]"
-            style="font-family: 'LatoLocal', Arial, sans-serif; font-weight: 400;"
+            style="font-family: 'LatoLocal', NotoGeorgian, Arial, sans-serif; font-weight: 400;"
           >
-            Reservations
+            დაჯავშნა
           </h1>
 
-          <p class="reservation-copy text-[#2f2f2f]">
-            Reservations are available by request. A non-refundable deposit of 50 GEL per guest is required to secure your table.
-          </p>
+          <p class="reservation-welcome">შვიდი მაგიდა თბილისის გულში.<br />მოხარული ვიქნებით, გიმასპინძლოთ.</p>
+          <div class="reservation-deposit">
+            <p class="deposit-amount"><strong>50 ₾</strong><span>ერთ სტუმარზე</span></p>
+            <p class="reservation-copy">დეპოზიტი უკან არ ბრუნდება და საბოლოო ანგარიშში ჩაითვლება.</p>
+          </div>
+          <div class="reservation-contact"><p>გსურთ, დაგვიკავშირდეთ?</p><a href="tel:+995595313344">+995 595 31 33 44</a><p>9 აპრილის ქუჩა 3, თბილისი</p></div>
         </div>
 
         <div class="reservation-card-wrap">
-          <div class="booking-card text-white p-6 md:p-8 space-y-6">
+          <div class="booking-card text-white p-6 md:p-8 space-y-6" role="form" aria-label="დაჯავშნის მოთხოვნა">
             <div class="flex items-center justify-between gap-3">
               <div>
-                <p class="eyebrow mb-2">Reservation request</p>
-                <h2 class="heading-font text-2xl md:text-3xl">Details</h2>
+                <p class="eyebrow mb-2">დაჯავშნის მოთხოვნა</p>
+                <h2 class="heading-font text-2xl md:text-3xl">თქვენი ჯავშანი</h2>
               </div>
-              <div class="step-chip">Step <span id="step-current">1</span> of 3</div>
+              <div class="step-chip" aria-live="polite">ეტაპი <span id="step-current">1</span> / 3</div>
             </div>
 
             <div class="progress-track">
               <div id="progress-bar" class="progress-bar"></div>
             </div>
+            <ol class="booking-steps" aria-label="დაჯავშნის ეტაპები"><li aria-current="step"><span>01</span> მონაცემები</li><li><span>02</span> ვიზიტი</li><li><span>03</span> გადამოწმება</li></ol>
 
-            <div id="status-banner" class="status-banner hidden" data-type="info"></div>
+            <div id="status-banner" role="status" aria-live="polite" class="status-banner hidden" data-type="info"></div>
 
             <section id="step-1" class="space-y-5">
               <div>
-                <h3 class="heading-font text-xl mb-1">Your details</h3>
-                
+                <h3 class="heading-font text-xl mb-1" tabindex="-1">თქვენი მონაცემები</h3>
               </div>
 
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div id="field-name" class="field-wrap">
-                  <label class="field-label" for="input-name">Name *</label>
+                  <label class="field-label" for="input-name">სახელი *</label>
                   <input
-                    id="input-name"
+                    id="input-name" aria-describedby="error-name"
                     type="text"
                     class="text-input"
                     autocomplete="given-name"
-                    placeholder="Enter your name"
+                    placeholder="თქვენი სახელი"
                   />
                   <p id="error-name" class="field-error-text hidden"></p>
                 </div>
 
                 <div id="field-surname" class="field-wrap">
-                  <label class="field-label" for="input-surname">Surname *</label>
+                  <label class="field-label" for="input-surname">გვარი *</label>
                   <input
-                    id="input-surname"
+                    id="input-surname" aria-describedby="error-surname"
                     type="text"
                     class="text-input"
                     autocomplete="family-name"
-                    placeholder="Enter your surname"
+                    placeholder="თქვენი გვარი"
                   />
                   <p id="error-surname" class="field-error-text hidden"></p>
                 </div>
               </div>
 
               <div id="field-email" class="field-wrap">
-                <label class="field-label" for="input-email">Email *</label>
+                <label class="field-label" for="input-email">ელფოსტა *</label>
                 <input
-                  id="input-email"
+                  id="input-email" aria-describedby="error-email"
                   type="email"
                   class="text-input"
                   autocomplete="email"
@@ -979,15 +423,15 @@
               </div>
 
               <div id="field-phone" class="field-wrap">
-                <label class="field-label" for="input-phone">Phone number *</label>
+                <label class="field-label" for="input-phone">ტელეფონი *</label>
                 <div class="phone-shell">
                   <div class="select-shell" id="country-select-shell" data-display="+995">
-                    <select id="input-country-code" class="country-code-select" autocomplete="tel-country-code"></select>
+                    <select id="input-country-code" aria-label="ქვეყნის სატელეფონო კოდი" class="country-code-select" autocomplete="tel-country-code"></select>
                     <span class="select-chevron">⌄</span>
                   </div>
 
                   <input
-                    id="input-phone"
+                    id="input-phone" aria-describedby="error-phone"
                     type="tel"
                     class="text-input"
                     inputmode="numeric"
@@ -999,47 +443,46 @@
               </div>
 
               <div class="flex justify-end pt-2">
-                <button id="btn-next-1" type="button" class="button-primary">Next</button>
+                <button id="btn-next-1" type="button" class="button-primary">შემდეგი</button>
               </div>
             </section>
 
             <section id="step-2" class="space-y-5 hidden">
               <div>
-                <h3 class="heading-font text-xl mb-1">Date, time and guests</h3>
-              
+                <h3 class="heading-font text-xl mb-1" tabindex="-1">თარიღი, დრო და სტუმრები</h3>
               </div>
 
               <div id="field-date" class="field-wrap selector-wrap" data-selector="date">
-                <label class="field-label">Date *</label>
-                <button id="trigger-date" type="button" class="selector-trigger">
-                  <span id="label-date" class="placeholder">Select date</span>
+                <label id="field-label-date" class="field-label" for="trigger-date">თარიღი *</label>
+                <button id="trigger-date" type="button" aria-describedby="error-date" aria-controls="panel-date" aria-expanded="false" aria-labelledby="field-label-date label-date" class="selector-trigger">
+                  <span id="label-date" class="placeholder">აირჩიეთ თარიღი</span>
                   <span class="selector-chevron-inline">⌄</span>
                 </button>
 
                 <div id="panel-date" class="selector-panel hidden">
                   <div class="calendar-shell">
                     <div class="calendar-header">
-                      <button id="calendar-prev" type="button" class="calendar-nav-btn" aria-label="Previous month">
+                      <button id="calendar-prev" type="button" class="calendar-nav-btn" aria-label="წინა თვე">
                         &#8249;
                       </button>
-                      <div id="calendar-title" class="calendar-title">Month Year</div>
-                      <button id="calendar-next" type="button" class="calendar-nav-btn" aria-label="Next month">
+                      <div id="calendar-title" class="calendar-title">თვე და წელი</div>
+                      <button id="calendar-next" type="button" class="calendar-nav-btn" aria-label="შემდეგი თვე">
                         &#8250;
                       </button>
                     </div>
 
                     <div class="calendar-weekdays">
-                      <div class="calendar-weekday">Mon</div>
-                      <div class="calendar-weekday">Tue</div>
-                      <div class="calendar-weekday">Wed</div>
-                      <div class="calendar-weekday">Thu</div>
-                      <div class="calendar-weekday">Fri</div>
-                      <div class="calendar-weekday">Sat</div>
-                      <div class="calendar-weekday">Sun</div>
+                      <div class="calendar-weekday">ორშ</div>
+                      <div class="calendar-weekday">სამ</div>
+                      <div class="calendar-weekday">ოთხ</div>
+                      <div class="calendar-weekday">ხუთ</div>
+                      <div class="calendar-weekday">პარ</div>
+                      <div class="calendar-weekday">შაბ</div>
+                      <div class="calendar-weekday">კვი</div>
                     </div>
 
                     <div id="calendar-grid" class="calendar-grid"></div>
-                    <p class="calendar-legend">Greyed out dates are unavailable.</p>
+                    <p class="calendar-legend">ნაცრისფრად მონიშნული თარიღები მიუწვდომელია.</p>
                   </div>
                 </div>
 
@@ -1047,9 +490,9 @@
               </div>
 
               <div id="field-guests" class="field-wrap selector-wrap" data-selector="guests">
-                <label class="field-label">Number of guests *</label>
-                <button id="trigger-guests" type="button" class="selector-trigger">
-                  <span id="label-guests" class="placeholder">Select guests</span>
+                <label id="field-label-guests" class="field-label" for="trigger-guests">სტუმრების რაოდენობა *</label>
+                <button id="trigger-guests" type="button" aria-describedby="error-guests" aria-controls="panel-guests" aria-expanded="false" aria-labelledby="field-label-guests label-guests" class="selector-trigger">
+                  <span id="label-guests" class="placeholder">აირჩიეთ სტუმრები</span>
                   <span class="selector-chevron-inline">⌄</span>
                 </button>
 
@@ -1063,9 +506,9 @@
               </div>
 
               <div id="field-time" class="field-wrap selector-wrap" data-selector="time">
-                <label class="field-label">Time *</label>
-                <button id="trigger-time" type="button" class="selector-trigger">
-                  <span id="label-time" class="placeholder">Select time</span>
+                <label id="field-label-time" class="field-label" for="trigger-time">დრო *</label>
+                <button id="trigger-time" type="button" aria-describedby="error-time" aria-controls="panel-time" aria-expanded="false" aria-labelledby="field-label-time label-time" class="selector-trigger">
+                  <span id="label-time" class="placeholder">აირჩიეთ დრო</span>
                   <span class="selector-chevron-inline">⌄</span>
                 </button>
 
@@ -1079,68 +522,69 @@
               </div>
 
               <div id="large-group-note" class="hint-box hidden">
-                A non-refundable deposit of 50 GEL per person is required for all reservations and will be applied towards your final bill.
+                ყველა ჯავშნისთვის საჭიროა 50 ლარის დეპოზიტი ერთ სტუმარზე. დეპოზიტი უკან არ ბრუნდება და საბოლოო ანგარიშში ჩაითვლება.
               </div>
 
               <div class="flex justify-between gap-3 pt-2">
-                <button id="btn-back-2" type="button" class="button-secondary">Back</button>
-                <button id="btn-next-2" type="button" class="button-primary">Next</button>
+                <button id="btn-back-2" type="button" class="button-secondary">უკან</button>
+                <button id="btn-next-2" type="button" class="button-primary">შემდეგი</button>
               </div>
             </section>
 
             <section id="step-3" class="space-y-5 hidden">
               <div>
-                <h3 class="heading-font text-xl mb-1">Review and requests</h3>
-                <p class="subtle-copy">One last look before continuing.</p>
+                <h3 class="heading-font text-xl mb-1" tabindex="-1">გადამოწმება და სურვილები</h3>
+                <p class="subtle-copy">გაგრძელებამდე გადაამოწმეთ მონაცემები.</p>
+              </div>
+
+              <div class="summary-card">
+                <div class="summary-visit">
+                  <div class="summary-row">
+                    <div class="summary-label">თარიღი</div>
+                    <div id="summary-date" class="summary-value">—</div>
+                  </div>
+                  <div class="summary-row">
+                    <div class="summary-label">დრო</div>
+                    <div id="summary-time" class="summary-value">—</div>
+                  </div>
+                  <div class="summary-row">
+                    <div class="summary-label">სტუმრები</div>
+                    <div id="summary-guests" class="summary-value">—</div>
+                  </div>
+                </div>
+                <div id="summary-deposit-row" class="summary-row hidden">
+                  <div class="summary-label">დეპოზიტი</div>
+                  <div id="summary-deposit-value" class="summary-value"> </div>
+                </div>
+                <div class="summary-row">
+                  <div class="summary-label">სტუმარი</div>
+                  <div id="summary-name" class="summary-value">—</div>
+                </div>
+                <div class="summary-row">
+                  <div class="summary-label">ელფოსტა</div>
+                  <div id="summary-email" class="summary-value">—</div>
+                </div>
+                <div class="summary-row">
+                  <div class="summary-label">ტელეფონი</div>
+                  <div id="summary-phone" class="summary-value">—</div>
+                </div>
+                <div class="summary-row hidden">
+                  <div class="summary-label">სურვილები</div>
+                  <div id="summary-requests" class="summary-value">არ არის</div>
+                </div>
               </div>
 
               <div id="field-requests" class="field-wrap">
-                <label class="field-label" for="input-requests">Special requests (optional)</label>
+                <label class="field-label" for="input-requests">განსაკუთრებული სურვილები (არასავალდებულო)</label>
                 <textarea
-                  id="input-requests"
-                  class="textarea-input"
-                  placeholder="Allergies, celebrations, seating preferences..."
+                  id="input-requests" aria-describedby="error-requests" class="textarea-input"
+                  placeholder="ალერგიები, განსაკუთრებული თარიღი, სასურველი ადგილი..."
                 ></textarea>
                 <p id="error-requests" class="field-error-text hidden"></p>
               </div>
 
               <div class="hint-box">
-                Please note: the latest time for set order requests is 19:30. After that, we may not be able to fulfill the request. The kitchen closes at 21:00 Sunday–Thursday and 22:00 Friday–Saturday.
-              </div>
-
-              <div class="summary-card">
-                <div class="summary-row">
-                  <div class="summary-label">Guest</div>
-                  <div id="summary-name" class="summary-value">—</div>
-                </div>
-                <div class="summary-row">
-                  <div class="summary-label">Email</div>
-                  <div id="summary-email" class="summary-value">—</div>
-                </div>
-                <div class="summary-row">
-                  <div class="summary-label">Phone</div>
-                  <div id="summary-phone" class="summary-value">—</div>
-                </div>
-                <div class="summary-row">
-                  <div class="summary-label">Date</div>
-                  <div id="summary-date" class="summary-value">—</div>
-                </div>
-                <div class="summary-row">
-                  <div class="summary-label">Time</div>
-                  <div id="summary-time" class="summary-value">—</div>
-                </div>
-                <div class="summary-row">
-                  <div class="summary-label">Guests</div>
-                  <div id="summary-guests" class="summary-value">—</div>
-                </div>
-                <div id="summary-deposit-row" class="summary-row hidden">
-                  <div class="summary-label">Deposit</div>
-                  <div id="summary-deposit-value" class="summary-value"> </div>
-                </div>
-                <div class="summary-row">
-                  <div class="summary-label">Requests</div>
-                  <div id="summary-requests" class="summary-value">None</div>
-                </div>
+                გთხოვთ, გაითვალისწინოთ: სეტის შეკვეთა შესაძლებელია 19:30-მდე. ამ დროის შემდეგ შესაძლოა თქვენი სურვილის შესრულება ვეღარ მოვახერხოთ. სამზარეულო კვირიდან ხუთშაბათამდე 21:00-ზე, პარასკევსა და შაბათს კი 22:00-ზე იხურება.
               </div>
 
               <div id="field-terms" class="field-wrap">
@@ -1153,20 +597,20 @@
                     aria-describedby="error-terms"
                   />
                   <div class="terms-copy">
-                    <label for="input-terms" class="cursor-pointer">I have read and agree to the</label>
-                    <a href="#" class="terms-link" data-terms-placeholder>Terms of Service</a>.
+                    <label for="input-terms" class="cursor-pointer">გავეცანი და ვეთანხმები</label>
+                    <a href="#" class="terms-link" data-terms-placeholder>მომსახურების პირობებს</a>.
                   </div>
                 </div>
                 <p id="error-terms" class="field-error-text hidden"></p>
               </div>
 
               <p class="subtle-copy">
-                Reservations are confirmed only after our team processes the request and the deposit step is completed.
+                ჯავშანი დადასტურდება მხოლოდ მას შემდეგ, რაც ჩვენი გუნდი მოთხოვნას დაამუშავებს და დეპოზიტის გადახდა დასრულდება.
               </p>
 
               <div class="flex justify-between gap-3 pt-2">
-                <button id="btn-back-3" type="button" class="button-secondary">Back</button>
-                <button id="btn-submit" type="button" class="button-primary">Continue to deposit</button>
+                <button id="btn-back-3" type="button" class="button-secondary">უკან</button>
+                <button id="btn-submit" type="button" class="button-primary">დეპოზიტის გადახდა</button>
               </div>
             </section>
           </div>
@@ -1184,15 +628,15 @@
     >
       <div class="policy-notice-backdrop" data-policy-close></div>
       <div class="policy-notice-card">
-        <p class="policy-notice-kicker">Before you continue</p>
-        <h2 id="deposit-policy-title" class="policy-notice-title">Deposit and terms</h2>
+        <p class="policy-notice-kicker">გაგრძელებამდე</p>
+        <h2 id="deposit-policy-title" class="policy-notice-title">დეპოზიტი და პირობები</h2>
         <p class="policy-notice-copy">
-          Your 50 GEL per guest deposit is non-refundable. Please review and accept the
-          <a href="#" class="terms-link" data-terms-placeholder>Terms of Service</a>
-          on the final step before continuing to payment.
+          ერთ სტუმარზე გადახდილი 50 ლარის დეპოზიტი უკან არ ბრუნდება. გთხოვთ, ბოლო ეტაპზე გაეცნოთ და დაეთანხმოთ
+          <a href="#" class="terms-link" data-terms-placeholder>მომსახურების პირობებს</a>
+          გადახდაზე გადასვლამდე.
         </p>
         <button id="deposit-policy-close" type="button" class="button-primary policy-notice-action">
-          I understand
+          გასაგებია
         </button>
       </div>
     </div>
@@ -1201,13 +645,14 @@
       <div class="max-w-7xl mx-auto px-6 md:px-16 flex items-center justify-center gap-5">
         <a
           href="https://api.whatsapp.com/send/?phone=%2B995595313344&text=&type=phone_number&app_absent=0"
-          target="_blank"
+          target="_blank" rel="noopener"
           aria-label="WhatsApp"
           class="social-btn inline-flex items-center justify-center w-10 h-10 rounded-full border border-white/20 hover:border-white/40"
         >
           <img
             src="images/Digital_Glyph_White.svg"
-            alt="WhatsApp icon"
+            alt="WhatsApp-ის ხატულა"
+            width="16" height="16"
             class="w-5 h-5"
             draggable="false"
           />
@@ -1215,13 +660,14 @@
 
         <a
           href="https://www.instagram.com/reserve.tbilisi/"
-          target="_blank"
+          target="_blank" rel="noopener"
           aria-label="Instagram"
           class="social-btn inline-flex items-center justify-center w-10 h-10 rounded-full border border-white/20 hover:border-white/40"
         >
           <img
             src="images/Instagram_Glyph_White.svg"
-            alt="Instagram icon"
+            alt="Instagram-ის ხატულა"
+            width="16" height="16"
             class="w-5 h-5"
             draggable="false"
           />
@@ -1236,6 +682,8 @@
       </div>
     </footer>
 
+    <script src="vendor/libphonenumber-js/libphonenumber-min.js"></script>
+    <script src="reservation-phone.js"></script>
     <script>
       const overlay = document.getElementById("page-overlay");
       const panel = document.getElementById("page-panel");
@@ -1254,7 +702,7 @@
       });
 
       const API_ENABLED = true;
-      const API_ENDPOINT = "/api/reservations/create";
+      const API_ENDPOINT = "/api/reservations/create?lang=ka";
       const AVAILABILITY_ENDPOINT = "/api/reservations/availability";
 
       const OPEN_TIME = "12:00";
@@ -1269,243 +717,243 @@
       const DISABLED_GUEST_COUNTS = [];
 
       const COUNTRY_OPTIONS = [
-        { name: "Afghanistan", iso: "AF", code: "+93" },
-        { name: "Albania", iso: "AL", code: "+355" },
-        { name: "Algeria", iso: "DZ", code: "+213" },
-        { name: "American Samoa", iso: "AS", code: "+1-684" },
-        { name: "Andorra", iso: "AD", code: "+376" },
-        { name: "Angola", iso: "AO", code: "+244" },
-        { name: "Anguilla", iso: "AI", code: "+1-264" },
-        { name: "Antigua and Barbuda", iso: "AG", code: "+1-268" },
-        { name: "Argentina", iso: "AR", code: "+54" },
-        { name: "Armenia", iso: "AM", code: "+374" },
-        { name: "Aruba", iso: "AW", code: "+297" },
-        { name: "Australia", iso: "AU", code: "+61" },
-        { name: "Austria", iso: "AT", code: "+43" },
-        { name: "Azerbaijan", iso: "AZ", code: "+994" },
-        { name: "Bahamas", iso: "BS", code: "+1-242" },
-        { name: "Bahrain", iso: "BH", code: "+973" },
-        { name: "Bangladesh", iso: "BD", code: "+880" },
-        { name: "Barbados", iso: "BB", code: "+1-246" },
-        { name: "Belarus", iso: "BY", code: "+375" },
-        { name: "Belgium", iso: "BE", code: "+32" },
-        { name: "Belize", iso: "BZ", code: "+501" },
-        { name: "Benin", iso: "BJ", code: "+229" },
-        { name: "Bermuda", iso: "BM", code: "+1-441" },
-        { name: "Bhutan", iso: "BT", code: "+975" },
-        { name: "Bolivia", iso: "BO", code: "+591" },
-        { name: "Bosnia and Herzegovina", iso: "BA", code: "+387" },
-        { name: "Botswana", iso: "BW", code: "+267" },
-        { name: "Brazil", iso: "BR", code: "+55" },
-        { name: "British Virgin Islands", iso: "VG", code: "+1-284" },
-        { name: "Brunei", iso: "BN", code: "+673" },
-        { name: "Bulgaria", iso: "BG", code: "+359" },
-        { name: "Burkina Faso", iso: "BF", code: "+226" },
-        { name: "Burundi", iso: "BI", code: "+257" },
-        { name: "Cambodia", iso: "KH", code: "+855" },
-        { name: "Cameroon", iso: "CM", code: "+237" },
-        { name: "Canada", iso: "CA", code: "+1" },
-        { name: "Cape Verde", iso: "CV", code: "+238" },
-        { name: "Cayman Islands", iso: "KY", code: "+1-345" },
-        { name: "Central African Republic", iso: "CF", code: "+236" },
-        { name: "Chad", iso: "TD", code: "+235" },
-        { name: "Chile", iso: "CL", code: "+56" },
-        { name: "China", iso: "CN", code: "+86" },
-        { name: "Colombia", iso: "CO", code: "+57" },
-        { name: "Comoros", iso: "KM", code: "+269" },
-        { name: "Congo", iso: "CG", code: "+242" },
-        { name: "Congo (DRC)", iso: "CD", code: "+243" },
-        { name: "Cook Islands", iso: "CK", code: "+682" },
-        { name: "Costa Rica", iso: "CR", code: "+506" },
-        { name: "Croatia", iso: "HR", code: "+385" },
-        { name: "Cuba", iso: "CU", code: "+53" },
-        { name: "Curaçao", iso: "CW", code: "+599" },
-        { name: "Cyprus", iso: "CY", code: "+357" },
-        { name: "Czech Republic", iso: "CZ", code: "+420" },
-        { name: "Denmark", iso: "DK", code: "+45" },
-        { name: "Djibouti", iso: "DJ", code: "+253" },
-        { name: "Dominica", iso: "DM", code: "+1-767" },
-        { name: "Dominican Republic", iso: "DO", code: "+1-809" },
-        { name: "Dominican Republic", iso: "DO", code: "+1-829" },
-        { name: "Dominican Republic", iso: "DO", code: "+1-849" },
-        { name: "Ecuador", iso: "EC", code: "+593" },
-        { name: "Egypt", iso: "EG", code: "+20" },
-        { name: "El Salvador", iso: "SV", code: "+503" },
-        { name: "Equatorial Guinea", iso: "GQ", code: "+240" },
-        { name: "Eritrea", iso: "ER", code: "+291" },
-        { name: "Estonia", iso: "EE", code: "+372" },
-        { name: "Eswatini", iso: "SZ", code: "+268" },
-        { name: "Ethiopia", iso: "ET", code: "+251" },
-        { name: "Faroe Islands", iso: "FO", code: "+298" },
-        { name: "Fiji", iso: "FJ", code: "+679" },
-        { name: "Finland", iso: "FI", code: "+358" },
-        { name: "France", iso: "FR", code: "+33" },
-        { name: "French Guiana", iso: "GF", code: "+594" },
-        { name: "French Polynesia", iso: "PF", code: "+689" },
-        { name: "Gabon", iso: "GA", code: "+241" },
-        { name: "Gambia", iso: "GM", code: "+220" },
-        { name: "Georgia", iso: "GE", code: "+995" },
-        { name: "Germany", iso: "DE", code: "+49" },
-        { name: "Ghana", iso: "GH", code: "+233" },
-        { name: "Gibraltar", iso: "GI", code: "+350" },
-        { name: "Greece", iso: "GR", code: "+30" },
-        { name: "Greenland", iso: "GL", code: "+299" },
-        { name: "Grenada", iso: "GD", code: "+1-473" },
-        { name: "Guadeloupe", iso: "GP", code: "+590" },
-        { name: "Guam", iso: "GU", code: "+1-671" },
-        { name: "Guatemala", iso: "GT", code: "+502" },
-        { name: "Guernsey", iso: "GG", code: "+44-1481" },
-        { name: "Guinea", iso: "GN", code: "+224" },
-        { name: "Guinea-Bissau", iso: "GW", code: "+245" },
-        { name: "Guyana", iso: "GY", code: "+592" },
-        { name: "Haiti", iso: "HT", code: "+509" },
-        { name: "Honduras", iso: "HN", code: "+504" },
-        { name: "Hong Kong", iso: "HK", code: "+852" },
-        { name: "Hungary", iso: "HU", code: "+36" },
-        { name: "Iceland", iso: "IS", code: "+354" },
-        { name: "India", iso: "IN", code: "+91" },
-        { name: "Indonesia", iso: "ID", code: "+62" },
-        { name: "Iran", iso: "IR", code: "+98" },
-        { name: "Iraq", iso: "IQ", code: "+964" },
-        { name: "Ireland", iso: "IE", code: "+353" },
-        { name: "Isle of Man", iso: "IM", code: "+44-1624" },
-        { name: "Israel", iso: "IL", code: "+972" },
-        { name: "Italy", iso: "IT", code: "+39" },
-        { name: "Ivory Coast", iso: "CI", code: "+225" },
-        { name: "Jamaica", iso: "JM", code: "+1-876" },
-        { name: "Japan", iso: "JP", code: "+81" },
-        { name: "Jersey", iso: "JE", code: "+44-1534" },
-        { name: "Jordan", iso: "JO", code: "+962" },
-        { name: "Kazakhstan", iso: "KZ", code: "+7" },
-        { name: "Kenya", iso: "KE", code: "+254" },
-        { name: "Kiribati", iso: "KI", code: "+686" },
-        { name: "Kosovo", iso: "XK", code: "+383" },
-        { name: "Kuwait", iso: "KW", code: "+965" },
-        { name: "Kyrgyzstan", iso: "KG", code: "+996" },
-        { name: "Laos", iso: "LA", code: "+856" },
-        { name: "Latvia", iso: "LV", code: "+371" },
-        { name: "Lebanon", iso: "LB", code: "+961" },
-        { name: "Lesotho", iso: "LS", code: "+266" },
-        { name: "Liberia", iso: "LR", code: "+231" },
-        { name: "Libya", iso: "LY", code: "+218" },
-        { name: "Liechtenstein", iso: "LI", code: "+423" },
-        { name: "Lithuania", iso: "LT", code: "+370" },
-        { name: "Luxembourg", iso: "LU", code: "+352" },
-        { name: "Macau", iso: "MO", code: "+853" },
-        { name: "Madagascar", iso: "MG", code: "+261" },
-        { name: "Malawi", iso: "MW", code: "+265" },
-        { name: "Malaysia", iso: "MY", code: "+60" },
-        { name: "Maldives", iso: "MV", code: "+960" },
-        { name: "Mali", iso: "ML", code: "+223" },
-        { name: "Malta", iso: "MT", code: "+356" },
-        { name: "Marshall Islands", iso: "MH", code: "+692" },
-        { name: "Martinique", iso: "MQ", code: "+596" },
-        { name: "Mauritania", iso: "MR", code: "+222" },
-        { name: "Mauritius", iso: "MU", code: "+230" },
-        { name: "Mayotte", iso: "YT", code: "+262" },
-        { name: "Mexico", iso: "MX", code: "+52" },
-        { name: "Micronesia", iso: "FM", code: "+691" },
-        { name: "Moldova", iso: "MD", code: "+373" },
-        { name: "Monaco", iso: "MC", code: "+377" },
-        { name: "Mongolia", iso: "MN", code: "+976" },
-        { name: "Montenegro", iso: "ME", code: "+382" },
-        { name: "Montserrat", iso: "MS", code: "+1-664" },
-        { name: "Morocco", iso: "MA", code: "+212" },
-        { name: "Mozambique", iso: "MZ", code: "+258" },
-        { name: "Myanmar", iso: "MM", code: "+95" },
-        { name: "Namibia", iso: "NA", code: "+264" },
-        { name: "Nauru", iso: "NR", code: "+674" },
-        { name: "Nepal", iso: "NP", code: "+977" },
-        { name: "Netherlands", iso: "NL", code: "+31" },
-        { name: "New Caledonia", iso: "NC", code: "+687" },
-        { name: "New Zealand", iso: "NZ", code: "+64" },
-        { name: "Nicaragua", iso: "NI", code: "+505" },
-        { name: "Niger", iso: "NE", code: "+227" },
-        { name: "Nigeria", iso: "NG", code: "+234" },
-        { name: "Niue", iso: "NU", code: "+683" },
-        { name: "North Korea", iso: "KP", code: "+850" },
-        { name: "North Macedonia", iso: "MK", code: "+389" },
-        { name: "Northern Mariana Islands", iso: "MP", code: "+1-670" },
-        { name: "Norway", iso: "NO", code: "+47" },
-        { name: "Oman", iso: "OM", code: "+968" },
-        { name: "Pakistan", iso: "PK", code: "+92" },
-        { name: "Palau", iso: "PW", code: "+680" },
-        { name: "Palestine", iso: "PS", code: "+970" },
-        { name: "Panama", iso: "PA", code: "+507" },
-        { name: "Papua New Guinea", iso: "PG", code: "+675" },
-        { name: "Paraguay", iso: "PY", code: "+595" },
-        { name: "Peru", iso: "PE", code: "+51" },
-        { name: "Philippines", iso: "PH", code: "+63" },
-        { name: "Poland", iso: "PL", code: "+48" },
-        { name: "Portugal", iso: "PT", code: "+351" },
-        { name: "Puerto Rico", iso: "PR", code: "+1-787" },
-        { name: "Puerto Rico", iso: "PR", code: "+1-939" },
-        { name: "Qatar", iso: "QA", code: "+974" },
-        { name: "Réunion", iso: "RE", code: "+262" },
-        { name: "Romania", iso: "RO", code: "+40" },
-        { name: "Russia", iso: "RU", code: "+7" },
-        { name: "Rwanda", iso: "RW", code: "+250" },
-        { name: "Saint Barthélemy", iso: "BL", code: "+590" },
-        { name: "Saint Helena", iso: "SH", code: "+290" },
-        { name: "Saint Kitts and Nevis", iso: "KN", code: "+1-869" },
-        { name: "Saint Lucia", iso: "LC", code: "+1-758" },
-        { name: "Saint Martin", iso: "MF", code: "+590" },
-        { name: "Saint Pierre and Miquelon", iso: "PM", code: "+508" },
-        { name: "Saint Vincent and the Grenadines", iso: "VC", code: "+1-784" },
-        { name: "Samoa", iso: "WS", code: "+685" },
-        { name: "San Marino", iso: "SM", code: "+378" },
-        { name: "Sao Tome and Principe", iso: "ST", code: "+239" },
-        { name: "Saudi Arabia", iso: "SA", code: "+966" },
-        { name: "Senegal", iso: "SN", code: "+221" },
-        { name: "Serbia", iso: "RS", code: "+381" },
-        { name: "Seychelles", iso: "SC", code: "+248" },
-        { name: "Sierra Leone", iso: "SL", code: "+232" },
-        { name: "Singapore", iso: "SG", code: "+65" },
-        { name: "Sint Maarten", iso: "SX", code: "+1-721" },
-        { name: "Slovakia", iso: "SK", code: "+421" },
-        { name: "Slovenia", iso: "SI", code: "+386" },
-        { name: "Solomon Islands", iso: "SB", code: "+677" },
-        { name: "Somalia", iso: "SO", code: "+252" },
-        { name: "South Africa", iso: "ZA", code: "+27" },
-        { name: "South Korea", iso: "KR", code: "+82" },
-        { name: "South Sudan", iso: "SS", code: "+211" },
-        { name: "Spain", iso: "ES", code: "+34" },
-        { name: "Sri Lanka", iso: "LK", code: "+94" },
-        { name: "Sudan", iso: "SD", code: "+249" },
-        { name: "Suriname", iso: "SR", code: "+597" },
-        { name: "Sweden", iso: "SE", code: "+46" },
-        { name: "Switzerland", iso: "CH", code: "+41" },
-        { name: "Syria", iso: "SY", code: "+963" },
-        { name: "Taiwan", iso: "TW", code: "+886" },
-        { name: "Tajikistan", iso: "TJ", code: "+992" },
-        { name: "Tanzania", iso: "TZ", code: "+255" },
-        { name: "Thailand", iso: "TH", code: "+66" },
-        { name: "Timor-Leste", iso: "TL", code: "+670" },
-        { name: "Togo", iso: "TG", code: "+228" },
-        { name: "Tokelau", iso: "TK", code: "+690" },
-        { name: "Tonga", iso: "TO", code: "+676" },
-        { name: "Trinidad and Tobago", iso: "TT", code: "+1-868" },
-        { name: "Tunisia", iso: "TN", code: "+216" },
-        { name: "Turkey", iso: "TR", code: "+90" },
-        { name: "Turkmenistan", iso: "TM", code: "+993" },
-        { name: "Turks and Caicos Islands", iso: "TC", code: "+1-649" },
-        { name: "Tuvalu", iso: "TV", code: "+688" },
-        { name: "U.S. Virgin Islands", iso: "VI", code: "+1-340" },
-        { name: "Uganda", iso: "UG", code: "+256" },
-        { name: "Ukraine", iso: "UA", code: "+380" },
-        { name: "United Arab Emirates", iso: "AE", code: "+971" },
-        { name: "United Kingdom", iso: "GB", code: "+44" },
-        { name: "United States", iso: "US", code: "+1" },
-        { name: "Uruguay", iso: "UY", code: "+598" },
-        { name: "Uzbekistan", iso: "UZ", code: "+998" },
-        { name: "Vanuatu", iso: "VU", code: "+678" },
-        { name: "Vatican City", iso: "VA", code: "+379" },
-        { name: "Venezuela", iso: "VE", code: "+58" },
-        { name: "Vietnam", iso: "VN", code: "+84" },
-        { name: "Wallis and Futuna", iso: "WF", code: "+681" },
-        { name: "Yemen", iso: "YE", code: "+967" },
-        { name: "Zambia", iso: "ZM", code: "+260" },
-        { name: "Zimbabwe", iso: "ZW", code: "+263" }
+        { name: "ავღანეთი", iso: "AF", code: "+93" },
+        { name: "ალბანეთი", iso: "AL", code: "+355" },
+        { name: "ალჟირი", iso: "DZ", code: "+213" },
+        { name: "ამერიკის სამოა", iso: "AS", code: "+1-684" },
+        { name: "ანდორა", iso: "AD", code: "+376" },
+        { name: "ანგოლა", iso: "AO", code: "+244" },
+        { name: "ანგილია", iso: "AI", code: "+1-264" },
+        { name: "ანტიგუა და ბარბუდა", iso: "AG", code: "+1-268" },
+        { name: "არგენტინა", iso: "AR", code: "+54" },
+        { name: "სომხეთი", iso: "AM", code: "+374" },
+        { name: "არუბა", iso: "AW", code: "+297" },
+        { name: "ავსტრალია", iso: "AU", code: "+61" },
+        { name: "ავსტრია", iso: "AT", code: "+43" },
+        { name: "აზერბაიჯანი", iso: "AZ", code: "+994" },
+        { name: "ბაჰამის კუნძულები", iso: "BS", code: "+1-242" },
+        { name: "ბაჰრეინი", iso: "BH", code: "+973" },
+        { name: "ბანგლადეში", iso: "BD", code: "+880" },
+        { name: "ბარბადოსი", iso: "BB", code: "+1-246" },
+        { name: "ბელარუსი", iso: "BY", code: "+375" },
+        { name: "ბელგია", iso: "BE", code: "+32" },
+        { name: "ბელიზი", iso: "BZ", code: "+501" },
+        { name: "ბენინი", iso: "BJ", code: "+229" },
+        { name: "ბერმუდა", iso: "BM", code: "+1-441" },
+        { name: "ბუტანი", iso: "BT", code: "+975" },
+        { name: "ბოლივია", iso: "BO", code: "+591" },
+        { name: "ბოსნია და ჰერცეგოვინა", iso: "BA", code: "+387" },
+        { name: "ბოტსვანა", iso: "BW", code: "+267" },
+        { name: "ბრაზილია", iso: "BR", code: "+55" },
+        { name: "ბრიტანეთის ვირჯინის კუნძულები", iso: "VG", code: "+1-284" },
+        { name: "ბრუნეი", iso: "BN", code: "+673" },
+        { name: "ბულგარეთი", iso: "BG", code: "+359" },
+        { name: "ბურკინა-ფასო", iso: "BF", code: "+226" },
+        { name: "ბურუნდი", iso: "BI", code: "+257" },
+        { name: "კამბოჯა", iso: "KH", code: "+855" },
+        { name: "კამერუნი", iso: "CM", code: "+237" },
+        { name: "კანადა", iso: "CA", code: "+1" },
+        { name: "კაბო-ვერდე", iso: "CV", code: "+238" },
+        { name: "კაიმანის კუნძულები", iso: "KY", code: "+1-345" },
+        { name: "ცენტრალური აფრიკის რესპუბლიკა", iso: "CF", code: "+236" },
+        { name: "ჩადი", iso: "TD", code: "+235" },
+        { name: "ჩილე", iso: "CL", code: "+56" },
+        { name: "ჩინეთი", iso: "CN", code: "+86" },
+        { name: "კოლუმბია", iso: "CO", code: "+57" },
+        { name: "კომორის კუნძულები", iso: "KM", code: "+269" },
+        { name: "კონგო - ბრაზავილი", iso: "CG", code: "+242" },
+        { name: "კონგო - კინშასა", iso: "CD", code: "+243" },
+        { name: "კუკის კუნძულები", iso: "CK", code: "+682" },
+        { name: "კოსტა-რიკა", iso: "CR", code: "+506" },
+        { name: "ხორვატია", iso: "HR", code: "+385" },
+        { name: "კუბა", iso: "CU", code: "+53" },
+        { name: "კიურასაო", iso: "CW", code: "+599" },
+        { name: "კვიპროსი", iso: "CY", code: "+357" },
+        { name: "ჩეხეთი", iso: "CZ", code: "+420" },
+        { name: "დანია", iso: "DK", code: "+45" },
+        { name: "ჯიბუტი", iso: "DJ", code: "+253" },
+        { name: "დომინიკა", iso: "DM", code: "+1-767" },
+        { name: "დომინიკელთა რესპუბლიკა", iso: "DO", code: "+1-809" },
+        { name: "დომინიკელთა რესპუბლიკა", iso: "DO", code: "+1-829" },
+        { name: "დომინიკელთა რესპუბლიკა", iso: "DO", code: "+1-849" },
+        { name: "ეკვადორი", iso: "EC", code: "+593" },
+        { name: "ეგვიპტე", iso: "EG", code: "+20" },
+        { name: "სალვადორი", iso: "SV", code: "+503" },
+        { name: "ეკვატორული გვინეა", iso: "GQ", code: "+240" },
+        { name: "ერიტრეა", iso: "ER", code: "+291" },
+        { name: "ესტონეთი", iso: "EE", code: "+372" },
+        { name: "სვაზილენდი", iso: "SZ", code: "+268" },
+        { name: "ეთიოპია", iso: "ET", code: "+251" },
+        { name: "ფარერის კუნძულები", iso: "FO", code: "+298" },
+        { name: "ფიჯი", iso: "FJ", code: "+679" },
+        { name: "ფინეთი", iso: "FI", code: "+358" },
+        { name: "საფრანგეთი", iso: "FR", code: "+33" },
+        { name: "საფრანგეთის გვიანა", iso: "GF", code: "+594" },
+        { name: "საფრანგეთის პოლინეზია", iso: "PF", code: "+689" },
+        { name: "გაბონი", iso: "GA", code: "+241" },
+        { name: "გამბია", iso: "GM", code: "+220" },
+        { name: "საქართველო", iso: "GE", code: "+995" },
+        { name: "გერმანია", iso: "DE", code: "+49" },
+        { name: "განა", iso: "GH", code: "+233" },
+        { name: "გიბრალტარი", iso: "GI", code: "+350" },
+        { name: "საბერძნეთი", iso: "GR", code: "+30" },
+        { name: "გრენლანდია", iso: "GL", code: "+299" },
+        { name: "გრენადა", iso: "GD", code: "+1-473" },
+        { name: "გვადელუპა", iso: "GP", code: "+590" },
+        { name: "გუამი", iso: "GU", code: "+1-671" },
+        { name: "გვატემალა", iso: "GT", code: "+502" },
+        { name: "გერნსი", iso: "GG", code: "+44-1481" },
+        { name: "გვინეა", iso: "GN", code: "+224" },
+        { name: "გვინეა-ბისაუ", iso: "GW", code: "+245" },
+        { name: "გაიანა", iso: "GY", code: "+592" },
+        { name: "ჰაიტი", iso: "HT", code: "+509" },
+        { name: "ჰონდურასი", iso: "HN", code: "+504" },
+        { name: "ჰონკონგის სპეციალური ადმინისტრაციული რეგიონი, ჩინეთი", iso: "HK", code: "+852" },
+        { name: "უნგრეთი", iso: "HU", code: "+36" },
+        { name: "ისლანდია", iso: "IS", code: "+354" },
+        { name: "ინდოეთი", iso: "IN", code: "+91" },
+        { name: "ინდონეზია", iso: "ID", code: "+62" },
+        { name: "ირანი", iso: "IR", code: "+98" },
+        { name: "ერაყი", iso: "IQ", code: "+964" },
+        { name: "ირლანდია", iso: "IE", code: "+353" },
+        { name: "მენის კუნძული", iso: "IM", code: "+44-1624" },
+        { name: "ისრაელი", iso: "IL", code: "+972" },
+        { name: "იტალია", iso: "IT", code: "+39" },
+        { name: "კოტ-დივუარი", iso: "CI", code: "+225" },
+        { name: "იამაიკა", iso: "JM", code: "+1-876" },
+        { name: "იაპონია", iso: "JP", code: "+81" },
+        { name: "ჯერსი", iso: "JE", code: "+44-1534" },
+        { name: "იორდანია", iso: "JO", code: "+962" },
+        { name: "ყაზახეთი", iso: "KZ", code: "+7" },
+        { name: "კენია", iso: "KE", code: "+254" },
+        { name: "კირიბატი", iso: "KI", code: "+686" },
+        { name: "კოსოვო", iso: "XK", code: "+383" },
+        { name: "ქუვეითი", iso: "KW", code: "+965" },
+        { name: "ყირგიზეთი", iso: "KG", code: "+996" },
+        { name: "ლაოსი", iso: "LA", code: "+856" },
+        { name: "ლატვია", iso: "LV", code: "+371" },
+        { name: "ლიბანი", iso: "LB", code: "+961" },
+        { name: "ლესოთო", iso: "LS", code: "+266" },
+        { name: "ლიბერია", iso: "LR", code: "+231" },
+        { name: "ლიბია", iso: "LY", code: "+218" },
+        { name: "ლიხტენშტაინი", iso: "LI", code: "+423" },
+        { name: "ლიეტუვა", iso: "LT", code: "+370" },
+        { name: "ლუქსემბურგი", iso: "LU", code: "+352" },
+        { name: "მაკაოს სპეციალური ადმინისტრაციული რეგიონი, ჩინეთი", iso: "MO", code: "+853" },
+        { name: "მადაგასკარი", iso: "MG", code: "+261" },
+        { name: "მალავი", iso: "MW", code: "+265" },
+        { name: "მალაიზია", iso: "MY", code: "+60" },
+        { name: "მალდივები", iso: "MV", code: "+960" },
+        { name: "მალი", iso: "ML", code: "+223" },
+        { name: "მალტა", iso: "MT", code: "+356" },
+        { name: "მარშალის კუნძულები", iso: "MH", code: "+692" },
+        { name: "მარტინიკა", iso: "MQ", code: "+596" },
+        { name: "მავრიტანია", iso: "MR", code: "+222" },
+        { name: "მავრიკი", iso: "MU", code: "+230" },
+        { name: "მაიოტა", iso: "YT", code: "+262" },
+        { name: "მექსიკა", iso: "MX", code: "+52" },
+        { name: "მიკრონეზია", iso: "FM", code: "+691" },
+        { name: "მოლდოვა", iso: "MD", code: "+373" },
+        { name: "მონაკო", iso: "MC", code: "+377" },
+        { name: "მონღოლეთი", iso: "MN", code: "+976" },
+        { name: "მონტენეგრო", iso: "ME", code: "+382" },
+        { name: "მონსერატი", iso: "MS", code: "+1-664" },
+        { name: "მაროკო", iso: "MA", code: "+212" },
+        { name: "მოზამბიკი", iso: "MZ", code: "+258" },
+        { name: "მიანმარი (ბირმა)", iso: "MM", code: "+95" },
+        { name: "ნამიბია", iso: "NA", code: "+264" },
+        { name: "ნაურუ", iso: "NR", code: "+674" },
+        { name: "ნეპალი", iso: "NP", code: "+977" },
+        { name: "ნიდერლანდები", iso: "NL", code: "+31" },
+        { name: "ახალი კალედონია", iso: "NC", code: "+687" },
+        { name: "ახალი ზელანდია", iso: "NZ", code: "+64" },
+        { name: "ნიკარაგუა", iso: "NI", code: "+505" },
+        { name: "ნიგერი", iso: "NE", code: "+227" },
+        { name: "ნიგერია", iso: "NG", code: "+234" },
+        { name: "ნიუე", iso: "NU", code: "+683" },
+        { name: "ჩრდილოეთ კორეა", iso: "KP", code: "+850" },
+        { name: "ჩრდილოეთ მაკედონია", iso: "MK", code: "+389" },
+        { name: "ჩრდილოეთ მარიანას კუნძულები", iso: "MP", code: "+1-670" },
+        { name: "ნორვეგია", iso: "NO", code: "+47" },
+        { name: "ომანი", iso: "OM", code: "+968" },
+        { name: "პაკისტანი", iso: "PK", code: "+92" },
+        { name: "პალაუ", iso: "PW", code: "+680" },
+        { name: "პალესტინის ტერიტორიები", iso: "PS", code: "+970" },
+        { name: "პანამა", iso: "PA", code: "+507" },
+        { name: "პაპუა-ახალი გვინეა", iso: "PG", code: "+675" },
+        { name: "პარაგვაი", iso: "PY", code: "+595" },
+        { name: "პერუ", iso: "PE", code: "+51" },
+        { name: "ფილიპინები", iso: "PH", code: "+63" },
+        { name: "პოლონეთი", iso: "PL", code: "+48" },
+        { name: "პორტუგალია", iso: "PT", code: "+351" },
+        { name: "პუერტო-რიკო", iso: "PR", code: "+1-787" },
+        { name: "პუერტო-რიკო", iso: "PR", code: "+1-939" },
+        { name: "კატარი", iso: "QA", code: "+974" },
+        { name: "რეუნიონი", iso: "RE", code: "+262" },
+        { name: "რუმინეთი", iso: "RO", code: "+40" },
+        { name: "რუსეთი", iso: "RU", code: "+7" },
+        { name: "რუანდა", iso: "RW", code: "+250" },
+        { name: "სენ-ბართელმი", iso: "BL", code: "+590" },
+        { name: "წმინდა ელენეს კუნძული", iso: "SH", code: "+290" },
+        { name: "სენტ-კიტსი და ნევისი", iso: "KN", code: "+1-869" },
+        { name: "სენტ-ლუსია", iso: "LC", code: "+1-758" },
+        { name: "სენ-მარტენი", iso: "MF", code: "+590" },
+        { name: "სენ-პიერი და მიკელონი", iso: "PM", code: "+508" },
+        { name: "სენტ-ვინსენტი და გრენადინები", iso: "VC", code: "+1-784" },
+        { name: "სამოა", iso: "WS", code: "+685" },
+        { name: "სან-მარინო", iso: "SM", code: "+378" },
+        { name: "სან-ტომე და პრინსიპი", iso: "ST", code: "+239" },
+        { name: "საუდის არაბეთი", iso: "SA", code: "+966" },
+        { name: "სენეგალი", iso: "SN", code: "+221" },
+        { name: "სერბეთი", iso: "RS", code: "+381" },
+        { name: "სეიშელის კუნძულები", iso: "SC", code: "+248" },
+        { name: "სიერა-ლეონე", iso: "SL", code: "+232" },
+        { name: "სინგაპური", iso: "SG", code: "+65" },
+        { name: "სინტ-მარტენი", iso: "SX", code: "+1-721" },
+        { name: "სლოვაკეთი", iso: "SK", code: "+421" },
+        { name: "სლოვენია", iso: "SI", code: "+386" },
+        { name: "სოლომონის კუნძულები", iso: "SB", code: "+677" },
+        { name: "სომალი", iso: "SO", code: "+252" },
+        { name: "სამხრეთ აფრიკის რესპუბლიკა", iso: "ZA", code: "+27" },
+        { name: "სამხრეთ კორეა", iso: "KR", code: "+82" },
+        { name: "სამხრეთ სუდანი", iso: "SS", code: "+211" },
+        { name: "ესპანეთი", iso: "ES", code: "+34" },
+        { name: "შრი-ლანკა", iso: "LK", code: "+94" },
+        { name: "სუდანი", iso: "SD", code: "+249" },
+        { name: "სურინამი", iso: "SR", code: "+597" },
+        { name: "შვედეთი", iso: "SE", code: "+46" },
+        { name: "შვეიცარია", iso: "CH", code: "+41" },
+        { name: "სირია", iso: "SY", code: "+963" },
+        { name: "ტაივანი", iso: "TW", code: "+886" },
+        { name: "ტაჯიკეთი", iso: "TJ", code: "+992" },
+        { name: "ტანზანია", iso: "TZ", code: "+255" },
+        { name: "ტაილანდი", iso: "TH", code: "+66" },
+        { name: "ტიმორ-ლესტე", iso: "TL", code: "+670" },
+        { name: "ტოგო", iso: "TG", code: "+228" },
+        { name: "ტოკელაუ", iso: "TK", code: "+690" },
+        { name: "ტონგა", iso: "TO", code: "+676" },
+        { name: "ტრინიდადი და ტობაგო", iso: "TT", code: "+1-868" },
+        { name: "ტუნისი", iso: "TN", code: "+216" },
+        { name: "თურქეთი", iso: "TR", code: "+90" },
+        { name: "თურქმენეთი", iso: "TM", code: "+993" },
+        { name: "თერქს-ქაიქოსის კუნძულები", iso: "TC", code: "+1-649" },
+        { name: "ტუვალუ", iso: "TV", code: "+688" },
+        { name: "აშშ-ის ვირჯინის კუნძულები", iso: "VI", code: "+1-340" },
+        { name: "უგანდა", iso: "UG", code: "+256" },
+        { name: "უკრაინა", iso: "UA", code: "+380" },
+        { name: "არაბთა გაერთიანებული საამიროები", iso: "AE", code: "+971" },
+        { name: "გაერთიანებული სამეფო", iso: "GB", code: "+44" },
+        { name: "ამერიკის შეერთებული შტატები", iso: "US", code: "+1" },
+        { name: "ურუგვაი", iso: "UY", code: "+598" },
+        { name: "უზბეკეთი", iso: "UZ", code: "+998" },
+        { name: "ვანუატუ", iso: "VU", code: "+678" },
+        { name: "ქალაქი ვატიკანი", iso: "VA", code: "+379" },
+        { name: "ვენესუელა", iso: "VE", code: "+58" },
+        { name: "ვიეტნამი", iso: "VN", code: "+84" },
+        { name: "უოლისი და ფუტუნა", iso: "WF", code: "+681" },
+        { name: "იემენი", iso: "YE", code: "+967" },
+        { name: "ზამბია", iso: "ZM", code: "+260" },
+        { name: "ზიმბაბვე", iso: "ZW", code: "+263" }
       ];
 
       const stepCurrent = document.getElementById("step-current");
@@ -1571,8 +1019,10 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
 
       const countrySelectShell = document.getElementById("country-select-shell");
 
-      const now = new Date();
-      const todayStart = startOfDay(now);
+      let todayStart = null;
+      let clockRequest = null;
+      let clockError = "";
+      let clockRevision = 0;
 
       const state = {
         date: "",
@@ -1583,10 +1033,12 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
         availabilityError: "",
       };
 
+      let availabilityRequestId = 0;
+      let availabilityController = null;
       let openPanelName = null;
       let depositPolicyNoticeShown = false;
       let depositPolicyCloseTimer = null;
-      let calendarCursor = new Date(todayStart.getFullYear(), todayStart.getMonth(), 1);
+      let calendarCursor = null;
 
       function openDepositPolicyNotice() {
         if (depositPolicyCloseTimer) {
@@ -1666,16 +1118,79 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
       }
 
       function parseDateString(dateStr) {
-        const parts = dateStr.split("-");
-        if (parts.length !== 3) return null;
+        if (typeof dateStr !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr) || dateStr.startsWith("0000")) return null;
+        const parsed = new Date(dateStr + "T00:00:00Z");
+        if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== dateStr) return null;
+        const date = new Date(0);
+        date.setFullYear(parsed.getUTCFullYear(), parsed.getUTCMonth(), parsed.getUTCDate());
+        date.setHours(0, 0, 0, 0);
+        return date;
+      }
 
-        const year = Number(parts[0]);
-        const month = Number(parts[1]);
-        const day = Number(parts[2]);
+      function restaurantDayFromResponse(response, data) {
+        if (parseDateString(data?.today)) return data.today;
+        // Older deployments omit `today`; the HTTP Date is still server time.
+        const serverTime = Date.parse(response.headers.get("Date") || "");
+        if (Number.isNaN(serverTime)) throw new Error("რესტორნის დროის ჩატვირთვა ვერ მოხერხდა. გთხოვთ, სცადოთ ხელახლა.");
+        return new Date(serverTime + 4 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      }
 
-        if (!year || !month || !day) return null;
+      function applyRestaurantDay(dateStr) {
+        const date = parseDateString(dateStr);
+        if (!date) throw new Error("რესტორნის დროის ჩატვირთვა ვერ მოხერხდა. გთხოვთ, სცადოთ ხელახლა.");
+        // Older in-flight responses must not rewind the restaurant's calendar.
+        if (todayStart && dateStr < formatDateISO(todayStart)) return false;
+        const changed = !todayStart || dateStr !== formatDateISO(todayStart) || Boolean(clockError);
+        todayStart = date;
+        if (clockError && statusBanner.textContent === clockError) clearBanner();
+        clockError = "";
+        clockRevision += 1;
+        const firstMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+        if (!calendarCursor || calendarCursor < firstMonth) calendarCursor = firstMonth;
+        if (state.date && state.date < dateStr) {
+          state.date = "";
+          state.time = "";
+          setSelectorLabel(labelDate, "აირჩიეთ თარიღი", false);
+          setSelectorLabel(labelTime, "აირჩიეთ დრო", false);
+          resetAvailability();
+          renderTimeOptions();
+        }
+        return changed;
+      }
 
-        return new Date(year, month - 1, day);
+      async function syncRestaurantClock() {
+        if (clockRequest) return clockRequest;
+        const revision = clockRevision;
+        clockRequest = (async () => {
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 10000);
+          try {
+            const response = await fetch(AVAILABILITY_ENDPOINT + "?clock=1", {
+              cache: "no-store",
+              headers: { "Accept": "application/json" },
+              signal: controller.signal,
+            });
+            const data = await response.json().catch(() => ({}));
+            const legacyClock = response.status === 400 && data?.error === "Invalid date.";
+            if ((!response.ok || !data?.ok) && !legacyClock) throw new Error("რესტორნის დროის ჩატვირთვა ვერ მოხერხდა. გთხოვთ, სცადოთ ხელახლა.");
+            if (applyRestaurantDay(restaurantDayFromResponse(response, data))) {
+              renderCalendar();
+              renderTimeOptions();
+            }
+            return true;
+          } catch (error) {
+            if (revision !== clockRevision) return true;
+            clockError = "რესტორნის დროის ჩატვირთვა ვერ მოხერხდა. გთხოვთ, სცადოთ ხელახლა.";
+            renderCalendar();
+            renderTimeOptions();
+            showBanner("error", clockError);
+            return false;
+          } finally {
+            clearTimeout(timeout);
+            clockRequest = null;
+          }
+        })();
+        return clockRequest;
       }
 
       function parseTimeToMinutes(timeStr) {
@@ -1698,33 +1213,23 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
       }
 
       function getPhoneLocalDigits() {
-        const raw = inputPhone.value || "";
-        const rawDigits = raw.replace(/\D/g, "");
-        const codeDigits = inputCountryCode.value.replace(/\D/g, "");
-
-        let localDigits = rawDigits;
-
-        if (localDigits.startsWith(codeDigits)) {
-          localDigits = localDigits.slice(codeDigits.length);
-        }
-
-        localDigits = localDigits.replace(/^0+/, "");
-        return localDigits;
+        return window.reservationPhoneLocalDigits(inputPhone.value, inputCountryCode.value);
       }
 
       function getPhoneFull() {
-        return `${inputCountryCode.value}${getPhoneLocalDigits()}`;
+        const local = getPhoneLocalDigits();
+        return local ? "+" + inputCountryCode.value.replace(/\D/g, "") + local : "";
       }
 
       function getSelectedDateTime() {
         if (!state.date || !state.time) return null;
-        return new Date(`${state.date}T${state.time}:00`);
+        return new Date(`${state.date}T${state.time}:00+04:00`);
       }
 
       function isPastDate(dateStr) {
         const selected = parseDateString(dateStr);
-        if (!selected) return true;
-        return startOfDay(selected).getTime() < todayStart.getTime();
+        if (!selected || !todayStart || clockError) return true;
+        return dateStr < formatDateISO(todayStart);
       }
 
       function isDateDisabled(dateStr) {
@@ -1732,6 +1237,7 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
       }
 
       function isTimeDisabledForDate(timeStr, dateStr) {
+        if (!todayStart || clockError || state.availabilityLoading || state.availabilityError) return true;
         if (DISABLED_TIME_SLOTS.includes(timeStr)) return true;
         if (!dateStr) return false;
 
@@ -1758,6 +1264,35 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
         setTimeout(() => field.classList.remove("shake"), 320);
       }
 
+      // Translate server feedback only at the display boundary; requests stay unchanged.
+      const serverMessages = new Map([
+        ["Invalid JSON body.", "მოთხოვნის გაგზავნა ვერ მოხერხდა. გთხოვთ, სცადოთ ხელახლა."],
+        ["Missing required fields.", "გთხოვთ, შეავსოთ ყველა აუცილებელი ველი."],
+        ["Invalid email format.", "გთხოვთ, შეიყვანოთ სწორი ელფოსტა."],
+        ["Invalid date.", "გთხოვთ, აირჩიოთ სწორი თარიღი."],
+        ["Invalid date format.", "თარიღის ფორმატი არასწორია."],
+        ["Invalid time format.", "დროის ფორმატი არასწორია."],
+        ["Invalid date/time.", "გთხოვთ, აირჩიოთ სწორი თარიღი და დრო."],
+        ["Invalid guest count.", "გთხოვთ, აირჩიოთ სტუმრების სწორი რაოდენობა."],
+        [`Reservations start from ${OPEN_TIME}.`, `ჯავშნები მიიღება ${OPEN_TIME}-დან.`],
+        [`Reservations are available until ${CLOSE_TIME}.`, `ჯავშნები მიიღება ${CLOSE_TIME}-მდე.`],
+        ["Reservations must be made at least 1 hour in advance.", "ჯავშანი უნდა გაკეთდეს სულ მცირე 1 საათით ადრე."],
+        ["This time is no longer available.", "ეს დრო უკვე დაკავებულია. გთხოვთ, აირჩიოთ სხვა დრო."],
+        ["This time is not available.", "ეს დრო მიუწვდომელია. გთხოვთ, აირჩიოთ სხვა დრო."],
+        ["Invalid deposit amount.", "დეპოზიტის თანხის განსაზღვრა ვერ მოხერხდა. გთხოვთ, დაგვიკავშირდეთ."],
+        ["Failed to initialize payment.", "გადახდის დაწყება ვერ მოხერხდა. გთხოვთ, სცადოთ ხელახლა."],
+        ["Server error.", "სერვერის შეფერხებაა. გთხოვთ, სცადოთ მოგვიანებით."],
+        ["Failed to load availability.", "თავისუფალი დროების ჩატვირთვა ვერ მოხერხდა. გთხოვთ, სცადოთ ხელახლა."],
+        ["Failed to fetch", "კავშირი ვერ დამყარდა. შეამოწმეთ ინტერნეტი და სცადეთ ხელახლა."],
+        ["NetworkError when attempting to fetch resource.", "კავშირი ვერ დამყარდა. შეამოწმეთ ინტერნეტი და სცადეთ ხელახლა."],
+        ["Load failed", "კავშირი ვერ დამყარდა. შეამოწმეთ ინტერნეტი და სცადეთ ხელახლა."]
+      ]);
+
+      function localizeMessage(message) {
+        const text = String(message || "");
+        return serverMessages.get(text) || (/[\u10a0-\u10ff]/.test(text) ? text : "მოთხოვნის შესრულება ვერ მოხერხდა. გთხოვთ, სცადოთ ხელახლა.");
+      }
+
       function setFieldError(fieldName, message) {
         const field = document.getElementById(`field-${fieldName}`);
         const error = document.getElementById(`error-${fieldName}`);
@@ -1765,7 +1300,7 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
         if (!field || !error) return;
 
         field.classList.add("has-error");
-        error.textContent = message;
+        error.textContent = localizeMessage(message);
         error.classList.remove("hidden");
         triggerShake(fieldName);
       }
@@ -1787,7 +1322,7 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
 
       function showBanner(type, message) {
         statusBanner.dataset.type = type;
-        statusBanner.textContent = message;
+        statusBanner.textContent = localizeMessage(message);
         statusBanner.classList.remove("hidden");
       }
 
@@ -1809,57 +1344,68 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
       }
 
       function resetAvailability() {
+        availabilityRequestId += 1;
+        availabilityController?.abort();
+        availabilityController = null;
         state.availability = new Map();
         state.availabilityLoading = false;
         state.availabilityError = "";
       }
 
       async function loadAvailability() {
+        resetAvailability();
         if (!state.date || !state.guests) {
-          resetAvailability();
           renderTimeOptions();
           return;
         }
 
+        const requestId = availabilityRequestId;
+        const requestedDate = state.date;
+        const requestedGuests = Number(state.guests);
+        const controller = new AbortController();
+        availabilityController = controller;
+        const isCurrent = () => requestId === availabilityRequestId &&
+          requestedDate === state.date && requestedGuests === Number(state.guests);
+        const timeout = setTimeout(() => controller.abort(), 15000);
         state.availabilityLoading = true;
-        state.availabilityError = "";
         renderTimeOptions();
 
         try {
-          const url =
-            `${AVAILABILITY_ENDPOINT}?date=${encodeURIComponent(state.date)}&guests=${encodeURIComponent(state.guests)}`;
-
+          const url = AVAILABILITY_ENDPOINT + "?date=" + encodeURIComponent(requestedDate) +
+            "&guests=" + encodeURIComponent(requestedGuests);
           const response = await fetch(url, {
-            headers: {
-              "Accept": "application/json",
-            },
+            cache: "no-store",
+            headers: { "Accept": "application/json" },
+            signal: controller.signal,
           });
-
           const data = await response.json().catch(() => ({}));
-
-          if (!response.ok || !data.ok || !Array.isArray(data.slots)) {
-            throw new Error(data.error || "Unable to load availability.");
+          if (!isCurrent()) return;
+          if (!response.ok || !data?.ok || !Array.isArray(data.slots) ||
+              data.date !== requestedDate || Number(data.guests) !== requestedGuests) {
+            throw new Error(data?.error || "თავისუფალი დროების ჩატვირთვა ვერ მოხერხდა.");
           }
-
-          state.availability = new Map(
-            data.slots.map((slot) => [slot.time, slot])
-          );
+          if (applyRestaurantDay(restaurantDayFromResponse(response, data))) renderCalendar();
+          if (!isCurrent()) return;
+          state.availability = new Map(data.slots.map(slot => [slot.time, slot]));
           state.availabilityError = "";
         } catch (error) {
+          if (!isCurrent()) return;
           state.availability = new Map();
-          state.availabilityError = String(error.message || error);
+          state.availabilityError = "თავისუფალი დროების ჩატვირთვა ვერ მოხერხდა.";
         } finally {
-          state.availabilityLoading = false;
-
-          if (state.time) {
-            const selectedSlot = state.availability.get(state.time);
-            if (selectedSlot && !selectedSlot.available) {
-              state.time = "";
-              setSelectorLabel(labelTime, "Select time", false);
+          clearTimeout(timeout);
+          if (isCurrent()) {
+            state.availabilityLoading = false;
+            availabilityController = null;
+            if (state.time) {
+              const selectedSlot = state.availability.get(state.time);
+              if (!selectedSlot?.available) {
+                state.time = "";
+                setSelectorLabel(labelTime, "აირჩიეთ დრო", false);
+              }
             }
+            renderTimeOptions();
           }
-
-          renderTimeOptions();
         }
       }
 
@@ -1907,7 +1453,10 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
         wrapMap[name].classList.add("open");
         openPanelName = name;
 
-        if (name === "date") renderCalendar();
+        if (name === "date") {
+          renderCalendar();
+          void syncRestaurantClock();
+        }
         if (name === "time") renderTimeOptions();
         if (name === "guests") renderGuestOptions();
       }
@@ -1955,11 +1504,24 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
       panelGuests.addEventListener("click", (event) => event.stopPropagation());
 
       const monthNames = [
-        "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
+        "იანვარი", "თებერვალი", "მარტი", "აპრილი", "მაისი", "ივნისი",
+        "ივლისი", "აგვისტო", "სექტემბერი", "ოქტომბერი", "ნოემბერი", "დეკემბერი"
       ];
 
       function renderCalendar() {
+        if (!todayStart || !calendarCursor || clockError) {
+          calendarTitle.textContent = "იტვირთება...";
+          calendarGrid.innerHTML = "";
+          const message = document.createElement("div");
+          message.className = "panel-empty";
+          message.style.gridColumn = "1 / -1";
+          message.textContent = clockError || "იტვირთება...";
+          calendarGrid.appendChild(message);
+          calendarPrev.disabled = true;
+          calendarNext.disabled = true;
+          return;
+        }
+        calendarNext.disabled = false;
         const year = calendarCursor.getFullYear();
         const month = calendarCursor.getMonth();
 
@@ -2010,13 +1572,14 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
           }
 
           button.addEventListener("click", async () => {
+            if (isDateDisabled(iso)) { renderCalendar(); return; }
             state.date = iso;
             clearFieldError("date");
             setSelectorLabel(labelDate, formatDateShort(iso), true);
 
             renderCalendar();
-            await loadAvailability();
             closeAllPanels();
+            await loadAvailability();
           });
 
           cell.appendChild(button);
@@ -2030,6 +1593,7 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
       }
 
       calendarPrev.addEventListener("click", () => {
+        if (!todayStart || !calendarCursor || clockError) return;
         const currentMonthStart = new Date(todayStart.getFullYear(), todayStart.getMonth(), 1);
         const nextCursor = new Date(calendarCursor.getFullYear(), calendarCursor.getMonth() - 1, 1);
 
@@ -2040,6 +1604,7 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
       });
 
       calendarNext.addEventListener("click", () => {
+        if (!todayStart || !calendarCursor || clockError) return;
         calendarCursor = new Date(calendarCursor.getFullYear(), calendarCursor.getMonth() + 1, 1);
         renderCalendar();
       });
@@ -2062,7 +1627,7 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
         if (!state.date || !state.guests) {
           const empty = document.createElement("div");
           empty.className = "panel-empty";
-          empty.textContent = "Choose a date and guest count first.";
+          empty.textContent = "ჯერ აირჩიეთ თარიღი და სტუმრების რაოდენობა.";
           timeList.appendChild(empty);
           return;
         }
@@ -2070,15 +1635,15 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
         if (state.availabilityLoading) {
           const loading = document.createElement("div");
           loading.className = "panel-empty";
-          loading.textContent = "Checking availability...";
+          loading.textContent = "თავისუფალი დროები მოწმდება...";
           timeList.appendChild(loading);
           return;
         }
 
-        if (state.availabilityError) {
+        if (state.availabilityError || clockError) {
           const error = document.createElement("div");
           error.className = "panel-empty";
-          error.textContent = state.availabilityError;
+          error.textContent = localizeMessage(clockError || state.availabilityError);
           timeList.appendChild(error);
           return;
         }
@@ -2092,7 +1657,7 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
         if (enabledCount === 0) {
           const empty = document.createElement("div");
           empty.className = "panel-empty";
-          empty.textContent = "No available time slots for this date.";
+          empty.textContent = "ამ თარიღისთვის თავისუფალი დრო არ არის.";
           timeList.appendChild(empty);
           return;
         }
@@ -2117,11 +1682,11 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
           statusEl.className = `time-option-status ${disabled ? "unavailable" : "available"}`;
 
           if (!disabled) {
-            statusEl.textContent = "Available";
+            statusEl.textContent = "თავისუფალია";
           } else if (slotInfo?.reason === "min_advance") {
-            statusEl.textContent = "Too soon";
+            statusEl.textContent = "ძალიან მალე";
           } else {
-            statusEl.textContent = "Fully booked";
+            statusEl.textContent = "დაკავებულია";
           }
 
           button.appendChild(timeEl);
@@ -2161,17 +1726,17 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
 
     button.addEventListener("click", async () => {
       state.guests = count;
-      setSelectorLabel(labelGuests, `${count} ${count === 1 ? "guest" : "guests"}`, true);
+      setSelectorLabel(labelGuests, `${count} სტუმარი`, true);
       clearFieldError("guests");
 
       if (state.time) {
         state.time = "";
-        setSelectorLabel(labelTime, "Select time", false);
+        setSelectorLabel(labelTime, "აირჩიეთ დრო", false);
       }
 
       updateLargeGroupNote();
-      await loadAvailability();
       closeAllPanels();
+      await loadAvailability();
     });
 
     guestsGrid.appendChild(button);
@@ -2181,7 +1746,7 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
       function updateLargeGroupNote() {
         largeGroupNote.classList.remove("hidden");
         largeGroupNote.innerHTML =
-          "A non-refundable deposit of 50 GEL per person is required for all reservations and will be applied towards your final bill.";
+          "ყველა ჯავშნისთვის საჭიროა 50 ლარის დეპოზიტი ერთ სტუმარზე. დეპოზიტი უკან არ ბრუნდება და საბოლოო ანგარიშში ჩაითვლება.";
       }
 
       function validateStep1() {
@@ -2198,28 +1763,28 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
         const phoneLocalDigits = getPhoneLocalDigits();
 
         if (!name) {
-          setFieldError("name", "Please enter the guest's name.");
+          setFieldError("name", "გთხოვთ, შეიყვანოთ სტუმრის სახელი.");
           valid = false;
         }
 
         if (!surname) {
-          setFieldError("surname", "Please enter the guest's surname.");
+          setFieldError("surname", "გთხოვთ, შეიყვანოთ სტუმრის გვარი.");
           valid = false;
         }
 
         if (!email) {
-          setFieldError("email", "Please enter an email address.");
+          setFieldError("email", "გთხოვთ, შეიყვანოთ ელფოსტა.");
           valid = false;
         } else if (!isEmailValid(email)) {
-          setFieldError("email", "Please enter a valid email address.");
+          setFieldError("email", "გთხოვთ, შეიყვანოთ სწორი ელფოსტა.");
           valid = false;
         }
 
         if (!phoneLocalDigits) {
-          setFieldError("phone", "Please enter a phone number.");
+          setFieldError("phone", "გთხოვთ, შეიყვანოთ ტელეფონის ნომერი.");
           valid = false;
         } else if (phoneLocalDigits.length < 6) {
-          setFieldError("phone", "Please enter a real phone number.");
+          setFieldError("phone", "გთხოვთ, შეიყვანოთ სწორი ტელეფონის ნომერი.");
           valid = false;
         }
 
@@ -2230,17 +1795,17 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
         clearFieldError("date");
 
         if (!state.date) {
-          setFieldError("date", "Please select a date.");
+          setFieldError("date", "გთხოვთ, აირჩიოთ თარიღი.");
           return false;
         }
 
         if (!/^\d{4}-\d{2}-\d{2}$/.test(state.date)) {
-          setFieldError("date", "Date format is invalid.");
+          setFieldError("date", "თარიღის ფორმატი არასწორია.");
           return false;
         }
 
         if (isDateDisabled(state.date)) {
-          setFieldError("date", "Please choose an available date.");
+          setFieldError("date", "გთხოვთ, აირჩიოთ ხელმისაწვდომი თარიღი.");
           return false;
         }
 
@@ -2251,23 +1816,23 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
         clearFieldError("time");
 
         if (!state.time) {
-          setFieldError("time", "Please select a time.");
+          setFieldError("time", "გთხოვთ, აირჩიოთ დრო.");
           return false;
         }
 
         if (!isValidTimeSlotFormat(state.time)) {
-          setFieldError("time", "Time format is invalid.");
+          setFieldError("time", "დროის ფორმატი არასწორია.");
           return false;
         }
 
         const timeMinutes = parseTimeToMinutes(state.time);
         if (timeMinutes < parseTimeToMinutes(OPEN_TIME) || timeMinutes > parseTimeToMinutes(CLOSE_TIME)) {
-          setFieldError("time", `Please choose a time between ${OPEN_TIME} and ${CLOSE_TIME}.`);
+          setFieldError("time", `გთხოვთ, აირჩიოთ დრო ${OPEN_TIME}-დან ${CLOSE_TIME}-მდე.`);
           return false;
         }
 
         if (isTimeDisabledForDate(state.time, state.date)) {
-          setFieldError("time", "Please choose an available time.");
+          setFieldError("time", "გთხოვთ, აირჩიოთ თავისუფალი დრო.");
           return false;
         }
 
@@ -2278,19 +1843,19 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
         clearFieldError("guests");
 
         if (!state.guests) {
-          setFieldError("guests", "Please select the number of guests.");
+          setFieldError("guests", "გთხოვთ, აირჩიოთ სტუმრების რაოდენობა.");
           return false;
         }
 
         const guests = Number(state.guests);
 
         if (!Number.isInteger(guests) || guests < 1 || guests > MAX_GUESTS) {
-          setFieldError("guests", `Guests must be between 1 and ${MAX_GUESTS}.`);
+          setFieldError("guests", `სტუმრების რაოდენობა უნდა იყოს 1-დან ${MAX_GUESTS}-მდე.`);
           return false;
         }
 
         if (isGuestCountDisabled(guests)) {
-          setFieldError("guests", "This guest count is currently unavailable.");
+          setFieldError("guests", "სტუმრების ეს რაოდენობა ამჟამად მიუწვდომელია.");
           return false;
         }
 
@@ -2317,7 +1882,7 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
         clearFieldError("terms");
 
         if (!inputTerms.checked) {
-          setFieldError("terms", "Please accept the Terms of Service before continuing.");
+          setFieldError("terms", "გასაგრძელებლად გთხოვთ, დაეთანხმოთ მომსახურების პირობებს.");
           return false;
         }
 
@@ -2331,21 +1896,21 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
 
         if (!step1Ok) {
           showStep(1);
-          showBanner("error", "Please complete the required personal details.");
+          showBanner("error", "გთხოვთ, შეავსოთ აუცილებელი პირადი მონაცემები.");
           scrollFormIntoView();
           return false;
         }
 
         if (!step2Ok) {
           showStep(2);
-          showBanner("error", "Please complete the reservation details correctly.");
+          showBanner("error", "გთხოვთ, სწორად შეავსოთ ჯავშნის მონაცემები.");
           scrollFormIntoView();
           return false;
         }
 
         if (!validateTermsAgreement()) {
           showStep(3);
-          showBanner("error", "Please accept the Terms of Service before continuing to the deposit.");
+          showBanner("error", "დეპოზიტის გადახდამდე გთხოვთ, დაეთანხმოთ მომსახურების პირობებს.");
           document.getElementById("field-terms")?.scrollIntoView({
             behavior: "smooth",
             block: "center",
@@ -2366,10 +1931,10 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
   summaryDate.textContent = state.date ? formatDateShort(state.date) : "—";
   summaryTime.textContent = state.time || "—";
   summaryGuests.textContent = guestsCount ? `${guestsCount}` : "—";
-  summaryRequests.textContent = inputRequests.value.trim() || "None";
+  summaryRequests.textContent = inputRequests.value.trim() || "არ არის";
 
   if (guestsCount > 0) {
-    summaryDepositValue.textContent = `${totalDeposit} GEL (${guestsCount} × ${DEPOSIT_AMOUNT} GEL)`;
+    summaryDepositValue.textContent = `${totalDeposit} ლარი (${guestsCount} × ${DEPOSIT_AMOUNT} ლარი)`;
     summaryDepositRow.classList.remove("hidden");
   } else {
     summaryDepositValue.textContent = "—";
@@ -2398,7 +1963,7 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
         clearBanner();
 
         if (!validateStep1()) {
-          showBanner("error", "Please complete the required personal details.");
+          showBanner("error", "გთხოვთ, შეავსოთ აუცილებელი პირადი მონაცემები.");
           scrollFormIntoView();
           return;
         }
@@ -2412,7 +1977,7 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
         clearBanner();
 
         if (!validateStep2()) {
-          showBanner("error", "Please complete the reservation details correctly.");
+          showBanner("error", "გთხოვთ, სწორად შეავსოთ ჯავშნის მონაცემები.");
           scrollFormIntoView();
           return;
         }
@@ -2462,7 +2027,7 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
 
   const originalText = btnSubmit.textContent;
   btnSubmit.disabled = true;
-  btnSubmit.textContent = "Processing...";
+  btnSubmit.textContent = "მუშავდება...";
 
   try {
     console.log("about to fetch", API_ENDPOINT);
@@ -2485,7 +2050,7 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
     console.log("response data:", data);
 
     if (!response.ok || !data.ok) {
-      showBanner("error", data.error || "Unable to create the reservation right now.");
+      showBanner("error", data.error || "ჯავშნის შექმნა ამჟამად ვერ მოხერხდა.");
       return;
     }
 
@@ -2495,7 +2060,7 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
       return;
     }
 
-    showBanner("success", "Reservation created successfully.");
+    showBanner("success", "ჯავშანი წარმატებით შეიქმნა.");
   } catch (error) {
     console.error("submit fetch failed:", error);
     showBanner("error", String(error?.message || error));
@@ -2516,8 +2081,7 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
       });
 
       inputPhone.addEventListener("blur", () => {
-        const localDigits = getPhoneLocalDigits();
-        inputPhone.value = localDigits;
+        inputPhone.value = inputPhone.value.trim();
       });
 
       inputCountryCode.addEventListener("change", () => {
@@ -2554,18 +2118,117 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
         clearBanner();
         resetAvailability();
 
-        setSelectorLabel(labelDate, "Select date", false);
-        setSelectorLabel(labelTime, "Select time", false);
-        setSelectorLabel(labelGuests, "Select guests", false);
+        setSelectorLabel(labelDate, "აირჩიეთ თარიღი", false);
+        setSelectorLabel(labelTime, "აირჩიეთ დრო", false);
+        setSelectorLabel(labelGuests, "აირჩიეთ სტუმრები", false);
 
         renderCalendar();
         renderTimeOptions();
         renderGuestOptions();
         updateLargeGroupNote();
         showStep(1);
+        void syncRestaurantClock();
       }
 
+      function refreshBookingData() {
+        if (document.hidden || btnSubmit.disabled) return;
+        if (state.date && state.guests) void loadAvailability();
+        else void syncRestaurantClock();
+      }
+      document.addEventListener("visibilitychange", refreshBookingData);
+      setInterval(() => {
+        if (!openPanelName) refreshBookingData();
+      }, 60000);
+
       init();
+    </script>
+    <script data-presentation>
+(() => {
+  const stepCounter = document.getElementById('step-current');
+  const notice = document.getElementById('deposit-policy-notice');
+  const main = document.querySelector('main');
+  const header = document.getElementById('site-header');
+  const footer = document.querySelector('footer');
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+  let previousStep = null;
+  let stepAnimation = null;
+  function syncStep() {
+    const step = Number(stepCounter.textContent);
+    document.querySelectorAll('.booking-steps li').forEach((item, index) => {
+      if (index === step - 1) item.setAttribute('aria-current', 'step');
+      else item.removeAttribute('aria-current');
+    });
+    if (previousStep !== null && step !== previousStep) {
+      const heading = document.querySelector(`#step-${step} h3`);
+      stepAnimation?.cancel();
+      if (!reducedMotion.matches && typeof heading.closest('section').animate === 'function') {
+        stepAnimation = heading.closest('section').animate([{ opacity: .25 }, { opacity: 1 }], {
+          duration: 280, easing: 'ease-out'
+        });
+      }
+      if (notice.getAttribute('aria-hidden') !== 'false') heading.focus({ preventScroll: true });
+      document.querySelector('.booking-card').scrollIntoView({ block: 'start', behavior: reducedMotion.matches ? 'auto' : 'smooth' });
+    }
+    previousStep = step;
+  }
+  new MutationObserver(syncStep).observe(stepCounter, { childList: true });
+  syncStep();
+  document.querySelectorAll('[data-selector]').forEach(wrap => {
+    const trigger = wrap.querySelector('.selector-trigger');
+    const observer = new MutationObserver(() => {
+      trigger.setAttribute('aria-expanded', String(wrap.classList.contains('open')));
+    });
+    observer.observe(wrap, { attributes: true, attributeFilter: ['class'] });
+  });
+  document.querySelectorAll('.field-wrap').forEach(wrap => {
+    new MutationObserver(() => {
+      wrap.querySelectorAll('input, textarea, .selector-trigger').forEach(input => {
+        input.setAttribute('aria-invalid', String(wrap.classList.contains('has-error')));
+      });
+    }).observe(wrap, { attributes: true, attributeFilter: ['class'] });
+  });
+  ['btn-next-1', 'btn-next-2', 'btn-submit'].forEach(id => {
+    document.getElementById(id).addEventListener('click', () => {
+      const section = document.querySelector('.booking-card section:not(.hidden)');
+      const invalid = section.querySelector('.has-error input, .has-error .selector-trigger, .has-error textarea');
+      if (!invalid) return;
+      invalid.focus({ preventScroll: true });
+      invalid.closest('.field-wrap').scrollIntoView({ block: 'center', behavior: reducedMotion.matches ? 'auto' : 'smooth' });
+    });
+  });
+  function syncNotice() {
+    const open = notice.getAttribute('aria-hidden') === 'false';
+    main.inert = open;
+    header.inert = open;
+    footer.inert = open;
+    document.body.classList.toggle('policy-open', open);
+  }
+  new MutationObserver(syncNotice).observe(notice, { attributes: true, attributeFilter: ['aria-hidden'] });
+  syncNotice();
+  reducedMotion.addEventListener('change', event => { if (event.matches) stepAnimation?.cancel(); });
+  document.addEventListener('keydown', event => {
+    if (notice.getAttribute('aria-hidden') === 'false' && event.key === 'Tab') {
+      const targets = Array.from(notice.querySelectorAll('a[href], button:not(:disabled)'));
+      const first = targets[0];
+      const last = targets[targets.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    }
+    if (event.key === 'Escape') {
+      const openSelector = document.querySelector('[data-selector].open .selector-trigger');
+      if (openSelector) { openSelector.click(); openSelector.focus(); }
+    }
+  });
+  const calendar = document.getElementById('calendar-grid');
+  new MutationObserver(() => {
+    calendar.querySelectorAll('button').forEach(button => {
+      button.setAttribute('aria-label', `${button.textContent} ${document.getElementById('calendar-title').textContent}`);
+      button.setAttribute('aria-pressed', String(button.classList.contains('selected')));
+    });
+  }).observe(calendar, { childList: true });
+})();
+
+
     </script>
   </body>
 </html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <meta name="theme-color" content="#fdfdfc" />
+  <title>Reserve</title>
+  <link rel="icon" type="image/svg+xml" href="images/R.svg" />
+  <link rel="preload" href="fonts/NotoSansGeorgian-Variable.ttf" as="font" type="font/ttf" crossorigin />
+  <link rel="preload" href="fonts/Lato-Regular.ttf" as="font" type="font/ttf" crossorigin />
+  <link rel="stylesheet" href="testreservation-results.css" />
+</head>
+<body data-result="failed">
+  <a class="skip-link" href="#result-main" data-copy="skip">გადახდის შედეგზე გადასვლა</a>
+  <header class="site-header">
+    <nav class="language-nav" aria-label="ენა" data-label="language">
+      <a id="language-en" href="testreservation-failed.html" lang="en" aria-label="English">EN</a>
+      <span class="language-divider" aria-hidden="true"></span>
+      <a id="language-ka" href="testreservation-failedge.html" lang="ka" aria-label="ქართული" aria-current="page">GE</a>
+    </nav>
+    <a class="header-brand" href="testge.html#top" data-home aria-label="Reserve, მთავარი გვერდი" data-label="homeLabel"><img src="images/logoblack.svg" alt="Reserve" width="3840" height="2160" /></a>
+    <nav class="header-nav" aria-label="მთავარი ნავიგაცია" data-label="navigation">
+      <a class="booking-link" href="testreservationsge.html" data-booking data-copy="reservations">დაჯავშნა</a>
+      <a href="menuge.pdf" id="menu-link" target="_blank" rel="noopener" data-copy="menu">მენიუ</a>
+    </nav>
+  </header>
+  <main id="result-main" class="result-main" tabindex="-1">
+    <img class="result-monogram" src="images/R.svg" alt="" width="2480" height="3508" aria-hidden="true" />
+    <div class="result-content">
+      <p class="status-label"><span class="status-icon" aria-hidden="true"><!-- Lucide icons; license: images/test/LUCIDE-LICENSE.txt. --><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path d="M12 8v4m0 4h.01" /></svg></span><span data-copy="status">გადახდა შეწყდა</span></p>
+      <h1 data-copy="heading">გადახდა არ დასრულდა</h1>
+      <p class="result-intro" data-copy="intro">გადახდა გაუქმდა ან ვერ დასრულდა. ამ გადახდით თქვენი ჯავშანი არ დადასტურებულა.</p>
+      <div class="next-details">
+        <section class="detail-row"><h2 data-copy="nextTitle">შეგიძლიათ სცადოთ ხელახლა</h2><p data-copy="nextText">დაბრუნდით დაჯავშნის გვერდზე და ხელახლა აირჩიეთ თარიღი და დრო. ხელმისაწვდომობა შესაძლოა შეცვლილი იყოს.</p></section>
+        <section class="detail-row"><h2 data-copy="depositTitle">თანხა ჩამოგეჭრათ?</h2><p data-copy="depositText">ხელახლა გადახდამდე გთხოვთ, დაგვიკავშირდეთ, რათა თქვენი ჯავშანი ერთად გადავამოწმოთ.</p></section>
+      </div>
+      <div id="reference-row" class="reference-row" hidden>
+        <div><span class="reference-label" data-copy="referenceLabel">ჯავშნის ნომერი</span><p id="reservation-reference" class="reference-value"></p></div>
+        <button id="copy-reference" class="copy-button" type="button" aria-label="ნომრის კოპირება" title="ნომრის კოპირება" data-label="copyReference" hidden><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></svg></button>
+      </div>
+      <p id="copy-feedback" class="copy-feedback" role="status" hidden></p>
+      <div class="result-actions">
+        <a class="primary-link" href="testreservationsge.html" data-booking><span data-copy="primary">ხელახლა დაჯავშნა</span><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v10M7 17 17 7" /></svg></a>
+        <a class="text-link" href="testge.html#top" data-home data-copy="secondary">Reserve-ზე დაბრუნება</a>
+      </div>
+      <p class="contact-note"><span data-copy="contact">გჭირდებათ დახმარება? დაგვირეკეთ ნომერზე</span> <a href="tel:+995595313344">+995 595 31 33 44</a>.</p>
+    </div>
+  </main>
+  <footer class="site-footer">
+    <p data-copy="address">9 აპრილის ქუჩა 3, თბილისი</p>
+    <div class="footer-links"><a href="mailto:info@reservetbilisi.ge">info@reservetbilisi.ge</a><a href="https://api.whatsapp.com/send/?phone=%2B995595313344" target="_blank" rel="noopener">WhatsApp</a></div>
+  </footer>
+  <script src="testreservation-results.js"></script>
+</body>
+</html>

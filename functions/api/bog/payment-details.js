@@ -1,8 +1,11 @@
+import { adminAuthenticated } from "../admin/_auth.js";
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data, null, 2), {
     status,
     headers: {
       "Content-Type": "application/json",
+      "Cache-Control": "private, no-store",
     },
   });
 }
@@ -37,6 +40,9 @@ async function getBogAccessToken(env) {
 
 export async function onRequestGet(context) {
   try {
+    if (!(await adminAuthenticated(context.request, context.env))) {
+      return json({ ok: false, error: "Unauthorized" }, 401);
+    }
     const { DB, BOG_CLIENT_ID, BOG_CLIENT_SECRET } = context.env;
     if (!DB || !BOG_CLIENT_ID || !BOG_CLIENT_SECRET) {
       return json({ ok: false, error: "Missing DB or BOG secrets." }, 500);

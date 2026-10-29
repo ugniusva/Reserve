@@ -13,7 +13,15 @@ export const MAX_GUESTS_PER_RESERVATION = 6;
 const allocationOptionsCache = new Map();
 
 export function isValidDate(dateStr) {
-  return /^\d{4}-\d{2}-\d{2}$/.test(dateStr);
+  if (typeof dateStr !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr) || dateStr.startsWith("0000")) {
+    return false;
+  }
+  const date = new Date(`${dateStr}T00:00:00Z`);
+  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === dateStr;
+}
+
+export function getRestaurantDate(now = new Date()) {
+  return new Date(now.getTime() + 4 * 60 * 60 * 1000).toISOString().slice(0, 10);
 }
 
 export function isValidTimeSlotFormat(timeStr) {
@@ -21,6 +29,7 @@ export function isValidTimeSlotFormat(timeStr) {
 }
 
 export function parseDateTime(dateStr, timeStr) {
+  if (!isValidDate(dateStr) || !isValidTimeSlotFormat(timeStr)) return new Date(NaN);
   return new Date(`${dateStr}T${timeStr}:00${RESTAURANT_TIMEZONE_OFFSET}`);
 }
 

@@ -1,3 +1,6 @@
+import { parseDateTime } from "../reservations/_availability.js";
+import { CAPACITY_WRITE_ATTEMPTS, readCapacitySnapshot } from "../reservations/_capacity.js";
+import { canFitCustomReservation, MIN_ADVANCE_MS } from "../admin/_custom-reservation.js";
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -136,22 +139,83 @@ function mapBogOrderStatus(orderStatusKey) {
   }
 }
 
+function resolveCallbackStatus(current, mapped, orderStatusKey) {
+  const unchanged = { status: current.status, payment_status: current.payment_status };
+  const currentPayment = current.payment_status;
+  const paid = Boolean(current.paid_at) || ["completed", "refund_requested", "refunded", "refunded_partially"].includes(currentPayment);
+
+  // Refund states must not be reversed by a delayed success or processing event.
+  if (currentPayment === "refunded" ||
+      (currentPayment === "refunded_partially" && orderStatusKey !== "refunded") ||
+      (currentPayment === "refund_requested" && !["refunded", "refunded_partially"].includes(orderStatusKey))) {
+    return unchanged;
+  }
+  if (paid && !mapped.paid && mapped.status !== "cancelled") return unchanged;
+
+  if (mapped.status === "pending_payment") {
+    const progress = { created: 0, auth_requested: 1, processing: 2 };
+    const currentProgress = Object.hasOwn(progress, currentPayment) ? progress[currentPayment] : null;
+    const incomingProgress = Object.hasOwn(progress, orderStatusKey) ? progress[orderStatusKey] : null;
+    if (current.status !== "pending_payment" || currentPayment === "rejected" ||
+        (currentProgress !== null && (incomingProgress === null || incomingProgress < currentProgress))) {
+      return unchanged;
+    }
+  }
+
+  if (mapped.paid && ["cancelled", "no_show"].includes(current.status)) {
+    return { status: paid ? current.status : "payment_review", payment_status: mapped.payment_status };
+  }
+  if (mapped.paid && ["completed", "payment_review"].includes(current.status)) {
+    return { status: current.status, payment_status: mapped.payment_status };
+  }
+  return mapped;
+}
+
 async function updateReservationFromCallback(DB, payload, rawBody) {
   const body = payload?.body || {};
   const orderId = body.order_id || null;
   const externalOrderId = body.external_order_id || null;
   const orderStatusKey = body?.order_status?.key || null;
   const transactionId = body?.payment_detail?.transaction_id || null;
-  const nowIso = new Date().toISOString();
-
   const mapped = mapBogOrderStatus(orderStatusKey);
-  const paidAt = mapped.paid ? nowIso : null;
   const payloadString = rawBody || JSON.stringify(payload);
+  const identifiers = { orderId, externalOrderId, orderStatusKey };
 
-  let result = null;
+  for (let attempt = 0; attempt < CAPACITY_WRITE_ATTEMPTS; attempt += 1) {
+    let current = externalOrderId
+      ? await DB.prepare("SELECT * FROM reservations WHERE id = ? LIMIT 1").bind(externalOrderId).first()
+      : null;
+    if (!current && orderId) {
+      current = await DB.prepare("SELECT * FROM reservations WHERE payment_order_id = ? LIMIT 1").bind(orderId).first();
+    }
+    if (!current) {
+      return { ...identifiers, mappedStatus: mapped.status, mappedPaymentStatus: mapped.payment_status, updated: false };
+    }
 
-  if (externalOrderId) {
-    result = await DB.prepare(`
+    const resolved = resolveCallbackStatus(current, mapped, orderStatusKey);
+    let nextStatus = resolved.status;
+    const nextPaymentStatus = resolved.payment_status;
+    let guard = { sql: "1 = 1", values: [] };
+    const now = new Date();
+
+    if (nextStatus === "confirmed" && !["confirmed", "completed"].includes(current.status)) {
+      const snapshot = await readCapacitySnapshot(DB, current.booking_date, current.id, now);
+      guard = snapshot.guard;
+      // A callback may arrive inside the advance window or after the visit started.
+      // Recheck capacity, not the advance-notice rule used for new bookings.
+      const start = parseDateTime(current.booking_date, current.booking_time);
+      const fit = canFitCustomReservation({
+        dateStr: current.booking_date,
+        timeStr: current.booking_time,
+        guests: Number(current.guests),
+        reservations: snapshot.reservations,
+        now: new Date(start.getTime() - MIN_ADVANCE_MS),
+      });
+      if (!fit.available) nextStatus = "payment_review";
+    }
+
+    const nowIso = now.toISOString();
+    const result = await DB.prepare(`
       UPDATE reservations
       SET
         status = ?,
@@ -159,61 +223,50 @@ async function updateReservationFromCallback(DB, payload, rawBody) {
         payment_provider = ?,
         payment_ref = COALESCE(?, payment_ref),
         payment_order_id = COALESCE(?, payment_order_id),
-        paid_at = COALESCE(?, paid_at),
+        paid_at = COALESCE(paid_at, ?),
         callback_received_at = ?,
         callback_payload = ?,
         updated_at = ?
-      WHERE id = ?
+      WHERE id = ? AND status IS ? AND payment_status IS ?
+        AND booking_date IS ? AND booking_time IS ? AND guests IS ?
+        AND updated_at IS ? AND payment_order_id IS ? AND paid_at IS ?
+        AND ${guard.sql}
     `).bind(
-      mapped.status,
-      mapped.payment_status,
+      nextStatus,
+      nextPaymentStatus,
       "bog",
       transactionId,
       orderId,
-      paidAt,
+      orderStatusKey === "completed" && nextPaymentStatus === "completed" ? nowIso : null,
       nowIso,
       payloadString,
       nowIso,
-      externalOrderId
+      current.id,
+      current.status,
+      current.payment_status,
+      current.booking_date,
+      current.booking_time,
+      current.guests,
+      current.updated_at,
+      current.payment_order_id,
+      current.paid_at,
+      ...guard.values
     ).run();
+
+    if (Number(result.meta?.changes) === 1) {
+      if (nextStatus === "payment_review") console.error("Paid reservation needs capacity review", current.id, orderId);
+      return {
+        ...identifiers,
+        mappedStatus: nextStatus,
+        mappedPaymentStatus: nextPaymentStatus,
+        updated: true,
+        reservationBefore: current,
+      };
+    }
   }
 
-  if ((!result || !result.meta || result.meta.changes === 0) && orderId) {
-    result = await DB.prepare(`
-      UPDATE reservations
-      SET
-        status = ?,
-        payment_status = ?,
-        payment_provider = ?,
-        payment_ref = COALESCE(?, payment_ref),
-        payment_order_id = COALESCE(?, payment_order_id),
-        paid_at = COALESCE(?, paid_at),
-        callback_received_at = ?,
-        callback_payload = ?,
-        updated_at = ?
-      WHERE payment_order_id = ?
-    `).bind(
-      mapped.status,
-      mapped.payment_status,
-      "bog",
-      transactionId,
-      orderId,
-      paidAt,
-      nowIso,
-      payloadString,
-      nowIso,
-      orderId
-    ).run();
-  }
-
-  return {
-    orderId,
-    externalOrderId,
-    orderStatusKey,
-    mappedStatus: mapped.status,
-    mappedPaymentStatus: mapped.payment_status,
-    updated: !!(result && result.meta && result.meta.changes > 0),
-  };
+  // Never acknowledge an unapplied payment update as successfully received.
+  throw new Error("Reservation availability changed while processing payment. Retry the callback.");
 }
 
 export async function onRequestPost(context) {
@@ -235,10 +288,11 @@ export async function onRequestPost(context) {
       } catch (err) {
         signatureValid = false;
       }
+    }
 
-      if (!signatureValid) {
-        return json({ ok: false, error: "Invalid callback signature." }, 401);
-      }
+    // Reject unsigned callbacks as well as signatures that fail verification.
+    if (!signatureValid) {
+      return json({ ok: false, error: "Invalid callback signature." }, 401);
     }
 
     let payload = null;
@@ -253,37 +307,15 @@ export async function onRequestPost(context) {
       }, 400);
     }
 
-    const body = payload?.body || {};
-    const orderId = body.order_id || null;
-    const externalOrderId = body.external_order_id || null;
-    const orderStatusKey = body?.order_status?.key || null;
-
-    let reservationBefore = null;
-
-    if (externalOrderId) {
-      reservationBefore = await DB.prepare(`
-        SELECT *
-        FROM reservations
-        WHERE id = ?
-        LIMIT 1
-      `).bind(externalOrderId).first();
-    }
-
-    if (!reservationBefore && orderId) {
-      reservationBefore = await DB.prepare(`
-        SELECT *
-        FROM reservations
-        WHERE payment_order_id = ?
-        LIMIT 1
-      `).bind(orderId).first();
-    }
-
     const updateResult = await updateReservationFromCallback(DB, payload, rawBody);
+    const { reservationBefore, orderStatusKey } = updateResult;
 
     let emailSent = false;
     let emailError = null;
 
     const shouldSendEmail =
+      updateResult.updated &&
+      updateResult.mappedStatus === "confirmed" &&
       orderStatusKey === "completed" &&
       reservationBefore &&
       reservationBefore.email &&

@@ -8,8 +8,11 @@ import {
 import {
   CUSTOM_MAX_GUESTS,
   canFitCustomReservation,
+  MIN_ADVANCE_MS,
 } from "./_custom-reservation.js";
 import { createUndoToken, snapshotGuard } from "./_undo.js";
+import { occupiesCapacity, readCapacitySnapshot } from "../reservations/_capacity.js";
+import { adminAuthenticated } from "./_auth.js";
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -19,11 +22,6 @@ function json(data, status = 200) {
       "Cache-Control": "no-store",
     },
   });
-}
-
-function isAuthenticated(request) {
-  const cookie = request.headers.get("Cookie") || "";
-  return cookie.includes("admin_auth=ok");
 }
 
 function hasOwn(object, key) {
@@ -52,7 +50,7 @@ function availabilityReasonToMessage(reason) {
 
 export async function onRequestPost(context) {
   try {
-    if (!isAuthenticated(context.request)) {
+    if (!(await adminAuthenticated(context.request, context.env))) {
       return json({ ok: false, error: "Unauthorized" }, 401);
     }
 
@@ -67,6 +65,7 @@ export async function onRequestPost(context) {
 
     const allowedStatuses = [
       "pending_payment",
+      "payment_review",
       "confirmed",
       "payment_failed",
       "cancelled",
@@ -158,21 +157,21 @@ export async function onRequestPost(context) {
       bookingTime !== String(current.booking_time || "") ||
       guests !== Number(current.guests);
 
-    if (availabilityChanged) {
-      const confirmedRows = await DB.prepare(`
-        SELECT id, booking_date, booking_time, guests, status
-        FROM reservations
-        WHERE booking_date = ?
-          AND status IN ('confirmed', 'completed')
-          AND id <> ?
-      `).bind(bookingDate, id).all();
+    const now = new Date();
+    let capacityGuard = { sql: "1 = 1", values: [] };
+    const becomingActive = occupiesCapacity({ ...current, status }, now) && !occupiesCapacity(current, now);
+    const confirmingHold = ["confirmed", "completed"].includes(status) && !["confirmed", "completed"].includes(current.status);
+
+    if (availabilityChanged || becomingActive || confirmingHold) {
+      const snapshot = await readCapacitySnapshot(DB, bookingDate, id, now);
+      capacityGuard = snapshot.guard;
 
       const availability = canFitCustomReservation({
         dateStr: bookingDate,
         timeStr: bookingTime,
         guests,
-        reservations: confirmedRows.results || [],
-        now: new Date(),
+        reservations: snapshot.reservations,
+        now: availabilityChanged ? now : new Date(selectedDateTime.getTime() - MIN_ADVANCE_MS),
       });
 
       if (!availability.available) {
@@ -186,7 +185,7 @@ export async function onRequestPost(context) {
     const updatedAt = new Date().toISOString();
     const after = { ...current, first_name: firstName, last_name: lastName, phone, booking_date: bookingDate, booking_time: bookingTime, guests, table_number: tableNumber || null, status, updated_at: updatedAt };
     const undo = body.undo === true ? await createUndoToken(context.env, current, after) : null;
-    const guard = undo ? snapshotGuard(current) : { sql: "id = ?", values: [id] };
+    const guard = snapshotGuard(current);
 
     const result = await DB.prepare(`
       UPDATE reservations
@@ -200,7 +199,7 @@ export async function onRequestPost(context) {
         table_number = ?,
         status = ?,
         updated_at = ?
-      WHERE ${guard.sql}
+      WHERE ${guard.sql} AND ${capacityGuard.sql}
     `).bind(
       firstName,
       lastName,
@@ -211,10 +210,11 @@ export async function onRequestPost(context) {
       tableNumber || null,
       status,
       updatedAt,
-      ...guard.values
+      ...guard.values,
+      ...capacityGuard.values
     ).run();
 
-    if (undo && Number(result.meta?.changes) !== 1) return json({ ok: false, error: "This reservation changed. Refresh it before saving." }, 409);
+    if (Number(result.meta?.changes) !== 1) return json({ ok: false, error: "This reservation or its availability changed. Refresh it before saving." }, 409);
     return json({ ok: true, result, ...(undo ? { undo } : {}) });
   } catch (error) {
     return json({

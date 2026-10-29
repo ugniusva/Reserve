@@ -2,7 +2,9 @@ import {
   CUSTOM_MAX_GUESTS,
   canFitCustomReservation,
 } from "./_custom-reservation.js";
-import { adminAuthenticated, createUndoToken } from "./_undo.js";
+import { createUndoToken } from "./_undo.js";
+import { adminAuthenticated } from "./_auth.js";
+import { readCapacitySnapshot } from "../reservations/_capacity.js";
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -55,7 +57,7 @@ export async function onRequestPost(context) {
   try {
     const { DB } = context.env;
     const body = await context.request.json();
-    if (body.undo === true && !adminAuthenticated(context.request)) return json({ ok: false, error: "Unauthorized" }, 401);
+    if (body.undo === true && !(await adminAuthenticated(context.request, context.env))) return json({ ok: false, error: "Unauthorized" }, 401);
 
     const fullName = (body.full_name || "").trim();
     const phone = (body.phone || "").trim();
@@ -73,19 +75,15 @@ export async function onRequestPost(context) {
       return json({ ok: false, error: "Guest count must be between 1 and 22." }, 400);
     }
 
-    const confirmedRows = await DB.prepare(`
-      SELECT booking_date, booking_time, guests, status
-      FROM reservations
-      WHERE booking_date = ?
-        AND status IN ('confirmed', 'completed')
-    `).bind(bookingDate).all();
+    const now = new Date();
+    const { reservations, guard } = await readCapacitySnapshot(DB, bookingDate, null, now);
 
     const availability = canFitCustomReservation({
       dateStr: bookingDate,
       timeStr: bookingTime,
       guests,
-      reservations: confirmedRows.results || [],
-      now: new Date(),
+      reservations,
+      now,
     });
 
     if (!availability.available) {
@@ -125,8 +123,9 @@ export async function onRequestPost(context) {
         callback_payload,
         created_at,
         updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      ${body.undo === true ? "RETURNING *" : ""}
+      ) SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+      WHERE ${guard.sql}
+      RETURNING *
     `).bind(
       id,
       firstName,
@@ -149,15 +148,15 @@ export async function onRequestPost(context) {
       null,
       null,
       createdAt,
-      createdAt
+      createdAt,
+      ...guard.values
     );
     let undo = null;
+    const created = await insert.first();
+    if (!created) return json({ ok: false, error: "Availability changed. Please select the time again." }, 409);
     if (body.undo === true) {
-      const created = await insert.first();
       try { undo = await createUndoToken(context.env, null, created); }
       catch (error) { console.error("Reservation created but undo token unavailable", id); }
-    } else {
-      await insert.run();
     }
 
     return json({

@@ -681,6 +681,8 @@ footer a:hover { color: var(--brand); }
       </div>
     </footer>
 
+    <script src="vendor/libphonenumber-js/libphonenumber-min.js"></script>
+    <script src="reservation-phone.js"></script>
     <script>
       const overlay = document.getElementById("page-overlay");
       const panel = document.getElementById("page-panel");
@@ -699,7 +701,7 @@ footer a:hover { color: var(--brand); }
       });
 
       const API_ENABLED = true;
-      const API_ENDPOINT = "/api/reservations/create";
+      const API_ENDPOINT = "/api/reservations/create?return_page=test";
       const AVAILABILITY_ENDPOINT = "/api/reservations/availability";
 
       const OPEN_TIME = "12:00";
@@ -1016,8 +1018,10 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
 
       const countrySelectShell = document.getElementById("country-select-shell");
 
-      const now = new Date();
-      const todayStart = startOfDay(now);
+      let todayStart = null;
+      let clockRequest = null;
+      let clockError = "";
+      let clockRevision = 0;
 
       const state = {
         date: "",
@@ -1028,10 +1032,12 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
         availabilityError: "",
       };
 
+      let availabilityRequestId = 0;
+      let availabilityController = null;
       let openPanelName = null;
       let depositPolicyNoticeShown = false;
       let depositPolicyCloseTimer = null;
-      let calendarCursor = new Date(todayStart.getFullYear(), todayStart.getMonth(), 1);
+      let calendarCursor = null;
 
       function openDepositPolicyNotice() {
         if (depositPolicyCloseTimer) {
@@ -1111,16 +1117,70 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
       }
 
       function parseDateString(dateStr) {
-        const parts = dateStr.split("-");
-        if (parts.length !== 3) return null;
+        if (typeof dateStr !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr) || dateStr.startsWith("0000")) return null;
+        const parsed = new Date(dateStr + "T00:00:00Z");
+        if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== dateStr) return null;
+        const date = new Date(0);
+        date.setFullYear(parsed.getUTCFullYear(), parsed.getUTCMonth(), parsed.getUTCDate());
+        date.setHours(0, 0, 0, 0);
+        return date;
+      }
 
-        const year = Number(parts[0]);
-        const month = Number(parts[1]);
-        const day = Number(parts[2]);
+      function applyRestaurantDay(dateStr) {
+        const date = parseDateString(dateStr);
+        if (!date) throw new Error("Unable to load restaurant time. Please try again.");
+        // Older in-flight responses must not rewind the restaurant's calendar.
+        if (todayStart && dateStr < formatDateISO(todayStart)) return false;
+        const changed = !todayStart || dateStr !== formatDateISO(todayStart) || Boolean(clockError);
+        todayStart = date;
+        if (clockError && statusBanner.textContent === clockError) clearBanner();
+        clockError = "";
+        clockRevision += 1;
+        const firstMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+        if (!calendarCursor || calendarCursor < firstMonth) calendarCursor = firstMonth;
+        if (state.date && state.date < dateStr) {
+          state.date = "";
+          state.time = "";
+          setSelectorLabel(labelDate, "Select date", false);
+          setSelectorLabel(labelTime, "Select time", false);
+          resetAvailability();
+          renderTimeOptions();
+        }
+        return changed;
+      }
 
-        if (!year || !month || !day) return null;
-
-        return new Date(year, month - 1, day);
+      async function syncRestaurantClock() {
+        if (clockRequest) return clockRequest;
+        const revision = clockRevision;
+        clockRequest = (async () => {
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 10000);
+          try {
+            const response = await fetch(AVAILABILITY_ENDPOINT + "?clock=1", {
+              cache: "no-store",
+              headers: { "Accept": "application/json" },
+              signal: controller.signal,
+            });
+            const data = await response.json();
+            if (!response.ok || !data?.ok) throw new Error("Unable to load restaurant time. Please try again.");
+            if (applyRestaurantDay(data.today)) {
+              renderCalendar();
+              renderTimeOptions();
+            }
+            return true;
+          } catch (error) {
+            if (revision !== clockRevision) return true;
+            clockError = "Unable to load restaurant time. Please try again.";
+            renderCalendar();
+            renderTimeOptions();
+            showBanner("error", clockError);
+            return false;
+          } finally {
+            clearTimeout(timeout);
+            clockRequest = null;
+          }
+        })();
+        return clockRequest;
       }
 
       function parseTimeToMinutes(timeStr) {
@@ -1143,33 +1203,23 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
       }
 
       function getPhoneLocalDigits() {
-        const raw = inputPhone.value || "";
-        const rawDigits = raw.replace(/\D/g, "");
-        const codeDigits = inputCountryCode.value.replace(/\D/g, "");
-
-        let localDigits = rawDigits;
-
-        if (localDigits.startsWith(codeDigits)) {
-          localDigits = localDigits.slice(codeDigits.length);
-        }
-
-        localDigits = localDigits.replace(/^0+/, "");
-        return localDigits;
+        return window.reservationPhoneLocalDigits(inputPhone.value, inputCountryCode.value);
       }
 
       function getPhoneFull() {
-        return `${inputCountryCode.value}${getPhoneLocalDigits()}`;
+        const local = getPhoneLocalDigits();
+        return local ? "+" + inputCountryCode.value.replace(/\D/g, "") + local : "";
       }
 
       function getSelectedDateTime() {
         if (!state.date || !state.time) return null;
-        return new Date(`${state.date}T${state.time}:00`);
+        return new Date(`${state.date}T${state.time}:00+04:00`);
       }
 
       function isPastDate(dateStr) {
         const selected = parseDateString(dateStr);
-        if (!selected) return true;
-        return startOfDay(selected).getTime() < todayStart.getTime();
+        if (!selected || !todayStart || clockError) return true;
+        return dateStr < formatDateISO(todayStart);
       }
 
       function isDateDisabled(dateStr) {
@@ -1177,6 +1227,7 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
       }
 
       function isTimeDisabledForDate(timeStr, dateStr) {
+        if (!todayStart || clockError || state.availabilityLoading || state.availabilityError) return true;
         if (DISABLED_TIME_SLOTS.includes(timeStr)) return true;
         if (!dateStr) return false;
 
@@ -1254,57 +1305,68 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
       }
 
       function resetAvailability() {
+        availabilityRequestId += 1;
+        availabilityController?.abort();
+        availabilityController = null;
         state.availability = new Map();
         state.availabilityLoading = false;
         state.availabilityError = "";
       }
 
       async function loadAvailability() {
+        resetAvailability();
         if (!state.date || !state.guests) {
-          resetAvailability();
           renderTimeOptions();
           return;
         }
 
+        const requestId = availabilityRequestId;
+        const requestedDate = state.date;
+        const requestedGuests = Number(state.guests);
+        const controller = new AbortController();
+        availabilityController = controller;
+        const isCurrent = () => requestId === availabilityRequestId &&
+          requestedDate === state.date && requestedGuests === Number(state.guests);
+        const timeout = setTimeout(() => controller.abort(), 15000);
         state.availabilityLoading = true;
-        state.availabilityError = "";
         renderTimeOptions();
 
         try {
-          const url =
-            `${AVAILABILITY_ENDPOINT}?date=${encodeURIComponent(state.date)}&guests=${encodeURIComponent(state.guests)}`;
-
+          const url = AVAILABILITY_ENDPOINT + "?date=" + encodeURIComponent(requestedDate) +
+            "&guests=" + encodeURIComponent(requestedGuests);
           const response = await fetch(url, {
-            headers: {
-              "Accept": "application/json",
-            },
+            cache: "no-store",
+            headers: { "Accept": "application/json" },
+            signal: controller.signal,
           });
-
           const data = await response.json().catch(() => ({}));
-
-          if (!response.ok || !data.ok || !Array.isArray(data.slots)) {
-            throw new Error(data.error || "Unable to load availability.");
+          if (!isCurrent()) return;
+          if (!response.ok || !data?.ok || !Array.isArray(data.slots) ||
+              data.date !== requestedDate || Number(data.guests) !== requestedGuests) {
+            throw new Error(data?.error || "Unable to load availability.");
           }
-
-          state.availability = new Map(
-            data.slots.map((slot) => [slot.time, slot])
-          );
+          if (applyRestaurantDay(data.today)) renderCalendar();
+          if (!isCurrent()) return;
+          state.availability = new Map(data.slots.map(slot => [slot.time, slot]));
           state.availabilityError = "";
         } catch (error) {
+          if (!isCurrent()) return;
           state.availability = new Map();
-          state.availabilityError = String(error.message || error);
+          state.availabilityError = "Unable to load availability.";
         } finally {
-          state.availabilityLoading = false;
-
-          if (state.time) {
-            const selectedSlot = state.availability.get(state.time);
-            if (selectedSlot && !selectedSlot.available) {
-              state.time = "";
-              setSelectorLabel(labelTime, "Select time", false);
+          clearTimeout(timeout);
+          if (isCurrent()) {
+            state.availabilityLoading = false;
+            availabilityController = null;
+            if (state.time) {
+              const selectedSlot = state.availability.get(state.time);
+              if (!selectedSlot?.available) {
+                state.time = "";
+                setSelectorLabel(labelTime, "Select time", false);
+              }
             }
+            renderTimeOptions();
           }
-
-          renderTimeOptions();
         }
       }
 
@@ -1352,7 +1414,10 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
         wrapMap[name].classList.add("open");
         openPanelName = name;
 
-        if (name === "date") renderCalendar();
+        if (name === "date") {
+          renderCalendar();
+          void syncRestaurantClock();
+        }
         if (name === "time") renderTimeOptions();
         if (name === "guests") renderGuestOptions();
       }
@@ -1405,6 +1470,19 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
       ];
 
       function renderCalendar() {
+        if (!todayStart || !calendarCursor || clockError) {
+          calendarTitle.textContent = "Loading...";
+          calendarGrid.innerHTML = "";
+          const message = document.createElement("div");
+          message.className = "panel-empty";
+          message.style.gridColumn = "1 / -1";
+          message.textContent = clockError || "Loading...";
+          calendarGrid.appendChild(message);
+          calendarPrev.disabled = true;
+          calendarNext.disabled = true;
+          return;
+        }
+        calendarNext.disabled = false;
         const year = calendarCursor.getFullYear();
         const month = calendarCursor.getMonth();
 
@@ -1455,13 +1533,14 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
           }
 
           button.addEventListener("click", async () => {
+            if (isDateDisabled(iso)) { renderCalendar(); return; }
             state.date = iso;
             clearFieldError("date");
             setSelectorLabel(labelDate, formatDateShort(iso), true);
 
             renderCalendar();
-            await loadAvailability();
             closeAllPanels();
+            await loadAvailability();
           });
 
           cell.appendChild(button);
@@ -1475,6 +1554,7 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
       }
 
       calendarPrev.addEventListener("click", () => {
+        if (!todayStart || !calendarCursor || clockError) return;
         const currentMonthStart = new Date(todayStart.getFullYear(), todayStart.getMonth(), 1);
         const nextCursor = new Date(calendarCursor.getFullYear(), calendarCursor.getMonth() - 1, 1);
 
@@ -1485,6 +1565,7 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
       });
 
       calendarNext.addEventListener("click", () => {
+        if (!todayStart || !calendarCursor || clockError) return;
         calendarCursor = new Date(calendarCursor.getFullYear(), calendarCursor.getMonth() + 1, 1);
         renderCalendar();
       });
@@ -1520,10 +1601,10 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
           return;
         }
 
-        if (state.availabilityError) {
+        if (state.availabilityError || clockError) {
           const error = document.createElement("div");
           error.className = "panel-empty";
-          error.textContent = state.availabilityError;
+          error.textContent = clockError || state.availabilityError;
           timeList.appendChild(error);
           return;
         }
@@ -1615,8 +1696,8 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
       }
 
       updateLargeGroupNote();
-      await loadAvailability();
       closeAllPanels();
+      await loadAvailability();
     });
 
     guestsGrid.appendChild(button);
@@ -1961,8 +2042,7 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
       });
 
       inputPhone.addEventListener("blur", () => {
-        const localDigits = getPhoneLocalDigits();
-        inputPhone.value = localDigits;
+        inputPhone.value = inputPhone.value.trim();
       });
 
       inputCountryCode.addEventListener("change", () => {
@@ -2008,7 +2088,18 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
         renderGuestOptions();
         updateLargeGroupNote();
         showStep(1);
+        void syncRestaurantClock();
       }
+
+      function refreshBookingData() {
+        if (document.hidden || btnSubmit.disabled) return;
+        if (state.date && state.guests) void loadAvailability();
+        else void syncRestaurantClock();
+      }
+      document.addEventListener("visibilitychange", refreshBookingData);
+      setInterval(() => {
+        if (!openPanelName) refreshBookingData();
+      }, 60000);
 
       init();
     </script>
