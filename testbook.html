@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="same-origin">
+  <title>Reserve | Booking Test</title>
+  <link rel="icon" href="images/R.svg" type="image/svg+xml">
+  <style>
+    *{box-sizing:border-box;letter-spacing:0}
+    body{margin:0;background:#f4f5f2;color:#242624;font:15px/1.5 Arial,sans-serif}
+    main{max-width:600px;margin:0 auto;padding:24px 20px 40px}
+    .logo{display:block;width:120px;height:54px;object-fit:contain}
+    h1{font-size:23px;margin:14px 0 4px}p{margin:0 0 18px;color:#596052}
+    form{margin-top:22px}fieldset{border:0;padding:0;margin:0;min-width:0}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+    label{display:block;font-size:13px;font-weight:700;min-width:0}
+    input,select,button{font:inherit;min-height:44px;border:1px solid #bbc2b6;border-radius:4px}
+    input,select{display:block;width:100%;margin-top:5px;background:#fff;color:#242624;padding:9px;min-width:0}
+    button{background:#242624;color:#fff;padding:9px 16px;cursor:pointer;font-weight:700}
+    button:disabled{opacity:.5;cursor:not-allowed}
+    input:focus-visible,select:focus-visible,button:focus-visible{outline:3px solid #d0842f;outline-offset:2px}
+    .login{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:end;border-top:1px solid #d7ddd2;border-bottom:1px solid #d7ddd2;padding:18px 0}
+    #pay{width:100%;margin-top:18px;background:#d0842f;border-color:#d0842f;color:#20180f}
+    #message{margin-top:16px;overflow-wrap:anywhere;color:#a52f32}#message[data-ok="true"]{color:#246644}
+    @media(max-width:420px){.grid{grid-template-columns:1fr}.login{grid-template-columns:1fr}.login button{width:100%}}
+  </style>
+</head>
+<body>
+  <main>
+    <a href="index.html"><img class="logo" src="images/logoblack2.svg" alt="Reserve" width="120" height="54"></a>
+    <h1>Test booking</h1>
+    <p><strong>1 GEL per person.</strong> Real payment, real reservation, usual confirmation email.</p>
+    <form id="login" class="login">
+      <label>Admin password<input id="password" type="password" autocomplete="current-password" required></label>
+      <button id="sign-in" type="submit">Sign in</button>
+    </form>
+    <form id="booking">
+      <fieldset id="fields" disabled>
+        <div class="grid">
+          <label>First name<input name="first_name" value="Test" autocomplete="given-name" required></label>
+          <label>Last name<input name="last_name" value="Booking" autocomplete="family-name" required></label>
+          <label>Email<input name="email" type="email" autocomplete="email" required></label>
+          <label>Phone with country code<input name="phone" type="tel" placeholder="+995..." autocomplete="tel" pattern="\+[1-9][0-9]{5,14}" required></label>
+          <label>Date (GMT+4)<input id="date" name="booking_date" type="date" required></label>
+          <label>Guests<select id="guests" name="guests"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select></label>
+          <label>Time (GMT+4)<select id="time" name="booking_time" required disabled><option value="">Loading times...</option></select></label>
+          <label>Return language<select id="language"><option value="en">English</option><option value="ka">Georgian</option></select></label>
+        </div>
+        <button id="pay" type="submit" disabled>Pay 1 GEL</button>
+      </fieldset>
+    </form>
+    <p id="message" role="status" aria-live="polite"></p>
+  </main>
+  <script>
+    'use strict';
+    const $ = id => document.getElementById(id);
+    let ticket = 0, controller, availableFor = '', paying = false, signingIn = false;
+    const key = () => `${$('date').value}|${$('guests').value}`;
+    function message(text, ok = false) { $('message').textContent = text; $('message').dataset.ok = String(ok); }
+    function syncPay() {
+      $('pay').textContent = paying ? 'Opening checkout...' : `Pay ${Number($('guests').value)} GEL`;
+      $('pay').disabled = paying || signingIn || availableFor !== key() || !$('time').value;
+    }
+    async function request(path, body, signal) {
+      const response = await fetch(path, { method: body ? 'POST' : 'GET', credentials: 'same-origin', cache: 'no-store', signal,
+        ...(body ? { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {}) });
+      const data = await response.json().catch(() => null);
+      if (!response.ok || !data?.ok) throw new Error(response.status === 401 && path !== '/api/admin/login' ? 'Sign in with the admin password, then try again.' : data?.error || 'Request failed. Check your connection and try again.');
+      return data;
+    }
+    async function loadTimes() {
+      const current = ++ticket, selected = key();
+      controller?.abort(); controller = new AbortController(); availableFor = '';
+      $('time').replaceChildren(new Option('Loading times...', '')); $('time').disabled = true; syncPay();
+      if (!$('date').value || !$('date').checkValidity()) { $('time').replaceChildren(new Option('Choose a valid date', '')); return; }
+      try {
+        const query = new URLSearchParams({ date: $('date').value, guests: $('guests').value });
+        const data = await request(`/api/reservations/availability?${query}`, null, controller.signal);
+        if (current !== ticket || selected !== key()) return;
+        if (data.date !== $('date').value || Number(data.guests) !== Number($('guests').value) || !Array.isArray(data.slots)) throw new Error('Availability could not be verified. Change the date to retry.');
+        const slots = data.slots.filter(slot => slot.available);
+        $('time').replaceChildren(new Option(slots.length ? 'Select time' : 'No available times', ''));
+        slots.forEach(slot => $('time').add(new Option(slot.time, slot.time)));
+        $('time').disabled = !slots.length; availableFor = selected;
+        message(slots.length ? '' : 'No available times for this date and guest count.'); syncPay();
+      } catch (error) {
+        if (current !== ticket || error.name === 'AbortError') return;
+        $('time').replaceChildren(new Option('Availability unavailable', '')); message(error.message); syncPay();
+      }
+    }
+    $('date').addEventListener('change', loadTimes);
+    $('guests').addEventListener('change', loadTimes);
+    $('time').addEventListener('change', syncPay);
+    $('login').addEventListener('submit', async event => {
+      event.preventDefault(); if ($('sign-in').disabled) return;
+      signingIn = true; $('sign-in').disabled = true; syncPay();
+      try { await request('/api/admin/login', { password: $('password').value }); $('password').value = ''; message('Signed in.', true); }
+      catch (error) { message(error.message); }
+      finally { signingIn = false; $('sign-in').disabled = false; syncPay(); }
+    });
+    $('booking').addEventListener('submit', async event => {
+      event.preventDefault(); if (paying || $('pay').disabled || !$('booking').reportValidity()) return;
+      const body = Object.fromEntries(new FormData($('booking'))); body.guests = Number(body.guests);
+      const query = new URLSearchParams({ lang: $('language').value });
+      paying = true; $('fields').disabled = true; $('sign-in').disabled = true; syncPay(); message('');
+      let redirecting = false;
+      try {
+        const data = await request(`/api/reservations/test-create?${query}`, body);
+        if (Number(data.depositAmount) !== body.guests) throw new Error('Unexpected test price. Do not pay; check the reservation in admin.');
+        if (typeof data.redirectUrl !== 'string' || !data.redirectUrl) throw new Error('Checkout URL missing. Check the admin record before retrying.');
+        window.location.assign(data.redirectUrl); redirecting = true;
+      } catch (error) { message(error.message); }
+      finally { if (!redirecting) { paying = false; $('fields').disabled = false; $('sign-in').disabled = false; syncPay(); } }
+    });
+    (async () => {
+      try {
+        const clock = await request('/api/reservations/availability?clock=1');
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(clock.today)) throw new Error('Server date unavailable. Refresh to retry.');
+        $('date').min = $('date').value = clock.today; $('fields').disabled = false; await loadTimes();
+      } catch (error) { message(error.message); }
+    })();
+  </script>
+</body>
+</html>
