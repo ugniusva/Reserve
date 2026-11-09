@@ -152,7 +152,6 @@
     dl{margin:15px 0 0;display:grid;grid-template-columns:130px 1fr;gap:9px;font-size:13px}
     dt{color:var(--muted)}dd{margin:0;overflow-wrap:anywhere}
     .delete-record{font-size:13px;color:var(--red);border-color:#e6bdbc;margin-top:20px}
-    .static-notes{white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;margin-top:20px;border-left:2px solid #d0842f;padding-left:12px}
     .manual-note{background:var(--gold-light);padding:10px 12px;border-radius:4px;font-size:13px;color:#7a4915;margin-bottom:20px}
     .deletion-name{font-weight:700;margin:18px 0 6px;font-size:17px}
     @media(min-width:1500px){.shell{padding-left:44px;padding-right:44px}td{padding-top:18px;padding-bottom:18px}}
@@ -169,7 +168,6 @@
     .header-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
     .undo-button{gap:6px;position:relative}
     .undo-button:disabled{opacity:1;color:var(--muted)}
-    .beta{display:inline-block;padding:2px 5px;border:1px solid #d8aa61;border-radius:8px;color:#885516;background:#fcf0d6;font-size:9px;font-weight:700;line-height:1.2}
     .undo-count{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
     .theme-button{white-space:nowrap;font-size:13px}
     .auth-theme{position:absolute;right:20px;top:20px}
@@ -201,7 +199,6 @@
     [data-theme="dark"] .manual-note{color:#f3c17c}
     [data-theme="dark"] .danger{background:#9b3436;border-color:#b94d4f;color:white}
     [data-theme="dark"] .banner{background:var(--red-light);color:#f2b6b1;border-color:#87504a}
-    [data-theme="dark"] .beta{background:#49371a;color:#f8d296;border-color:#9d7639}
     @media(max-width:800px){.topbar .shell{padding-top:14px;padding-bottom:14px;align-items:flex-start}.header-tools{max-width:70%;gap:7px}.header-actions{flex-wrap:wrap;justify-content:flex-end}.theme-button{padding:8px 10px}.undo-button{padding:8px 10px}.header-tools .icon{width:16px;height:16px}}
     @media(max-width:480px){
       .topbar .shell{position:relative;flex-wrap:wrap;gap:10px;align-items:center}
@@ -214,7 +211,7 @@
       .header-tools>.theme-button{flex:1 1 100px;font-size:12px;gap:5px}
       .header-tools>.undo-button{flex:1 1 112px;font-size:12px}
       .topbar h1{font-size:22px}
-      .beta{font-size:9px}.undo-count{display:none}
+      .undo-count{display:none}
     }
     @media(max-width:370px){.topbar h1{font-size:20px}}
     @media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;scroll-behavior:auto!important}}
@@ -265,7 +262,7 @@
           <div><h1>Reservations</h1><p class="heading-sub">Staff desk &middot; Tbilisi, GMT+4</p></div>
         </div>
         <div class="header-tools"><button class="theme-button" type="button" data-theme-toggle><svg class="icon" aria-hidden="true"><use href="#i-sun"/></svg><span>Light mode</span></button>
-        <button class="undo-button" id="undo" title="Undo the last admin change" disabled><svg class="icon" aria-hidden="true"><use href="#i-undo"/></svg>Undo <span class="beta">BETA</span><span class="undo-count" id="undo-count"></span></button>
+        <button class="undo-button" id="undo" title="Undo the last admin change" disabled><svg class="icon" aria-hidden="true"><use href="#i-undo"/></svg>Undo <span class="undo-count" id="undo-count"></span></button>
         <div class="header-actions">
           <button class="primary" id="new-reservation"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg><span>Add reservation</span></button>
           <button class="quiet" id="logout" title="Sign out"><svg class="icon" aria-hidden="true"><use href="#i-logout"/></svg><span class="logout-label">Sign out</span></button>
@@ -328,8 +325,8 @@
           <div><label for="edit-guests">Guests</label><input id="edit-guests" name="guests" type="number" min="1" max="22" step="1" required></div>
           <div><label for="edit-table">Table</label><input id="edit-table" name="table_number" placeholder="Not assigned" autocomplete="off"></div>
           <div class="full"><label for="edit-status">Booking status</label><select id="edit-status" name="status"><option value="confirmed">Confirmed</option><option value="completed">Completed</option><option value="pending_payment">Pending payment</option><option value="payment_review">Paid - needs review</option><option value="payment_failed">Payment failed</option><option value="cancelled">Cancelled</option><option value="no_show">No show</option></select></div>
+          <div class="full"><label for="edit-notes">Comments / requests <span class="muted">(optional)</span></label><textarea id="edit-notes" name="requests" rows="2"></textarea></div>
         </div></fieldset>
-        <div id="edit-notes" class="static-notes" hidden></div>
         <details class="record-details" open><summary>Payment &amp; record details</summary><dl id="record-details"></dl><button type="button" class="delete-record" id="open-delete"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg>Delete reservation</button></details>
       </div>
       <div class="dialog-actions"><button type="button" data-close>Cancel</button><button class="primary" id="edit-save" type="submit">Save changes</button></div>
@@ -358,7 +355,7 @@
             <div class="calendar-grid" id="create-calendar-days"></div>
           </div>
           <div class="full"><label for="create-time">Available time</label><select id="create-time" name="booking_time" required disabled><option value="">Choose a date first</option></select></div>
-          <div class="full"><label for="create-notes">Requests / notes <span class="muted">(optional)</span></label><textarea id="create-notes" name="requests" rows="3"></textarea></div>
+          <div class="full"><label for="create-notes">Comments / requests <span class="muted">(optional)</span></label><textarea id="create-notes" name="requests" rows="3"></textarea></div>
         </div></fieldset>
       </div>
       <div class="dialog-actions"><button type="button" data-close>Cancel</button><button class="primary" id="create-save" type="submit" disabled>Add reservation</button></div>
@@ -452,7 +449,7 @@
       dialogOpeners.clear();
       ['edit-form','table-form','create-form','delete-form','undo-form'].forEach(id => $(id).reset());
       $('undo-description').textContent = ''; $('undo-note').textContent = '';
-      $('rows').replaceChildren(); $('record-details').replaceChildren(); $('edit-notes').textContent = '';
+      $('rows').replaceChildren(); $('record-details').replaceChildren();
       $('delete-name').textContent = ''; $('delete-booking').textContent = ''; $('table-guest').textContent = ''; $('edit-subtitle').textContent = '';
       $('create-date').value = ''; closeCalendar(); $('create-calendar-days').replaceChildren(); $('create-time').replaceChildren(); $('toast').hidden = true; $('toast-message').textContent = '';
       $('search').value = ''; $('status-filter').value = ''; $('arrival-filter').value = '';
@@ -584,10 +581,8 @@
       }
       if (r.booking_time && !times.includes(r.booking_time)) times.push(r.booking_time);
       $('edit-time').innerHTML = times.map(time => `<option value="${esc(time)}">${esc(time)}</option>`).join('');
-      ['first_name','last_name','phone','booking_date','booking_time','guests','table_number','status'].forEach(key => $('edit-form').elements.namedItem(key).value = r[key] ?? '');
+      ['first_name','last_name','phone','booking_date','booking_time','guests','table_number','status','requests'].forEach(key => $('edit-form').elements.namedItem(key).value = r[key] ?? '');
       $('edit-subtitle').textContent = `${dateLabel(r.booking_date)} / ${r.booking_time}`;
-      $('edit-notes').textContent = r.requests ? `Guest requests: ${r.requests}` : '';
-      $('edit-notes').hidden = !r.requests;
       $('edit-dialog').querySelector('details').open = true;
       const paidCreated = r.paid_at || r.callback_received_at || r.created_at;
       const source = r.paid_at ? 'Payment confirmed' : r.callback_received_at ? 'Callback' : 'Created';
@@ -637,7 +632,9 @@
       for (const key of Object.keys(body)) if (typeof body[key] === 'string') body[key] = body[key].trim();
       // Send only edits so an unchanged field cannot overwrite another staff member's update.
       for (const key of Object.keys(body)) {
-        if (key !== 'id' && String(body[key]) === String(r[key] ?? '')) delete body[key];
+        const previous = String(r[key] ?? '');
+        const original = key === 'requests' ? previous.replace(/\r\n?/g,'\n').trim() : previous;
+        if (key !== 'id' && String(body[key]) === original) delete body[key];
       }
       if (Object.keys(body).length === 1) { $(`${mode}-dialog`).close(); notify('No changes made.'); return; }
       const session = state.session, dialog = `${mode}-dialog`, save = `${mode}-save`;

@@ -77,6 +77,10 @@ export async function onRequestPost(context) {
       return json({ ok: false, error: "Missing reservation ID." }, 400);
     }
 
+    if (hasOwn(body, "requests") && body.requests !== null && typeof body.requests !== "string") {
+      return json({ ok: false, error: "Comments must be text." }, 400);
+    }
+
     const current = await DB.prepare(`
       SELECT *
       FROM reservations
@@ -112,6 +116,9 @@ export async function onRequestPost(context) {
     const status = hasOwn(body, "status")
       ? String(body.status || "").trim()
       : String(current.status || "").trim();
+    const requests = hasOwn(body, "requests")
+      ? body.requests?.trim() || null
+      : current.requests;
 
     if (!firstName || !lastName) {
       return json({ ok: false, error: "Name is required." }, 400);
@@ -183,7 +190,7 @@ export async function onRequestPost(context) {
     }
 
     const updatedAt = new Date().toISOString();
-    const after = { ...current, first_name: firstName, last_name: lastName, phone, booking_date: bookingDate, booking_time: bookingTime, guests, table_number: tableNumber || null, status, updated_at: updatedAt };
+    const after = { ...current, first_name: firstName, last_name: lastName, phone, booking_date: bookingDate, booking_time: bookingTime, guests, table_number: tableNumber || null, status, requests, updated_at: updatedAt };
     const undo = body.undo === true ? await createUndoToken(context.env, current, after) : null;
     const guard = snapshotGuard(current);
 
@@ -198,6 +205,7 @@ export async function onRequestPost(context) {
         guests = ?,
         table_number = ?,
         status = ?,
+        requests = ?,
         updated_at = ?
       WHERE ${guard.sql} AND ${capacityGuard.sql}
     `).bind(
@@ -209,6 +217,7 @@ export async function onRequestPost(context) {
       guests,
       tableNumber || null,
       status,
+      requests,
       updatedAt,
       ...guard.values,
       ...capacityGuard.values
