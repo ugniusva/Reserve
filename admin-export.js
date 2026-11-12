@@ -125,15 +125,13 @@ function setupReservationExport({ $, notify, nameOf, paymentLabel, labels, sessi
     syncButtons();
     try {
       const data = dataRows();
-      const all = [columns.map(([header]) => header),...data];
-      const text = all.map(row => row.map((value,i) => clipboardValue(value,columns[i][3])).join('\t')).join('\r\n');
+      const text = data.map(row => row.map((value,i) => clipboardValue(value,columns[i][3])).join('\t')).join('\r\n');
       let copied = false;
       if (navigator.clipboard?.write && typeof ClipboardItem === 'function') {
-        const html = '<table>' + all.map((row,j) => '<tr>' + row.map((value,i) => {
-          const tag = j ? 'td' : 'th';
-          const format = j ? columns[i][3] : undefined;
+        const html = '<table>' + data.map(row => '<tr>' + row.map((value,i) => {
+          const format = columns[i][3];
           const style = !format || format === '@' ? ' style="mso-number-format:\'\\@\'"' : '';
-          return `<${tag}${style}>${htmlEscape(clipboardValue(value,format))}</${tag}>`;
+          return `<td${style}>${htmlEscape(clipboardValue(value,format))}</td>`;
         }).join('') + '</tr>').join('') + '</table>';
         try {
           await navigator.clipboard.write([new ClipboardItem({
