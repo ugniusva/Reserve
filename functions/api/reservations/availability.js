@@ -5,6 +5,7 @@ import {
   getRestaurantDate,
 } from "./_availability.js";
 import { readCapacitySnapshot } from "./_capacity.js";
+import { isClosedSlot, readBookingClosures, readClosedDateRanges } from "./_closures.js";
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -24,7 +25,9 @@ export async function onRequestGet(context) {
 
     // Calendar bootstrap uses the same server clock as slot validation.
     if (url.searchParams.get("clock") === "1") {
-      return json({ ok: true, server_now: now.toISOString(), today: getRestaurantDate(now) });
+      const today = getRestaurantDate(now);
+      const closed_date_ranges = await readClosedDateRanges(DB, today);
+      return json({ ok: true, server_now: now.toISOString(), today, closed_date_ranges });
     }
 
     const date = (url.searchParams.get("date") || "").trim();
@@ -40,12 +43,15 @@ export async function onRequestGet(context) {
 
     const { reservations } = await readCapacitySnapshot(DB, date, null, now);
 
+    const closures = await readBookingClosures(DB, date);
     const slots = buildDailyAvailability({
       dateStr: date,
       guests,
       reservations,
       now,
-    });
+    }).map(slot => isClosedSlot(closures, date, slot.time)
+      ? { ...slot, available: false, reason: "closed" }
+      : slot);
 
     return json({
       ok: true,

@@ -13,6 +13,7 @@ import {
 import { createUndoToken, snapshotGuard } from "./_undo.js";
 import { occupiesCapacity, readCapacitySnapshot } from "../reservations/_capacity.js";
 import { adminAuthenticated } from "./_auth.js";
+import { bookingIsClosed, CLOSED_BOOKING_MESSAGE, openBookingGuard } from "../reservations/_closures.js";
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -159,15 +160,20 @@ export async function onRequestPost(context) {
       return json({ ok: false, error: "Invalid status." }, 400);
     }
 
-    const availabilityChanged =
+    const slotChanged =
       bookingDate !== String(current.booking_date || "") ||
-      bookingTime !== String(current.booking_time || "") ||
-      guests !== Number(current.guests);
+      bookingTime !== String(current.booking_time || "");
+    const availabilityChanged = slotChanged || guests !== Number(current.guests);
 
     const now = new Date();
     let capacityGuard = { sql: "1 = 1", values: [] };
     const becomingActive = occupiesCapacity({ ...current, status }, now) && !occupiesCapacity(current, now);
     const confirmingHold = ["confirmed", "completed"].includes(status) && !["confirmed", "completed"].includes(current.status);
+    const needsOpenSlot = slotChanged || guests > Number(current.guests) || becomingActive || confirmingHold;
+    const opening = needsOpenSlot ? openBookingGuard(bookingDate, bookingTime) : { sql: "1 = 1", values: [] };
+    if (needsOpenSlot && await bookingIsClosed(DB, opening)) {
+      return json({ ok: false, error: CLOSED_BOOKING_MESSAGE, reason: "closed" }, 409);
+    }
 
     if (availabilityChanged || becomingActive || confirmingHold) {
       const snapshot = await readCapacitySnapshot(DB, bookingDate, id, now);
@@ -207,7 +213,7 @@ export async function onRequestPost(context) {
         status = ?,
         requests = ?,
         updated_at = ?
-      WHERE ${guard.sql} AND ${capacityGuard.sql}
+      WHERE ${guard.sql} AND ${capacityGuard.sql} AND ${opening.sql}
     `).bind(
       firstName,
       lastName,
@@ -220,10 +226,16 @@ export async function onRequestPost(context) {
       requests,
       updatedAt,
       ...guard.values,
-      ...capacityGuard.values
+      ...capacityGuard.values,
+      ...opening.values
     ).run();
 
-    if (Number(result.meta?.changes) !== 1) return json({ ok: false, error: "This reservation or its availability changed. Refresh it before saving." }, 409);
+    if (Number(result.meta?.changes) !== 1) {
+      if (needsOpenSlot && await bookingIsClosed(DB, opening)) {
+        return json({ ok: false, error: CLOSED_BOOKING_MESSAGE, reason: "closed" }, 409);
+      }
+      return json({ ok: false, error: "This reservation or its availability changed. Refresh it before saving." }, 409);
+    }
     return json({ ok: true, result, ...(undo ? { undo } : {}) });
   } catch (error) {
     return json({

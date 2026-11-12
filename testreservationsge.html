@@ -143,6 +143,7 @@ main { min-height: calc(100vh - 120px); padding: var(--header-height) 0 0; }
 .calendar-cell { min-height: 40px; }
 .calendar-day { width: 100%; min-height: 40px; font-size: 14px; border-color: transparent; }
 .calendar-day.today { text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 5px; }
+.calendar-day.closed { text-decoration: line-through; }
 .calendar-legend { font-size: 11px; color: var(--muted); margin-top: 14px; }
 .button-primary, .button-secondary { min-height: 50px; padding: 12px 24px; border-radius: 2px; font-size: 14px; border: 1px solid transparent; transition: background 180ms ease, border-color 180ms ease; }
 .button-primary { color: var(--ink); background: var(--brand); min-width: 160px; }
@@ -1040,6 +1041,7 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
       let depositPolicyNoticeShown = false;
       let depositPolicyCloseTimer = null;
       let calendarCursor = null;
+      let closedDateRanges = [];
 
       function openDepositPolicyNotice() {
         if (depositPolicyCloseTimer) {
@@ -1165,10 +1167,14 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
             });
             const data = await response.json();
             if (!response.ok || !data?.ok) throw new Error("რესტორნის დროის ჩატვირთვა ვერ მოხერხდა. გთხოვთ, სცადოთ ხელახლა.");
-            if (applyRestaurantDay(data.today)) {
-              renderCalendar();
-              renderTimeOptions();
-            }
+            const day = data.today;
+            if (todayStart && day < formatDateISO(todayStart)) return true;
+            const dayChanged = applyRestaurantDay(day);
+            const ranges = Array.isArray(data.closed_date_ranges) ? data.closed_date_ranges : [];
+            const closuresChanged = JSON.stringify(ranges) !== JSON.stringify(closedDateRanges);
+            closedDateRanges = ranges;
+            if (dayChanged || closuresChanged) renderCalendar();
+            if (dayChanged) renderTimeOptions();
             return true;
           } catch (error) {
             if (revision !== clockRevision) return true;
@@ -1225,7 +1231,11 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
       }
 
       function isDateDisabled(dateStr) {
-        return isPastDate(dateStr) || DISABLED_DATES.includes(dateStr);
+        return isPastDate(dateStr) || isClosedDate(dateStr) || DISABLED_DATES.includes(dateStr);
+      }
+
+      function isClosedDate(dateStr) {
+        return closedDateRanges.some(range => dateStr >= range.start_date && dateStr <= range.end_date);
       }
 
       function isTimeDisabledForDate(timeStr, dateStr) {
@@ -1270,6 +1280,7 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
         [`Reservations are available until ${CLOSE_TIME}.`, `ჯავშნები მიიღება ${CLOSE_TIME}-მდე.`],
         ["Reservations must be made at least 1 hour in advance.", "ჯავშანი უნდა გაკეთდეს სულ მცირე 1 საათით ადრე."],
         ["This time is no longer available.", "ეს დრო უკვე დაკავებულია. გთხოვთ, აირჩიოთ სხვა დრო."],
+        ["This time is closed for reservations.", "ამ დროს ჯავშნები არ მიიღება. გთხოვთ, აირჩიოთ სხვა დრო."],
         ["This time is not available.", "ეს დრო მიუწვდომელია. გთხოვთ, აირჩიოთ სხვა დრო."],
         ["Invalid deposit amount.", "დეპოზიტის თანხის განსაზღვრა ვერ მოხერხდა. გთხოვთ, დაგვიკავშირდეთ."],
         ["Failed to initialize payment.", "გადახდის დაწყება ვერ მოხერხდა. გთხოვთ, სცადოთ ხელახლა."],
@@ -1550,6 +1561,11 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
           const isSelected = state.date === iso;
           const isToday = iso === formatDateISO(todayStart);
 
+          if (isClosedDate(iso)) {
+            button.classList.add("closed");
+            button.title = "დაკეტილია";
+          }
+
           if (disabled) {
             button.disabled = true;
             button.classList.add("disabled");
@@ -1649,7 +1665,9 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
         if (enabledCount === 0) {
           const empty = document.createElement("div");
           empty.className = "panel-empty";
-          empty.textContent = "ამ თარიღისთვის თავისუფალი დრო არ არის.";
+          empty.textContent = slots.every(slot => state.availability.get(slot)?.reason === "closed")
+            ? "ამ თარიღში რესტორანი დაკეტილია."
+            : "ამ თარიღისთვის თავისუფალი დრო არ არის.";
           timeList.appendChild(empty);
           return;
         }
@@ -1675,6 +1693,8 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
 
           if (!disabled) {
             statusEl.textContent = "თავისუფალია";
+          } else if (slotInfo?.reason === "closed") {
+            statusEl.textContent = "დაკეტილია";
           } else if (slotInfo?.reason === "min_advance") {
             statusEl.textContent = "ძალიან მალე";
           } else {
@@ -2218,7 +2238,7 @@ const summaryDepositValue = document.getElementById("summary-deposit-value");
   const calendar = document.getElementById('calendar-grid');
   new MutationObserver(() => {
     calendar.querySelectorAll('button').forEach(button => {
-      button.setAttribute('aria-label', `${button.textContent} ${document.getElementById('calendar-title').textContent}`);
+      button.setAttribute('aria-label', `${button.textContent} ${document.getElementById('calendar-title').textContent}${button.title ? ', ' + button.title : ''}`);
       button.setAttribute('aria-pressed', String(button.classList.contains('selected')));
     });
   }).observe(calendar, { childList: true });

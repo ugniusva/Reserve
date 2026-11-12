@@ -8,6 +8,7 @@ import {
 } from "./_custom-reservation.js";
 import { capacityStatusWhere, paymentHoldCutoff, readCapacitySnapshot } from "../reservations/_capacity.js";
 import { isValidDate } from "../reservations/_availability.js";
+import { isClosedSlot, readBookingClosures } from "../reservations/_closures.js";
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -37,7 +38,9 @@ export async function onRequestGet(context) {
     if (dateStr) {
       if (!isValidDate(dateStr)) return json({ ok: false, error: "Invalid date." }, 400);
       const { reservations } = await readCapacitySnapshot(DB, dateStr, null, now);
+      const closures = await readBookingClosures(DB, dateStr);
       const slots = getTimeSlots().map((time) => {
+        if (isClosedSlot(closures, dateStr, time)) return { time, available: false, reason: "closed" };
         const result = canFitCustomReservation({
           dateStr,
           timeStr: time,
@@ -72,6 +75,7 @@ export async function onRequestGet(context) {
     `).bind(startDate, endDate, paymentHoldCutoff(now)).all();
 
     const grouped = groupReservationsByDate(rows.results || []);
+    const closures = await readBookingClosures(DB, startDate, endDate);
     const slots = getTimeSlots();
     const dates = [];
 
@@ -82,6 +86,7 @@ export async function onRequestGet(context) {
       let available = false;
 
       for (const time of slots) {
+        if (isClosedSlot(closures, date, time)) continue;
         const result = canFitCustomReservation({
           dateStr: date,
           timeStr: time,

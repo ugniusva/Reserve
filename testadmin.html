@@ -137,6 +137,16 @@
     .full{grid-column:1/-1}
     fieldset{border:0;padding:0;margin:0;min-width:0}
     .field-note{font-size:12px;color:var(--muted);margin-top:5px}
+    .closure-heading{font-size:15px;margin-bottom:12px}
+    .closure-check{display:flex;align-items:center;gap:8px;margin:0}
+    .closure-check input{width:18px;height:18px;min-height:0;margin:0;accent-color:var(--gold)}
+    .closure-list-section{border-top:1px solid var(--line);margin-top:22px;padding-top:17px}
+    .closure-list,.closure-conflict-list{list-style:none;padding:0;margin:0}
+    .closure-list li{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
+    .closure-row-actions{display:flex;gap:2px;flex-shrink:0}
+    .closure-conflicts{margin-top:16px;padding:12px;background:var(--gold-light);border-radius:5px;overflow-wrap:anywhere}
+    .closure-conflict-list li{padding:5px 0}
+    #closure-cancel-edit{margin-top:12px}
     .date-trigger{width:100%;justify-content:space-between;min-height:43px;padding:9px 11px;font-weight:400;text-align:left}
     .date-calendar{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:12px 0}
     .calendar-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
@@ -285,6 +295,7 @@
           <button class="icon-button" id="next-day" title="Next day" aria-label="Next day"><svg class="icon" aria-hidden="true"><use href="#i-right"/></svg></button>
           <button class="icon-button" id="refresh" title="Refresh reservations and clear Undo history" aria-label="Refresh reservations and clear Undo history"><svg class="icon" aria-hidden="true"><use href="#i-refresh"/></svg></button>
         </div>
+        <button id="manage-closures" type="button"><svg class="icon" aria-hidden="true"><use href="#i-calendar"/></svg>Closures</button>
       </div>
       <div class="overview"><div class="day-title"><h2 id="view-title"></h2><span class="small muted" id="updated-at"></span></div>
       <section class="stats" aria-label="Current view totals">
@@ -310,6 +321,40 @@
       </div>
     </main>
   </div>
+
+  <dialog id="closure-dialog" aria-labelledby="closure-title">
+    <form id="closure-form">
+      <div class="dialog-head"><div><h2 id="closure-title">Closures</h2><p class="small muted">Tbilisi time (GMT+4)</p></div><button type="button" class="icon-button quiet" data-close title="Close" aria-label="Close"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button></div>
+      <div class="dialog-body">
+        <div id="closure-error" class="form-error" role="alert" hidden></div>
+        <fieldset id="closure-fields">
+          <h3 id="closure-form-title" class="closure-heading">New closure</h3>
+          <div class="form-grid">
+            <div><label for="closure-start-date">Start date</label><input id="closure-start-date" name="start_date" type="date" required></div>
+            <div><label for="closure-end-date">End date</label><input id="closure-end-date" name="end_date" type="date" required></div>
+            <label class="full closure-check"><input id="closure-all-day" type="checkbox" checked>All day</label>
+            <div id="closure-hours" class="full form-grid" hidden>
+              <div><label for="closure-start-time">From</label><input id="closure-start-time" name="start_time" type="time" value="18:00"></div>
+              <div><label for="closure-end-time">Until</label><input id="closure-end-time" name="end_time" type="time" value="20:00"></div>
+            </div>
+            <div class="full"><label for="closure-reason">Staff reason <span class="muted">(optional)</span></label><input id="closure-reason" name="reason" maxlength="160"></div>
+          </div>
+          <button id="closure-cancel-edit" type="button" hidden>Cancel edit</button>
+        </fieldset>
+        <section id="closure-conflicts" class="closure-conflicts" tabindex="-1" aria-labelledby="closure-conflict-title" hidden>
+          <strong id="closure-conflict-title">Affected reservations</strong>
+          <ul id="closure-conflict-list" class="closure-conflict-list small"></ul>
+          <p class="small muted">These reservations will not be cancelled or refunded.</p>
+        </section>
+        <section class="closure-list-section" aria-labelledby="closure-list-title">
+          <h3 id="closure-list-title" class="closure-heading">Active and upcoming</h3>
+          <p id="closure-empty" class="small muted">No closures scheduled.</p>
+          <ul id="closure-list" class="closure-list"></ul>
+        </section>
+      </div>
+      <div class="dialog-actions"><button type="button" data-close>Close</button><button id="closure-save" class="primary" type="submit">Add closure</button></div>
+    </form>
+  </dialog>
 
   <dialog id="edit-dialog" aria-labelledby="edit-title">
     <form id="edit-form">
@@ -376,6 +421,7 @@
   </dialog>
   <div class="toast" id="toast" role="status" hidden><span id="toast-message"></span><button id="dismiss-toast" title="Dismiss notification" aria-label="Dismiss notification"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button></div>
 
+  <script src="admin-closures.js"></script>
   <script>
     'use strict';
     const $ = id => document.getElementById(id);
@@ -466,7 +512,11 @@
       catch { throw new Error('Connection lost. Check your connection and refresh before trying again.'); }
       const data = await response.json().catch(() => null);
       if (response.status === 401 && path !== 'login') { if (session === state.session) requireLogin('Your session ended. Sign in again.'); throw new Error('Please sign in again.'); }
-      if (!response.ok || !data?.ok) throw new Error(data?.error || 'The server could not complete this request. Please try again.');
+      if (!response.ok || !data?.ok) {
+        const error = new Error(data?.error || 'The server could not complete this request. Please try again.');
+        error.data = data;
+        throw error;
+      }
       return data;
     }
     function pageError(message) { $('page-error').hidden = !message; $('page-error').querySelector('span').textContent = message; }
@@ -755,7 +805,7 @@
         const data = await api(`custom-reservation-availability?guests=${guests}&date=${encodeURIComponent(date)}`);
         if (ticket !== state.availability || !$('create-dialog').open) return;
         state.slots = Array.isArray(data.slots) ? data.slots : [];
-        $('create-time').innerHTML = '<option value="">Choose a time</option>' + state.slots.map(slot => `<option value="${esc(slot.time)}" ${slot.available ? '' : 'disabled'}>${esc(slot.time)}${slot.available ? '' : slot.reason === 'min_advance' ? ' / Too soon' : ' / Unavailable'}</option>`).join('');
+        $('create-time').innerHTML = '<option value="">Choose a time</option>' + state.slots.map(slot => `<option value="${esc(slot.time)}" ${slot.available ? '' : 'disabled'}>${esc(slot.time)}${slot.available ? '' : slot.reason === 'closed' ? ' / Closed' : slot.reason === 'min_advance' ? ' / Too soon' : ' / Unavailable'}</option>`).join('');
         $('create-time').disabled = !state.slots.some(slot => slot.available);
         if ($('create-time').disabled) showError('create-error','No times are available. Choose another date or guest count.');
         updateCreateButton();
@@ -879,6 +929,8 @@
     window.addEventListener('pageshow',event => { if (event.persisted) { requireLogin('Checking your session...'); loadReservations(); } });
     window.addEventListener('pagehide',() => { undoHistory.length = 0; });
     state.date = georgiaToday();
+    setupBookingClosures({api, openDialog, dialogBusy, dateLabel, notify, session:() => state.session,
+      initialDate:() => state.date >= georgiaToday() ? state.date : georgiaToday()});
     loadReservations();
   </script>
 </body>

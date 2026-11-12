@@ -1,8 +1,9 @@
 import { columnName, readUndoToken, snapshotGuard } from "./_undo.js";
 import { adminAuthenticated } from "./_auth.js";
 import { canFitCustomReservation } from "./_custom-reservation.js";
-import { parseDateTime, BOOKING_DURATION_HOURS } from "../reservations/_availability.js";
+import { parseDateTime } from "../reservations/_availability.js";
 import { occupiesCapacity, readCapacitySnapshot } from "../reservations/_capacity.js";
+import { bookingIsClosed, BOOKING_DURATION_MS, openBookingGuard } from "../reservations/_closures.js";
 
 const json = (data, status = 200) => new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
 
@@ -24,15 +25,22 @@ export async function onRequestPost(context) {
     let extra = "", extraValues = [];
     const now = new Date();
     const confirmingHold = ["confirmed", "completed"].includes(before?.status) && !["confirmed", "completed"].includes(after?.status);
-    const capacityChanged = occupiesCapacity(before, now) && (!occupiesCapacity(after, now) || confirmingHold || before.booking_date !== after.booking_date || before.booking_time !== after.booking_time || Number(before.guests) !== Number(after.guests));
+    const restoresSlot = !occupiesCapacity(after, now) || confirmingHold ||
+      before?.booking_date !== after?.booking_date || before?.booking_time !== after?.booking_time;
+    const capacityChanged = occupiesCapacity(before, now) && (restoresSlot || Number(before.guests) !== Number(after.guests));
     const start = before ? parseDateTime(before.booking_date, before.booking_time) : null;
-    if (capacityChanged && start && start.getTime() + BOOKING_DURATION_HOURS * 3600000 > Date.now()) {
+    if (capacityChanged && start && start.getTime() + BOOKING_DURATION_MS > now.getTime()) {
+      const needsOpenSlot = restoresSlot || Number(before.guests) > Number(after.guests);
+      const opening = needsOpenSlot ? openBookingGuard(before.booking_date, before.booking_time) : { sql: "1 = 1", values: [] };
+      if (needsOpenSlot && await bookingIsClosed(DB, opening)) {
+        return json({ ok: false, error: "Cannot undo: the original time is closed. No changes were made." }, 409);
+      }
       const { reservations, guard } = await readCapacitySnapshot(DB, before.booking_date, id, now);
       // Undo may restore an already-started booking; retain capacity rules, not the advance notice rule.
       const fit = canFitCustomReservation({ dateStr: before.booking_date, timeStr: before.booking_time, guests: Number(before.guests), reservations, now: new Date(start.getTime() - 3600000) });
       if (!fit.available) return json({ ok: false, error: "Cannot undo: the original time no longer has capacity. No changes were made." }, 409);
-      extra = ` AND ${guard.sql}`;
-      extraValues = guard.values;
+      extra = ` AND ${guard.sql} AND ${opening.sql}`;
+      extraValues = [...guard.values, ...opening.values];
     }
     let result;
     if (!after) {

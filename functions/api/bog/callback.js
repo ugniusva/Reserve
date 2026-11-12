@@ -1,5 +1,6 @@
 import { parseDateTime } from "../reservations/_availability.js";
-import { CAPACITY_WRITE_ATTEMPTS, readCapacitySnapshot } from "../reservations/_capacity.js";
+import { CAPACITY_WRITE_ATTEMPTS, occupiesCapacity, readCapacitySnapshot } from "../reservations/_capacity.js";
+import { bookingIsClosed, openBookingGuard } from "../reservations/_closures.js";
 import { canFitCustomReservation, MIN_ADVANCE_MS } from "../admin/_custom-reservation.js";
 
 function json(data, status = 200) {
@@ -171,7 +172,7 @@ function resolveCallbackStatus(current, mapped, orderStatusKey) {
   return mapped;
 }
 
-async function updateReservationFromCallback(DB, payload, rawBody) {
+export async function updateReservationFromCallback(DB, payload, rawBody) {
   const body = payload?.body || {};
   const orderId = body.order_id || null;
   const externalOrderId = body.external_order_id || null;
@@ -212,6 +213,12 @@ async function updateReservationFromCallback(DB, payload, rawBody) {
         now: new Date(start.getTime() - MIN_ADVANCE_MS),
       });
       if (!fit.available) nextStatus = "payment_review";
+      // A closure does not revoke a hold that was already granted at checkout.
+      if (nextStatus === "confirmed" && !occupiesCapacity(current, now)) {
+        const opening = openBookingGuard(current.booking_date, current.booking_time);
+        if (await bookingIsClosed(DB, opening)) nextStatus = "payment_review";
+        else guard = { sql: `${guard.sql} AND ${opening.sql}`, values: [...guard.values, ...opening.values] };
+      }
     }
 
     const nowIso = now.toISOString();

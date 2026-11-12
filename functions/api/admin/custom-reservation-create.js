@@ -5,6 +5,7 @@ import {
 import { createUndoToken } from "./_undo.js";
 import { adminAuthenticated } from "./_auth.js";
 import { readCapacitySnapshot } from "../reservations/_capacity.js";
+import { bookingIsClosed, CLOSED_BOOKING_MESSAGE, openBookingGuard } from "../reservations/_closures.js";
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -94,6 +95,10 @@ export async function onRequestPost(context) {
     }
 
     const { firstName, lastName } = splitName(fullName);
+    const opening = openBookingGuard(bookingDate, bookingTime);
+    if (await bookingIsClosed(DB, opening)) {
+      return json({ ok: false, error: CLOSED_BOOKING_MESSAGE, reason: "closed" }, 409);
+    }
     const id = crypto.randomUUID();
     const createdAt = new Date().toISOString();
     // Check encryption/configuration and payload size before creating an undo-enabled booking.
@@ -124,7 +129,7 @@ export async function onRequestPost(context) {
         created_at,
         updated_at
       ) SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
-      WHERE ${guard.sql}
+      WHERE ${guard.sql} AND ${opening.sql}
       RETURNING *
     `).bind(
       id,
@@ -149,10 +154,14 @@ export async function onRequestPost(context) {
       null,
       createdAt,
       createdAt,
-      ...guard.values
+      ...guard.values,
+      ...opening.values
     );
     let undo = null;
     const created = await insert.first();
+    if (!created && await bookingIsClosed(DB, opening)) {
+      return json({ ok: false, error: CLOSED_BOOKING_MESSAGE, reason: "closed" }, 409);
+    }
     if (!created) return json({ ok: false, error: "Availability changed. Please select the time again." }, 409);
     if (body.undo === true) {
       try { undo = await createUndoToken(context.env, null, created); }

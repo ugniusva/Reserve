@@ -12,6 +12,7 @@ import {
   CAPACITY_WRITE_ATTEMPTS,
   readCapacitySnapshot,
 } from "./_capacity.js";
+import { bookingIsClosed, CLOSED_BOOKING_MESSAGE, openBookingGuard } from "./_closures.js";
 
 const DEPOSIT_PER_PERSON = 50; // testing; later change to 50
 
@@ -233,6 +234,10 @@ export async function createReservation(context, { testBooking = false } = {}) {
     }
 
     const id = crypto.randomUUID();
+    const opening = openBookingGuard(bookingDate, bookingTime);
+    if (await bookingIsClosed(DB, opening)) {
+      return json({ ok: false, error: CLOSED_BOOKING_MESSAGE, reason: "closed" }, 409);
+    }
     let createdAt;
     let reserved = false;
 
@@ -277,7 +282,7 @@ export async function createReservation(context, { testBooking = false } = {}) {
           created_at,
           updated_at
         ) SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
-        WHERE ${guard.sql}
+        WHERE ${guard.sql} AND ${opening.sql}
       `).bind(
         id,
         firstName,
@@ -300,12 +305,16 @@ export async function createReservation(context, { testBooking = false } = {}) {
         null,
         createdAt,
         createdAt,
-        ...guard.values
+        ...guard.values,
+        ...opening.values
       ).run();
 
       if (Number(result.meta?.changes) === 1) {
         reserved = true;
         break;
+      }
+      if (await bookingIsClosed(DB, opening)) {
+        return json({ ok: false, error: CLOSED_BOOKING_MESSAGE, reason: "closed" }, 409);
       }
     }
 
