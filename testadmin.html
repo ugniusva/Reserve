@@ -74,9 +74,13 @@
     .search>.icon{position:absolute;left:12px;top:36px;color:var(--muted)}
     .search input{padding-left:39px;padding-right:36px}
     .search button{position:absolute;right:3px;top:27px;min-height:36px;width:34px;padding:6px;border:0;background:transparent}
-    .list-meta{display:flex;gap:12px;align-items:center;justify-content:space-between;margin:0 0 10px;font-size:13px;color:var(--muted)}
-    .list-meta button{padding:2px 0;min-height:28px;border:0;background:none;font-size:13px;text-decoration:underline;text-underline-offset:3px}
+    .list-meta{display:flex;gap:8px 14px;flex-wrap:wrap;align-items:center;margin:0 0 10px;font-size:13px;color:var(--muted)}
+    .list-tools button{padding:2px 0;min-height:28px;border:0;background:none;font-size:13px;text-decoration:underline;text-underline-offset:3px}
     .list-tools{display:flex;gap:16px;align-items:center;flex-shrink:0}
+    .export-actions{display:flex;gap:6px;margin-left:auto}
+    .export-actions button{font-size:13px;min-height:38px;padding:6px 11px;white-space:nowrap;color:var(--ink)}
+    #export-excel{border-color:var(--gold);color:var(--gold);min-width:144px}
+    @media(max-width:480px){.export-actions{width:100%;margin-left:0}.export-actions button{flex:1;min-height:42px}.list-tools{margin-left:auto}}
     #toggle-filters{display:none}
     .table-wrap{background:white;border:1px solid var(--line);border-radius:6px;overflow:clip}
     table{width:100%;table-layout:fixed;border-collapse:collapse}
@@ -239,6 +243,8 @@
     <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15.4-6.4L21 8M21 3v5h-5M21 12a9 9 0 0 1-15.4 6.4L3 16M8 16H3v5"/></symbol>
     <symbol id="i-edit" viewBox="0 0 24 24"><path d="m16 3 5 5M4 20l4-1L21 6a2.1 2.1 0 0 0-3-3L5 16l-1 4Z"/></symbol>
     <symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></symbol>
     <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></symbol>
     <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M19 6l-1 14H6L5 6M9 6V3h6v3M10 10v7M14 10v7"/></symbol>
     <symbol id="i-filter" viewBox="0 0 24 24"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></symbol>
@@ -311,7 +317,14 @@
         <div id="arrival-field"><label for="arrival-filter">Arrival</label><select id="arrival-filter"><option value="">All arrivals</option><option value="waiting">Not checked in</option><option value="arrived">Checked in</option><option value="unassigned">Need a table</option></select></div>
         <div class="sort-field" id="sort-field"><label for="sort">Time order</label><select id="sort"><option value="asc">Earliest first</option><option value="desc">Latest first</option></select></div>
       </div>
-      <div class="list-meta"><span id="list-caption" aria-live="polite"></span><div class="list-tools"><button id="reset-filters" hidden>Clear</button><button id="toggle-filters" aria-expanded="false" aria-controls="status-field arrival-field sort-field"><svg class="icon" aria-hidden="true"><use href="#i-filter"/></svg><span id="filters-label">Filters</span></button></div></div>
+      <div class="list-meta">
+        <span id="list-caption" aria-live="polite"></span>
+        <div class="list-tools"><button id="reset-filters" hidden>Clear</button><button id="toggle-filters" aria-expanded="false" aria-controls="status-field arrival-field sort-field"><svg class="icon" aria-hidden="true"><use href="#i-filter"/></svg><span id="filters-label">Filters</span></button></div>
+        <div class="export-actions" role="group" aria-label="Export displayed reservations">
+          <button id="export-excel" type="button" title="Download the displayed reservations as an Excel workbook" disabled><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg><span>Export to Excel</span></button>
+          <button id="copy-excel" type="button" title="Copy the displayed reservations to paste into Excel" disabled><svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg>Copy</button>
+        </div>
+      </div>
       <div class="table-wrap" id="list-region" aria-busy="false">
         <table aria-label="Reservations"><colgroup><col class="time-col"><col><col class="guests-col"><col class="table-col"><col class="deposit-col"><col class="payment-date-col"><col class="arrival-col"><col class="edit-col"></colgroup>
           <thead><tr><th scope="col">Time / date</th><th scope="col">Guest / requests</th><th scope="col">Guests</th><th scope="col">Table</th><th scope="col">Deposit / payment</th><th scope="col">Payment confirmed<span class="payment-zone">GMT+4</span></th><th scope="col">Arrival</th><th scope="col"><span class="sr-only">Edit</span></th></tr></thead>
@@ -422,6 +435,7 @@
   <div class="toast" id="toast" role="status" hidden><span id="toast-message"></span><button id="dismiss-toast" title="Dismiss notification" aria-label="Dismiss notification"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button></div>
 
   <script src="admin-closures.js"></script>
+  <script src="admin-export.js"></script>
   <script>
     'use strict';
     const $ = id => document.getElementById(id);
@@ -490,6 +504,7 @@
       undoHistory.length = 0; syncUndo();
       state.loading = false; state.view = 'today'; state.date = georgiaToday();
       state.reservations = []; state.dates = []; state.slots = []; state.busy.clear();
+      updateExport([], '', false);
       state.editing = state.tableId = state.deleteId = null;
       document.querySelectorAll('dialog[open]').forEach(dialog => dialog.close());
       dialogOpeners.clear();
@@ -542,6 +557,8 @@
         const order = aKey.localeCompare(bKey) || nameOf(a).localeCompare(nameOf(b));
         return $('sort').value === 'desc' ? -order : order;
       });
+      updateExport(visible, ['all','upcoming'].includes(state.view) ? state.view : state.date,
+        state.authenticated && !state.loading && state.busy.size === 0);
       const expected = visible.filter(active);
       $('count-bookings').textContent = visible.length;
       $('count-guests').textContent = expected.reduce((n,r) => n + (Number(r.guests)||0),0);
@@ -929,6 +946,9 @@
     window.addEventListener('pageshow',event => { if (event.persisted) { requireLogin('Checking your session...'); loadReservations(); } });
     window.addEventListener('pagehide',() => { undoHistory.length = 0; });
     state.date = georgiaToday();
+    const updateExport = typeof setupReservationExport === 'function'
+      ? setupReservationExport({ $, notify, nameOf, paymentLabel, labels, session:() => state.session })
+      : () => {};
     setupBookingClosures({api, openDialog, dialogBusy, dateLabel, notify, session:() => state.session,
       initialDate:() => state.date >= georgiaToday() ? state.date : georgiaToday()});
     loadReservations();
